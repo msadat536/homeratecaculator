@@ -592,7 +592,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="qhero">
       <div>
         <div class="qnum" id="q_total">$0</div>
-        <div class="qlab">per month, all-in below</div>
+        <div class="qlab">all-in per month</div>
       </div>
       <div id="q_verdict" class="qpill ok">—</div>
     </div>
@@ -612,7 +612,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <div><label>Closing costs</label><div class="qin"><input type="number" step="0.1" inputmode="decimal" id="q_ccpct" oninput="qSync('ccpct')"><span>%</span></div></div>
         <div><label>PMI rate</label><div class="qin"><input type="number" step="0.05" inputmode="decimal" id="q_pmir" oninput="qSync('pmir')"><span>%</span></div></div>
       </div>
-      <div class="qgroup">📆 Monthly costs</div>
+      <div class="qgroup">📆 Ongoing costs</div>
       <div class="qrow2">
         <div><label>Property tax</label><div class="qin"><input type="number" step="0.01" inputmode="decimal" id="q_taxr" oninput="qSync('taxr')"><span>%/yr</span></div></div>
         <div><label>Home insurance</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_ins" oninput="qSync('ins')"></div></div>
@@ -626,7 +626,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <div class="qstat"><b id="q_left">$0</b><span>Left each month</span></div>
       <div class="qstat"><b id="q_cash">$0</b><span>Cash to close</span></div>
       <div class="qstat"><b id="q_pi">$0</b><span>Principal &amp; interest</span></div>
-      <div class="qstat"><b id="q_allin">$0</b><span>All-in monthly</span></div>
+      <div class="qstat"><b id="q_allin">$0</b><span>Housing payment (PITI+)</span></div>
     </div>
 
     <div class="qcard" style="margin-top:.9rem">
@@ -833,7 +833,7 @@ function updateQuick(){
   const r = RESULTS[0]; if(!r) return;
   // reflect any import-applied values back into quick fields
   Object.entries(Q_MAP).forEach(([q,pid])=>{ document.getElementById('q_'+q).value = document.getElementById(pid).value; });
-  animateQTotal(r.total);
+  animateQTotal(r.allin);
   document.getElementById('q_left').textContent = fmt.format(r.left);
   document.getElementById('q_left').parentElement.classList.toggle('bad', r.left<0);
   document.getElementById('q_cash').textContent = fmt.format(r.cash);
@@ -842,7 +842,7 @@ function updateQuick(){
     `<div style="display:flex;justify-content:space-between;padding:.22rem 0;border-bottom:1px dashed var(--line)"><span>${x[0]}</span><b style="font-family:'IBM Plex Mono',monospace">${fmt.format(x[1])}</b></div>`).join('')
     + `<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-weight:700"><span>All-in total</span><b style="font-family:'IBM Plex Mono',monospace;color:var(--indigo)">${fmt.format(r.allin)}</b></div>`;
   document.getElementById('q_pi').textContent = fmt.format(r.pi);
-  document.getElementById('q_allin').textContent = fmt.format(r.allin);
+  document.getElementById('q_allin').textContent = fmt.format(r.total);
   const sh = RESULTS.shared || {takehome:0};
   const v = document.getElementById('q_verdict');
   if(!(sh.takehome>0)){
@@ -940,10 +940,10 @@ function calc(){
   document.getElementById('workaddrHint').textContent = wa ? 'To: ' + wa : '';
   document.querySelectorAll('.hz').forEach(el=>el.textContent=Math.max(1,s.horizon));
   RESULTS = P.map(p=>calcProperty(p,s));
+  RESULTS.shared = s;
   RESULTS.active = RESULTS.slice(0, pCount());
   scheduleSave();
   updateQuick();
-  RESULTS.shared = s;
   highlightRows();
   if(document.getElementById('analysisOverlay').classList.contains('open')) buildAnalysis();
 }

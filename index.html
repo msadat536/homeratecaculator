@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Home Check">
+<meta name="application-name" content="Home Check">
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
+<title>Home Purchase Comparison Workbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f4f6fb;
+  --ink:#1c2540;
+  --ink-soft:#5b6b7a;
+  --line:#dcdfe8;
+  --card:#ffffff;
+  --p1:#0e6ba8;
+  --p2:#2e7d4f;
+  --p3:#8a4fbe;
+  --win:#eafaf0;
+  --win-ink:#158a4a;
+  --warn:#fdecec;
+  --warn-ink:#c62f27;
+  --calc:#f8fafc;
+  --sun:#f59e0b;
+  --coral:#f0655a;
+  --teal:#0d9488;
+  --indigo:#4f46e5;
+  --rose:#db2777;
+  --sky:#0284c7;
+  --grad-hero:linear-gradient(120deg,#4f46e5 0%,#0284c7 45%,#0d9488 100%);
+  --grad-cta:linear-gradient(120deg,#4f46e5,#7c3aed)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Archivo',-apple-system,'Segoe UI',sans-serif;
+  background:
+    radial-gradient(900px 400px at 110% -10%, rgba(79,70,229,.10), transparent 60%),
+    radial-gradient(800px 400px at -10% 0%, rgba(13,148,136,.10), transparent 55%),
+    var(--paper);
+  color:var(--ink);
+  padding:1rem 1.25rem;
+  min-height:100vh;
+}
+.wrap{width:100%;margin:0}
+header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1.25rem;padding-bottom:.85rem;position:relative}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;border-radius:99px;background:var(--grad-hero)}
+h1{font-size:1.6rem;font-weight:800;font-stretch:112%;letter-spacing:-.01em;background:var(--grad-hero);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+h1 #forWhom{-webkit-text-fill-color:var(--ink-soft)}
+header .sub{color:var(--ink-soft);font-size:.85rem}
+header .actions button{
+  font-family:inherit;font-size:.8rem;font-weight:600;
+  border:1.5px solid var(--indigo);background:#fff;color:var(--indigo);
+  padding:.45rem .95rem;border-radius:8px;cursor:pointer;transition:all .15s;
+}
+header .actions button:hover{background:var(--indigo);color:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,70,229,.3)}
+
+
+/* Settings modal */
+#settingsOverlay{display:none;position:fixed;inset:0;background:rgba(27,39,51,.45);z-index:95;align-items:flex-start;justify-content:center;padding:4rem 1rem}
+#settingsOverlay.open{display:flex}
+.smodal{background:var(--card);border-radius:12px;max-width:520px;width:100%;padding:1.4rem 1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.25);max-height:85vh;overflow-y:auto}
+.smodal h2{font-size:1.1rem;font-weight:800;margin-bottom:1rem;background:var(--grad-hero);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.smodal h3{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:1rem 0 .5rem;display:flex;align-items:center;gap:.6rem}
+.smodal h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.smodal h3:first-of-type{margin-top:0}
+.smodal .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem .9rem}
+.smodal .field{display:flex;flex-direction:column;gap:.28rem;font-size:.73rem;color:var(--ink-soft);font-weight:600}
+.smodal .field.full{grid-column:1 / -1}
+.databtn{font-family:inherit;font-size:.75rem;font-weight:600;border:1.5px solid var(--indigo);background:#fff;color:var(--indigo);padding:.4rem .8rem;border-radius:6px;cursor:pointer}
+.databtn:hover{background:var(--indigo);color:#fff}
+.smodal .done{margin-top:1.2rem;width:100%;font-family:inherit;font-weight:700;font-size:.85rem;border:none;background:var(--ink);color:var(--paper);padding:.65rem;border-radius:8px;cursor:pointer}
+.smodal .fhint{font-size:.62rem;font-weight:400;color:var(--ink-soft)}
+
+/* Schools */
+.school-cell{font-size:.82rem;color:var(--ink-soft)}
+.school-chip{display:inline-flex;align-items:center;gap:.35rem;background:linear-gradient(120deg,#eef2ff,#e0f2fe);border:1px solid #c7d2fe;color:var(--indigo);font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:.82rem;padding:.35rem .7rem;border-radius:99px;cursor:pointer}
+.school-chip:hover{box-shadow:0 2px 8px rgba(79,70,229,.25)}
+.school-link{font-size:.75rem;color:var(--sky);text-decoration:none;font-weight:600}
+.school-link:hover{text-decoration:underline}
+#schoolOverlay{display:none;position:fixed;inset:0;background:rgba(27,39,51,.5);z-index:96;align-items:center;justify-content:center;padding:1rem}
+#schoolOverlay.open{display:flex}
+.schmodal{background:var(--card);border-radius:12px;max-width:460px;width:100%;padding:1.2rem 1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.schmodal h3{font-size:1rem;font-weight:800;margin-bottom:.8rem}
+.sch-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px dashed var(--line);font-size:.83rem}
+.sch-row:last-of-type{border-bottom:none}
+.sch-type{font-size:.65rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;display:block}
+.sch-score{font-family:'IBM Plex Mono',monospace;font-weight:700;padding:.15rem .55rem;border-radius:6px;color:#fff}
+
+/* Property-count column hiding */
+body.pc1 th:nth-child(3), body.pc1 td:nth-child(3),
+body.pc1 th:nth-child(4), body.pc1 td:nth-child(4),
+body.pc2 th:nth-child(4), body.pc2 td:nth-child(4){display:none}
+
+/* Mobile */
+@media (max-width:700px){
+  body{padding:.6rem}
+  h1{font-size:1.15rem}
+  header .sub{font-size:.72rem}
+  header .actions button{font-size:.7rem;padding:.35rem .6rem}
+  td:first-child,th:first-child{min-width:150px;width:auto;font-size:.78rem}
+  th,td{padding:.35rem .45rem}
+  input{font-size:16px;padding:.4rem .45rem}
+  .hint{display:none}
+  .smodal{padding:1rem}
+  .smodal .sgrid{grid-template-columns:1fr}
+  .amodal-body{padding:.8rem}
+  .reco .r-name{font-size:1.15rem}
+  .score-grid{grid-template-columns:80px 1fr 1fr 1fr;font-size:.68rem}
+  #importBar{bottom:.5rem;right:.5rem;left:.5rem;width:auto;max-width:none}
+}
+
+
+.qhero{position:sticky;top:56px;z-index:4;background:linear-gradient(135deg,#ffffff,#f2f5ff);border:1px solid #e3e8ff;border-radius:16px;padding:.85rem 1rem;margin-bottom:.9rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 6px 24px rgba(28,37,64,.12)}
+.qhero .qnum{font-size:1.7rem;line-height:1.1}
+.qpill{font-size:.66rem;font-weight:800;letter-spacing:.03em;padding:.4rem .7rem;border-radius:99px;text-align:center;max-width:44%}
+.qpill.ok{background:var(--win);color:var(--win-ink)}
+.qpill.tight{background:#fef3e2;color:#92600a}
+.qpill.over{background:var(--warn);color:var(--warn-ink)}
+.qgroup{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:.9rem 0 .5rem;display:flex;align-items:center;gap:.5rem}
+.qgroup:first-child{margin-top:0}
+.qgroup::after{content:"";flex:1;height:1px;background:var(--line)}
+.qin{display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.qin:focus-within{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+.qin span{padding:0 .55rem;font-size:.75rem;color:var(--ink-soft);font-weight:600;background:#f4f6fb;align-self:stretch;display:flex;align-items:center}
+.qin input{border:none;box-shadow:none !important;margin-bottom:0 !important;padding:.6rem .55rem;min-width:0}
+.qin input:focus{outline:none}
+@media (max-width:700px){.qfull{display:none}.view-only-desktop{display:none}}
+/* Quick check (mobile) */
+#quickOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:65;overflow-y:auto}
+#quickOverlay.open{display:block}
+.qwrap{max-width:480px;margin:0 auto;padding:1rem 1rem 2.5rem}
+.qhead{background:var(--grad-hero);margin:-1rem -1rem 1rem;padding:1rem;color:#fff;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.qhead b{font-size:1.05rem;font-weight:800}
+.qhead button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;font-family:inherit;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:6px;cursor:pointer}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-bottom:.9rem}
+.qcard label{display:block;font-size:.68rem;font-weight:700;color:var(--ink-soft);margin-bottom:.22rem}
+.qcard input{width:100%;font-size:16px}
+.qrow2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem .6rem;margin-bottom:.2rem}
+.qbig{text-align:center;padding:1.1rem 1rem}
+.qbig .qnum{font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:700;background:var(--grad-hero);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.qbig .qlab{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft)}
+.qstats{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.qstat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.8rem;text-align:center}
+.qstat b{display:block;font-family:'IBM Plex Mono',monospace;font-size:1.05rem}
+.qstat span{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+.qstat.bad b{color:var(--warn-ink)}
+.qverdict{text-align:center;margin:.9rem 0;font-weight:800;font-size:.95rem;padding:.6rem;border-radius:10px}
+.qverdict.ok{background:var(--win);color:var(--win-ink)}
+.qverdict.tight{background:#fef3e2;color:#92600a}
+.qverdict.over{background:var(--warn);color:var(--warn-ink)}
+
+/* ---- Polish layer ---- */
+*{-webkit-tap-highlight-color:transparent}
+.card,.qcard,.an-sec,.an-card,.reco,.smodal,.qstat{border-radius:16px}
+.card{box-shadow:0 1px 2px rgba(28,37,64,.05),0 8px 30px rgba(28,37,64,.07)}
+.an-card,.an-sec,.qcard,.qstat{box-shadow:0 1px 2px rgba(28,37,64,.04),0 6px 20px rgba(28,37,64,.06);transition:transform .18s ease,box-shadow .18s ease}
+.an-card:hover,.qstat:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(28,37,64,.06),0 14px 34px rgba(28,37,64,.12)}
+button{transition:transform .12s ease,box-shadow .15s ease,background .15s,color .15s !important}
+button:active{transform:scale(.97) !important}
+.bar-fill,.sbar i,.stack-seg{transition:width .6s cubic-bezier(.22,1,.36,1)}
+input{transition:border-color .15s,box-shadow .15s}
+input:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+thead input.pname:focus{box-shadow:none}
+.reco{background:linear-gradient(135deg,#ffffff 0%,#f5f7ff 60%,#eef7ff 100%);border:1px solid #e3e8ff;position:relative;overflow:hidden}
+.reco::after{content:"";position:absolute;top:-40%;right:-15%;width:55%;height:180%;background:radial-gradient(closest-side,rgba(79,70,229,.08),transparent)}
+.reco .r-name{font-family:'Fraunces',serif;letter-spacing:0}
+.qbig .qnum{font-family:'Fraunces',serif}
+.amodal-title{font-family:'Fraunces',serif}
+.qverdict{box-shadow:0 4px 14px rgba(28,37,64,.08)}
+.school-chip,.an-verdict{box-shadow:0 2px 8px rgba(28,37,64,.08)}
+.sec td{text-shadow:0 1px 2px rgba(0,0,0,.15)}
+::selection{background:rgba(79,70,229,.2)}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+/* score donut */
+.donut{display:flex;align-items:center;gap:.8rem}
+.donut svg{flex-shrink:0}
+.donut .dval{font-family:'Fraunces',serif;font-weight:800;font-size:1.05rem}
+/* Analysis view */
+header .actions{display:flex;gap:.5rem}
+header .actions button.primary{background:var(--ink);color:var(--paper)}
+header .actions button.primary:hover{opacity:.85}
+#analysisOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:60;overflow-y:auto}
+#analysisOverlay.open{display:block}
+.amodal{background:var(--paper);width:100%;min-height:100vh;display:flex;flex-direction:column}
+.chart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-top:.7rem}
+@media (max-width:1100px){.chart-grid{grid-template-columns:1fr 1fr}}
+.chart-grid .an-sec{margin-bottom:0}
+@media (max-width:900px){.chart-grid{grid-template-columns:1fr}}
+@media print{.amodal{min-height:auto}}
+.amodal-head{background:var(--grad-hero);color:#fff;padding:.7rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.amodal-eyebrow{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;opacity:.7;font-weight:700}
+.amodal-title{font-size:1.05rem;font-weight:800}
+.aclose{background:none;border:none;color:var(--paper);font-size:1.8rem;cursor:pointer;line-height:1;padding:0 .3rem}
+.amodal-body{padding:1rem 1.25rem}
+/* Recommendation hero */
+.verdict-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:.7rem;align-items:stretch;margin-bottom:.7rem}
+@media (max-width:900px){.verdict-grid{grid-template-columns:1fr}}
+.reco{border-radius:12px;padding:.9rem 1.1rem;margin-bottom:0;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--win-ink)}
+.reco.none{border-left-color:var(--warn-ink)}
+.reco .r-eyebrow{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--ink-soft)}
+.reco .r-name{font-size:1.2rem;font-weight:800;margin:.15rem 0 .35rem}
+.reco .r-why{font-size:.78rem;line-height:1.45;color:var(--ink)}
+.reco .r-stats{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.55rem}
+.reco .r-stat b{display:block;font-family:'IBM Plex Mono',monospace;font-size:.9rem}
+.reco .r-stat span{font-size:.6rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em}
+/* Scorecard */
+.score-grid{display:grid;grid-template-columns:95px 1fr 1fr 1fr;gap:.25rem .6rem;align-items:center;font-size:.7rem}
+.score-grid .shead{font-weight:700;font-size:.8rem;padding-bottom:.3rem}
+.sbar{background:#eef0ee;border-radius:4px;height:10px;overflow:hidden}
+.sbar i{display:block;height:100%;border-radius:4px}
+.stotal{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.95rem}
+/* Suggestions */
+.sugg{counter-reset:sg;display:grid;grid-template-columns:1fr 1fr;gap:0 1.5rem}
+@media (max-width:900px){.sugg{grid-template-columns:1fr}}
+.sugg .sg{display:flex;gap:.6rem;padding:.4rem 0;border-bottom:1px dashed var(--line);font-size:.74rem;line-height:1.4}
+.sugg .sg:last-child{border-bottom:none}
+.sugg .sg::before{counter-increment:sg;content:counter(sg);flex-shrink:0;width:1.2rem;height:1.2rem;border-radius:50%;background:var(--grad-cta);color:#fff;font-weight:700;font-size:.75rem;display:flex;align-items:center;justify-content:center;margin-top:.1rem}
+.sugg .sg b{font-family:'IBM Plex Mono',monospace}
+.an-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:.7rem 0}
+.an-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;border-top:4px solid var(--ink)}
+.an-card.p1{border-top-color:var(--p1)}
+.an-card.p2{border-top-color:var(--p2)}
+.an-card.p3{border-top-color:var(--p3)}
+.an-card h3{font-size:.85rem;margin-bottom:.1rem}
+.an-verdict{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .55rem;border-radius:99px;margin-bottom:.6rem}
+.an-verdict.ok{background:var(--win);color:var(--win-ink)}
+.an-verdict.tight{background:#fef3e2;color:#92600a}
+.an-verdict.over{background:var(--warn);color:var(--warn-ink)}
+.an-card ul{list-style:none;font-size:.71rem;line-height:1.35}
+.an-card li{padding:.08rem 0 .08rem 1.05rem;position:relative}
+.an-card li.pro::before{content:"✓";position:absolute;left:0;color:var(--win-ink);font-weight:700}
+.an-card li.con::before{content:"✕";position:absolute;left:0;color:var(--warn-ink);font-weight:700}
+.an-sec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;margin-bottom:.7rem}
+.an-sec h4{font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);margin-bottom:.45rem;display:flex;align-items:center;gap:.5rem}
+.an-sec h4::after{content:"";flex:1;height:1px;background:var(--line)}
+.bar-row{display:grid;grid-template-columns:90px 1fr 78px;gap:.4rem;align-items:center;margin:.18rem 0;font-size:.7rem}
+.bar-track{background:#eef0ee;border-radius:4px;height:13px;position:relative}
+.bar-fill{height:100%;border-radius:4px;min-width:2px}
+.bar-fill.p1{background:var(--p1)}.bar-fill.p2{background:var(--p2)}.bar-fill.p3{background:var(--p3)}
+.bar-val{font-family:'IBM Plex Mono',monospace;font-weight:600;text-align:right}
+.bar-row.best .bar-val{color:var(--win-ink)}
+.bar-row.best .bar-track::after{content:"best";position:absolute;right:.4rem;top:50%;transform:translateY(-50%);font-size:.6rem;font-weight:700;color:#fff;letter-spacing:.05em}
+.stack{display:grid;grid-template-columns:90px 1fr;gap:.4rem;align-items:center;margin:.22rem 0;font-size:.7rem}
+.stack-bar{display:flex;height:16px;border-radius:4px;overflow:hidden}
+.stack-seg{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.62rem;color:var(--ink-soft);margin-top:.6rem}
+.legend span{display:inline-flex;align-items:center;gap:.3rem}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+@media (max-width:820px){.an-grid{grid-template-columns:1fr}}
+@media print{#analysis{display:block}}
+/* Shared assumptions */
+.assume{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem 1.1rem;margin-bottom:1.4rem}
+.assume h2{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--ink-soft);margin-bottom:.65rem;display:flex;align-items:center;gap:.6rem}
+.assume h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.assume .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem .9rem}
+.assume .field{display:flex;flex-direction:column;gap:.28rem;font-size:.73rem;color:var(--ink-soft);font-weight:600;line-height:1.25}
+.assume .field input{width:100%}
+.assume .fhint{font-size:.62rem;font-weight:400;color:var(--ink-soft)}
+.assume .grid + h2{margin-top:1.1rem}
+.pbtn{font-family:inherit;font-size:.75rem;font-weight:600;border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:.5rem .8rem;border-radius:6px;cursor:pointer}
+.pbtn.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+@media (max-width:560px){.assume .grid{grid-template-columns:repeat(2,1fr)}}
+
+/* Table */
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0;box-shadow:0 1px 2px rgba(27,39,51,.06)}
+@media (max-width:960px){.card{overflow-x:auto}}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+@media (max-width:960px){table{min-width:900px}}
+th,td{border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+td:first-child,th:first-child{position:sticky;left:0;background:var(--card);width:26%;min-width:230px;z-index:1;border-right:1px solid var(--line)}
+thead th{font-weight:700;background:var(--card);position:sticky;top:0;z-index:3;box-shadow:0 1px 0 var(--line)}
+thead th:first-child{z-index:4}
+thead th.pcol{border-top:5px solid var(--ink);width:24.6%}
+thead th.pcol.h1{border-top-color:var(--p1);background:linear-gradient(180deg,rgba(14,107,168,.12),transparent)}
+thead th.pcol.h2{border-top-color:var(--p2);background:linear-gradient(180deg,rgba(46,125,79,.12),transparent)}
+thead th.pcol.h3{border-top-color:var(--p3);background:linear-gradient(180deg,rgba(138,79,190,.12),transparent)}
+tbody tr:not(.sec) td:nth-child(2){background:rgba(14,107,168,.035)}
+tbody tr:not(.sec) td:nth-child(3){background:rgba(46,125,79,.035)}
+tbody tr:not(.sec) td:nth-child(4){background:rgba(138,79,190,.035)}
+thead input.pname{font-weight:700;font-size:.92rem;border:none;border-bottom:1.5px dashed var(--line);border-radius:0;background:transparent;padding:.2rem 0}
+thead input.pname:focus{outline:none;border-bottom-color:var(--ink)}
+.sec td{color:#fff;font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:.09em;padding:.5rem .8rem;cursor:pointer;user-select:none}
+.sec:nth-of-type(1) td{background:linear-gradient(90deg,#0d9488,#14b8a6)}
+.sec:nth-of-type(2) td{background:linear-gradient(90deg,#0284c7,#38bdf8)}
+.sec:nth-of-type(3) td{background:linear-gradient(90deg,#4f46e5,#818cf8)}
+.sec:nth-of-type(4) td{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.sec:nth-of-type(5) td{background:linear-gradient(90deg,#db2777,#f472b6)}
+.sec:nth-of-type(6) td{background:linear-gradient(90deg,#ea580c,#fb923c)}
+.sec:nth-of-type(1) td:first-child{background:linear-gradient(90deg,#0d9488,#14b8a6)}
+.sec:nth-of-type(2) td:first-child{background:linear-gradient(90deg,#0284c7,#38bdf8)}
+.sec:nth-of-type(3) td:first-child{background:linear-gradient(90deg,#4f46e5,#818cf8)}
+.sec:nth-of-type(4) td:first-child{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.sec:nth-of-type(5) td:first-child{background:linear-gradient(90deg,#db2777,#f472b6)}
+.sec:nth-of-type(6) td:first-child{background:linear-gradient(90deg,#ea580c,#fb923c)}
+.sec td::before{content:"▾ ";opacity:.6}
+.sec.closed td::before{content:"▸ "}
+tr.hidden-row{display:none}
+th,td{padding:.45rem .7rem}
+.rowlabel{font-weight:500}
+.hint{display:block;font-size:.68rem;color:var(--ink-soft);font-weight:400;margin-top:.1rem}
+input{font-family:'IBM Plex Mono',monospace;font-size:.84rem;width:100%;padding:.42rem .55rem;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+input:focus{outline:2px solid var(--p1);outline-offset:-1px}
+input[type=text].free{font-family:'Archivo',sans-serif}
+.out{font-family:'IBM Plex Mono',monospace;font-weight:600;background:var(--calc)}
+.calcrow td{background:var(--calc)}
+.calcrow td:first-child{background:var(--calc)}
+.totalrow td{background:linear-gradient(90deg,#eef2ff,#e0f2fe) !important;font-size:.95rem}
+.totalrow td:first-child{background:linear-gradient(90deg,#eef2ff,#e0f2fe) !important;font-weight:700}
+.totalrow .out{background:transparent;color:var(--indigo)}
+td.best{background:var(--win) !important;box-shadow:inset 3px 0 0 var(--win-ink)}
+td.danger{background:var(--warn) !important}
+td.best .out{background:transparent;color:var(--win-ink)}
+td.danger{background:var(--warn) !important;box-shadow:inset 3px 0 0 var(--warn-ink)}
+td.danger .out{background:transparent;color:var(--warn-ink)}
+tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem .8rem}
+@media print{
+  .assume input, thead input.pname, input{border:none;background:transparent;padding:0}
+  header .actions{display:none}
+  body{padding:0;background:#fff}
+}
+@media (max-width:820px){.verdict{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Home Purchase Comparison Workbook<span id="forWhom" style="font-size:.9rem;font-weight:600;color:var(--ink-soft)"></span></h1>
+    <div class="sub">Paste a listing URL or type values — grey rows calculate live. Green = best of the three. Red = budget risk.</div>
+  </div>
+  <div class="actions">
+    <button onclick="window.print()">Print / Save PDF</button>
+    <button onclick="openQuick()">⚡ Quick check</button>
+    <button onclick="openSettings()" title="Your profile, commute, income">&#9881; Settings</button>
+  </div>
+</header>
+
+<!-- Shared assumptions -->
+<!-- Listing import status + fallback (hidden until a URL is pasted) -->
+<div id="importBar" style="display:none;position:fixed;bottom:1.2rem;right:1.2rem;z-index:80;max-width:420px;width:calc(100vw - 2.4rem);background:var(--ink);color:#fff;border-radius:12px;padding:.9rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+  <div style="display:flex;justify-content:space-between;gap:.8rem;align-items:flex-start">
+    <div id="importStatus" style="font-size:.8rem;line-height:1.5">
+      <div id="imp_p1"></div><div id="imp_p2"></div><div id="imp_p3"></div>
+    </div>
+    <button onclick="document.getElementById('importBar').style.display='none'" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1;padding:0">&times;</button>
+  </div>
+  <div id="importFallback" style="display:none;margin-top:.6rem">
+    <textarea id="importIn" style="width:100%;min-height:70px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;padding:.5rem;border:1px solid var(--line);border-radius:6px;resize:vertical"></textarea>
+    <button id="importBtn" onclick="importPastedText()" style="margin-top:.4rem;font-family:inherit;font-weight:600;font-size:.8rem;border:none;background:#fff;color:var(--ink);padding:.5rem 1rem;border-radius:6px;cursor:pointer">Parse pasted listing</button>
+  </div>
+</div>
+
+<div class="card">
+<table id="cmp">
+<thead>
+<tr>
+  <th>Metric</th>
+  <th class="pcol h1"><input class="pname" id="name_p1" type="text" value="Property 1" oninput="calc()"></th>
+  <th class="pcol h2"><input class="pname" id="name_p2" type="text" value="Property 2" oninput="calc()"></th>
+  <th class="pcol h3"><input class="pname" id="name_p3" type="text" value="Property 3" oninput="calc()"></th>
+</tr>
+</thead>
+<tbody>
+
+<tr class="sec"><td colspan="4">🏠&nbsp; Property details</td></tr>
+<tr><td class="rowlabel">Listing link / address<span class="hint">Paste a listing URL — fields below auto-fill</span></td>
+  <td><input type="text" class="free" id="p1_url" onchange="urlChanged('p1')" onkeydown="if(event.key==='Enter')urlChanged('p1')" onpaste="setTimeout(()=>urlChanged('p1'),50)"></td>
+  <td><input type="text" class="free" id="p2_url" onchange="urlChanged('p2')" onkeydown="if(event.key==='Enter')urlChanged('p2')" onpaste="setTimeout(()=>urlChanged('p2'),50)"></td>
+  <td><input type="text" class="free" id="p3_url" onchange="urlChanged('p3')" onkeydown="if(event.key==='Enter')urlChanged('p3')" onpaste="setTimeout(()=>urlChanged('p3'),50)"></td></tr>
+<tr><td class="rowlabel">Square footage</td>
+  <td><input type="number" id="p1_sqft" value="" oninput="calc()"></td>
+  <td><input type="number" id="p2_sqft" value="" oninput="calc()"></td>
+  <td><input type="number" id="p3_sqft" value="" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Year built</td>
+  <td><input type="number" id="p1_year"></td>
+  <td><input type="number" id="p2_year"></td>
+  <td><input type="number" id="p3_year"></td></tr>
+<tr class="calcrow" data-cmp="low"><td class="rowlabel">Price per sq ft</td>
+  <td><input class="out" id="p1_ppsf" readonly></td>
+  <td><input class="out" id="p2_ppsf" readonly></td>
+  <td><input class="out" id="p3_ppsf" readonly></td></tr>
+<tr><td class="rowlabel">Bedrooms &amp; layout</td>
+  <td><input type="text" class="free" id="p1_beds"></td>
+  <td><input type="text" class="free" id="p2_beds"></td>
+  <td><input type="text" class="free" id="p3_beds"></td></tr>
+<tr><td class="rowlabel">School zone ratings<span class="hint">Average of listed school scores — click for the breakdown</span></td>
+  <td><div class="school-cell" id="p1_school_cell">—</div></td>
+  <td><div class="school-cell" id="p2_school_cell">—</div></td>
+  <td><div class="school-cell" id="p3_school_cell">—</div></td></tr>
+<tr><td class="rowlabel">Yard / kid-friendly space</td>
+  <td><input type="text" class="free" id="p1_yard"></td>
+  <td><input type="text" class="free" id="p2_yard"></td>
+  <td><input type="text" class="free" id="p3_yard"></td></tr>
+<tr><td class="rowlabel">Commute to office (min, one-way)<span class="hint" id="workaddrHint"></span></td>
+  <td><input type="number" id="p1_cmin" oninput="calc()"></td>
+  <td><input type="number" id="p2_cmin" oninput="calc()"></td>
+  <td><input type="number" id="p3_cmin" oninput="calc()"></td></tr>
+<tr class="calcrow" data-cmp="low"><td class="rowlabel">Hours commuting / month<span class="hint">Round trip × commute days (set in Settings)</span></td>
+  <td><input class="out" id="p1_chrs" readonly></td>
+  <td><input class="out" id="p2_chrs" readonly></td>
+  <td><input class="out" id="p3_chrs" readonly></td></tr>
+
+
+<tr class="sec"><td colspan="4">🏦&nbsp; Purchase &amp; loan</td></tr>
+<tr><td class="rowlabel">Purchase price ($)</td>
+  <td><input type="number" id="p1_price" value="" oninput="calc()"></td>
+  <td><input type="number" id="p2_price" value="" oninput="calc()"></td>
+  <td><input type="number" id="p3_price" value="" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Down payment (%)</td>
+  <td><input type="number" step="0.5" id="p1_dp" value="20" oninput="calc()"></td>
+  <td><input type="number" step="0.5" id="p2_dp" value="20" oninput="calc()"></td>
+  <td><input type="number" step="0.5" id="p3_dp" value="20" oninput="calc()"></td></tr>
+<tr class="calcrow"><td class="rowlabel">Down payment ($)</td>
+  <td><input class="out" id="p1_dpamt" readonly></td>
+  <td><input class="out" id="p2_dpamt" readonly></td>
+  <td><input class="out" id="p3_dpamt" readonly></td></tr>
+<tr class="calcrow"><td class="rowlabel">Loan amount ($)</td>
+  <td><input class="out" id="p1_loan" readonly></td>
+  <td><input class="out" id="p2_loan" readonly></td>
+  <td><input class="out" id="p3_loan" readonly></td></tr>
+<tr><td class="rowlabel">Interest rate (%)</td>
+  <td><input type="number" step="0.01" id="p1_rate" value="6.75" oninput="calc()"></td>
+  <td><input type="number" step="0.01" id="p2_rate" value="6.75" oninput="calc()"></td>
+  <td><input type="number" step="0.01" id="p3_rate" value="6.75" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Loan term (years)<span class="hint">Your choice — 15, 20, 30, anything. Each property can differ.</span></td>
+  <td><input type="number" id="p1_term" value="30" oninput="calc()"></td>
+  <td><input type="number" id="p2_term" value="30" oninput="calc()"></td>
+  <td><input type="number" id="p3_term" value="30" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Discount points<span class="hint">1 point = 1% of loan, paid at closing</span></td>
+  <td><input type="number" step="0.25" id="p1_pts" value="0" oninput="calc()"></td>
+  <td><input type="number" step="0.25" id="p2_pts" value="0" oninput="calc()"></td>
+  <td><input type="number" step="0.25" id="p3_pts" value="0" oninput="calc()"></td></tr>
+
+<tr class="sec"><td colspan="4">💵&nbsp; Cash to close</td></tr>
+<tr><td class="rowlabel">Closing costs (% of loan)<span class="hint">Escrow, title, lender fees. 2–3% typical</span></td>
+  <td><input type="number" step="0.1" id="p1_ccpct" value="2.5" oninput="calc()"></td>
+  <td><input type="number" step="0.1" id="p2_ccpct" value="2.5" oninput="calc()"></td>
+  <td><input type="number" step="0.1" id="p3_ccpct" value="2.5" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Lender / seller credits ($)</td>
+  <td><input type="number" id="p1_cred" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p2_cred" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p3_cred" value="0" oninput="calc()"></td></tr>
+<tr class="calcrow"><td class="rowlabel">Closing costs + points ($)</td>
+  <td><input class="out" id="p1_cc" readonly></td>
+  <td><input class="out" id="p2_cc" readonly></td>
+  <td><input class="out" id="p3_cc" readonly></td></tr>
+<tr class="calcrow totalrow" data-cmp="low"><td class="rowlabel">TOTAL CASH TO CLOSE ($)</td>
+  <td><input class="out" id="p1_cash" readonly></td>
+  <td><input class="out" id="p2_cash" readonly></td>
+  <td><input class="out" id="p3_cash" readonly></td></tr>
+
+<tr class="sec"><td colspan="4">📆&nbsp; Monthly housing payment</td></tr>
+<tr class="calcrow"><td class="rowlabel">Principal &amp; interest ($/mo)</td>
+  <td><input class="out" id="p1_pi" readonly></td>
+  <td><input class="out" id="p2_pi" readonly></td>
+  <td><input class="out" id="p3_pi" readonly></td></tr>
+<tr><td class="rowlabel">Property tax rate (%/yr of price)<span class="hint">CA base ≈ 1.1–1.25%</span></td>
+  <td><input type="number" step="0.01" id="p1_taxr" value="1.15" oninput="calc()"></td>
+  <td><input type="number" step="0.01" id="p2_taxr" value="1.15" oninput="calc()"></td>
+  <td><input type="number" step="0.01" id="p3_taxr" value="1.15" oninput="calc()"></td></tr>
+<tr class="calcrow"><td class="rowlabel">Property tax ($/mo)</td>
+  <td><input class="out" id="p1_tax" readonly></td>
+  <td><input class="out" id="p2_tax" readonly></td>
+  <td><input class="out" id="p3_tax" readonly></td></tr>
+<tr><td class="rowlabel">Mello-Roos / special assessments ($/mo)</td>
+  <td><input type="number" id="p1_mr" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p2_mr" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p3_mr" value="0" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Homeowners insurance ($/mo)</td>
+  <td><input type="number" id="p1_ins" value="" oninput="calc()"></td>
+  <td><input type="number" id="p2_ins" value="" oninput="calc()"></td>
+  <td><input type="number" id="p3_ins" value="" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">HOA dues ($/mo)</td>
+  <td><input type="number" id="p1_hoa" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p2_hoa" value="" oninput="calc()"></td>
+  <td><input type="number" id="p3_hoa" value="0" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">PMI rate (%/yr of loan)<span class="hint">Applies only if down payment &lt; 20%</span></td>
+  <td><input type="number" step="0.05" id="p1_pmir" value="0.5" oninput="calc()"></td>
+  <td><input type="number" step="0.05" id="p2_pmir" value="0.5" oninput="calc()"></td>
+  <td><input type="number" step="0.05" id="p3_pmir" value="0.5" oninput="calc()"></td></tr>
+<tr class="calcrow"><td class="rowlabel">PMI ($/mo)</td>
+  <td><input class="out" id="p1_pmi" readonly></td>
+  <td><input class="out" id="p2_pmi" readonly></td>
+  <td><input class="out" id="p3_pmi" readonly></td></tr>
+<tr class="calcrow totalrow" data-cmp="low"><td class="rowlabel">TOTAL HOUSING PAYMENT ($/mo)<span class="hint">P&amp;I + tax + Mello-Roos + insurance + HOA + PMI</span></td>
+  <td><input class="out" id="p1_total" readonly></td>
+  <td><input class="out" id="p2_total" readonly></td>
+  <td><input class="out" id="p3_total" readonly></td></tr>
+
+<tr class="sec"><td colspan="4">⚖️&nbsp; All-in monthly cost &amp; budget reality</td></tr>
+<tr><td class="rowlabel">Utilities estimate ($/mo)</td>
+  <td><input type="number" id="p1_util" value="" oninput="calc()"></td>
+  <td><input type="number" id="p2_util" value="" oninput="calc()"></td>
+  <td><input type="number" id="p3_util" value="" oninput="calc()"></td></tr>
+<tr class="calcrow"><td class="rowlabel">Maintenance reserve ($/mo)<span class="hint">From shared % assumption</span></td>
+  <td><input class="out" id="p1_mnt" readonly></td>
+  <td><input class="out" id="p2_mnt" readonly></td>
+  <td><input class="out" id="p3_mnt" readonly></td></tr>
+<tr class="calcrow totalrow" data-cmp="low"><td class="rowlabel">ALL-IN MONTHLY COST ($)<span class="hint">Housing + utilities + maintenance</span></td>
+  <td><input class="out" id="p1_allin" readonly></td>
+  <td><input class="out" id="p2_allin" readonly></td>
+  <td><input class="out" id="p3_allin" readonly></td></tr>
+<tr class="calcrow" data-cmp="low"><td class="rowlabel">All-in cost as % of take-home pay<span class="hint">Above ~45% of take-home leaves little room for anything else</span></td>
+  <td><input class="out" id="p1_pct" readonly></td>
+  <td><input class="out" id="p2_pct" readonly></td>
+  <td><input class="out" id="p3_pct" readonly></td></tr>
+<tr class="calcrow totalrow" data-cmp="high"><td class="rowlabel">CASH LEFT EACH MONTH ($)<span class="hint">Take-home pay minus all-in cost. This must cover food, cars, insurance, kids, savings — everything.</span></td>
+  <td><input class="out" id="p1_left" readonly></td>
+  <td><input class="out" id="p2_left" readonly></td>
+  <td><input class="out" id="p3_left" readonly></td></tr>
+
+
+<tr class="sec"><td colspan="4">📈&nbsp; <span class="hz">5</span>-year outlook</td></tr>
+<tr class="calcrow" data-cmp="low"><td class="rowlabel">Interest paid over <span class="hz">5</span> years ($)</td>
+  <td><input class="out" id="p1_intH" readonly></td>
+  <td><input class="out" id="p2_intH" readonly></td>
+  <td><input class="out" id="p3_intH" readonly></td></tr>
+<tr class="calcrow" data-cmp="high"><td class="rowlabel">Principal paid over <span class="hz">5</span> years ($)</td>
+  <td><input class="out" id="p1_prinH" readonly></td>
+  <td><input class="out" id="p2_prinH" readonly></td>
+  <td><input class="out" id="p3_prinH" readonly></td></tr>
+<tr class="calcrow" data-cmp="high"><td class="rowlabel">Estimated equity after <span class="hz">5</span> years ($)<span class="hint">Down payment + principal + appreciation</span></td>
+  <td><input class="out" id="p1_eqH" readonly></td>
+  <td><input class="out" id="p2_eqH" readonly></td>
+  <td><input class="out" id="p3_eqH" readonly></td></tr>
+<tr class="calcrow totalrow" data-cmp="low"><td class="rowlabel"><span class="hz">5</span>-YEAR NET COST ($)<span class="hint">Cash to close + all-in monthly cost over the horizon − principal − appreciation</span></td>
+  <td><input class="out" id="p1_netH" readonly></td>
+  <td><input class="out" id="p2_netH" readonly></td>
+  <td><input class="out" id="p3_netH" readonly></td></tr>
+<tr class="calcrow" data-cmp="low"><td class="rowlabel">Total interest over full loan ($)</td>
+  <td><input class="out" id="p1_intall" readonly></td>
+  <td><input class="out" id="p2_intall" readonly></td>
+  <td><input class="out" id="p3_intall" readonly></td></tr>
+
+</tbody>
+<tfoot>
+<tr><td colspan="4">Estimates only. The analysis horizon is a comparison window, not the loan term — set the loan term per property above. PMI is held constant over the horizon (in practice it drops near 20% equity), appreciation is not guaranteed, and closing costs vary by lender. Verify tax rates and Mello-Roos on the county assessor listing for each parcel. If "Cash left each month" runs thin or red, that number matters more than any equity projection.</td></tr>
+</tfoot>
+</table>
+</div>
+
+<!-- Bottom CTA -->
+<div style="margin-top:1.4rem;text-align:center">
+  <button id="runAnalysisBtn" onclick="openAnalysis()" style="font-family:inherit;font-weight:800;font-size:1rem;letter-spacing:.01em;border:none;background:var(--grad-cta);color:#fff;padding:.95rem 2.4rem;border-radius:12px;cursor:pointer;box-shadow:0 6px 20px rgba(79,70,229,.35);transition:transform .15s">Run analysis →</button>
+  <div style="font-size:.72rem;color:var(--ink-soft);margin-top:.5rem">Fill in the details above first — the recommendation is only as good as the numbers.</div>
+</div>
+
+<!-- Analysis modal -->
+<div id="analysisOverlay">
+  <div class="amodal">
+    <div class="amodal-head">
+      <div>
+        <div class="amodal-eyebrow">Side-by-side analysis</div>
+        <div class="amodal-title" id="anTitle">Your comparison</div>
+      </div>
+      <button class="aclose" onclick="closeAnalysis()">&times;</button>
+    </div>
+    <div id="analysis" class="amodal-body"></div>
+  </div>
+</div>
+
+<!-- School details modal -->
+<div id="schoolOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="schmodal">
+    <h3 id="schTitle">Nearby schools</h3>
+    <div id="schList"></div>
+    <a id="schMore" class="school-link" target="_blank" style="display:inline-block;margin-top:.8rem">See all nearby schools on GreatSchools ↗</a>
+  </div>
+</div>
+
+<!-- Quick check (mobile) -->
+<div id="quickOverlay">
+  <div class="qwrap">
+    <div class="qhead">
+      <b>🏠 Home Check</b>
+      <div style="display:flex;gap:.4rem">
+        <button onclick="openSettings()">&#9881;</button>
+        <button class="qfull" onclick="closeQuick()">Full workbook</button>
+      </div>
+    </div>
+
+    <!-- Sticky live result -->
+    <div class="qhero">
+      <div>
+        <div class="qnum" id="q_total">$0</div>
+        <div class="qlab">per month, all-in below</div>
+      </div>
+      <div id="q_verdict" class="qpill ok">—</div>
+    </div>
+
+    <!-- Inputs, grouped -->
+    <div class="qcard">
+      <div class="qgroup">🏠 The home</div>
+      <div class="qrow2">
+        <div><label>Price</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_price" oninput="qSync('price')"></div></div>
+        <div><label>Year built</label><div class="qin"><input type="number" inputmode="numeric" id="q_year" oninput="qSync('year')"></div></div>
+      </div>
+      <div class="qgroup">🏦 Your loan</div>
+      <div class="qrow2">
+        <div><label>Down payment</label><div class="qin"><input type="number" step="0.5" inputmode="decimal" id="q_dp" oninput="qSync('dp')"><span>%</span></div></div>
+        <div><label>Interest rate</label><div class="qin"><input type="number" step="0.01" inputmode="decimal" id="q_rate" oninput="qSync('rate')"><span>%</span></div></div>
+        <div><label>Loan term</label><div class="qin"><input type="number" inputmode="numeric" id="q_term" oninput="qSync('term')"><span>yrs</span></div></div>
+        <div><label>Closing costs</label><div class="qin"><input type="number" step="0.1" inputmode="decimal" id="q_ccpct" oninput="qSync('ccpct')"><span>%</span></div></div>
+        <div><label>PMI rate</label><div class="qin"><input type="number" step="0.05" inputmode="decimal" id="q_pmir" oninput="qSync('pmir')"><span>%</span></div></div>
+      </div>
+      <div class="qgroup">📆 Monthly costs</div>
+      <div class="qrow2">
+        <div><label>Property tax</label><div class="qin"><input type="number" step="0.01" inputmode="decimal" id="q_taxr" oninput="qSync('taxr')"><span>%/yr</span></div></div>
+        <div><label>Home insurance</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_ins" oninput="qSync('ins')"></div></div>
+        <div><label>HOA</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_hoa" oninput="qSync('hoa')"></div></div>
+        <div><label>Mello-Roos</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_mr" oninput="qSync('mr')"></div></div>
+        <div><label>Utilities</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_util" oninput="qSync('util')"></div></div>
+      </div>
+    </div>
+
+    <div class="qstats">
+      <div class="qstat"><b id="q_left">$0</b><span>Left each month</span></div>
+      <div class="qstat"><b id="q_cash">$0</b><span>Cash to close</span></div>
+      <div class="qstat"><b id="q_pi">$0</b><span>Principal &amp; interest</span></div>
+      <div class="qstat"><b id="q_allin">$0</b><span>All-in monthly</span></div>
+    </div>
+
+    <div class="qcard" style="margin-top:.9rem">
+      <div class="qgroup" style="margin-top:0">💵 Monthly breakdown</div>
+      <div id="q_break" style="font-size:.78rem"></div>
+    </div>
+    <div class="qcard" style="margin-top:.9rem">
+      <div class="qgroup" style="margin-top:0">✅ What you should do</div>
+      <div class="sugg" id="q_suggs" style="grid-template-columns:1fr"></div>
+    </div>
+    <div style="font-size:.66rem;color:var(--ink-soft);margin:1rem 0 0;text-align:center">Auto-saves on this device · income &amp; assumptions in ⚙</div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="smodal">
+    <h2>Settings</h2>
+    <h3>Profile</h3>
+    <div class="sgrid">
+      <label class="field full">Your name<input type="text" class="free" id="s_name" oninput="calc()"></label>
+      <label class="field full">Work address<input type="text" class="free" id="s_workaddr" value="" oninput="calc()"></label>
+    </div>
+    <h3>Commute</h3>
+    <div class="sgrid">
+      <label class="field">Commute days / month<input type="number" id="s_cdays" value="21" oninput="calc()"><span class="fhint">Daily office commute</span></label>
+    </div>
+    <h3>Budget</h3>
+    <div class="sgrid">
+      <label class="field">Monthly income ($, take-home)<input type="number" id="takehome" value="" oninput="calc()"><span class="fhint">What actually hits your account</span></label>
+    </div>
+    <h3 class="view-only-desktop">View</h3>
+    <div class="sgrid view-only-desktop">
+      <label class="field">Properties to compare<select id="s_pcount" onchange="applyPCount();calc()" style="font-family:'IBM Plex Mono',monospace;font-size:.84rem;padding:.42rem .55rem;border:1px solid var(--line);border-radius:6px;background:#fff">
+        <option value="1">1 property</option>
+        <option value="2">2 properties</option>
+        <option value="3" selected>3 properties</option>
+      </select></label>
+    </div>
+    <h3>Analysis</h3>
+    <div class="sgrid">
+      <label class="field">Analysis horizon (yrs)<input type="number" id="horizon" value="30" min="1" oninput="calc()"><span class="fhint">Comparison window, not loan term</span></label>
+      <label class="field">Appreciation (%/yr)<input type="number" step="0.1" id="apprec" value="3.5" oninput="calc()"></label>
+      <label class="field">Maintenance (%/yr of price)<input type="number" step="0.1" id="maint" value="1.0" oninput="calc()"></label>
+    </div>
+    <h3>Phone / standalone use</h3>
+    <div class="sgrid">
+      <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="scheduleSave()"><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only in this browser — don't use on shared devices. Without it, paste listing text instead: it parses instantly on-device.</span></label>
+    </div>
+    <h3>Data</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+      <button type="button" onclick="saveState(true)" class="databtn">Save now</button>
+      <button type="button" onclick="clearSaved()" class="databtn">Clear saved</button>
+      <button type="button" onclick="exportState()" class="databtn">Export file</button>
+      <label class="databtn" style="cursor:pointer">Import file<input type="file" accept=".json" style="display:none" onchange="importState(this)"></label>
+    </div>
+    <div class="fhint" id="storageNote" style="margin-top:.4rem">Auto-saves to this browser as you type.</div>
+    <button class="done" onclick="closeSettings()">Done</button>
+    
+  </div>
+</div>
+</div>
+
+<script>
+const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+const P = ['p1','p2','p3'];
+const g = id => parseFloat(document.getElementById(id).value) || 0;
+const set = (id,v) => document.getElementById(id).value = v;
+
+function pmt(r,n,pv){ return r===0 ? pv/n : pv*r/(1-Math.pow(1+r,-n)); }
+
+// Income: single monthly take-home field drives all affordability rows.
+
+function principalPaid(loan,r,n,m){
+  if(loan<=0) return 0;
+  if(r===0) return loan*Math.min(m,n)/n;
+  const pay = pmt(r,n,loan);
+  const mm = Math.min(m,n);
+  const bal = loan*Math.pow(1+r,mm) - pay*(Math.pow(1+r,mm)-1)/r;
+  return loan - Math.max(bal,0);
+}
+
+function calcProperty(p, s){
+  const price=g(p+'_price'), dpPct=g(p+'_dp'), rate=g(p+'_rate'), term=g(p+'_term')||30;
+  const sqft=g(p+'_sqft'), pts=g(p+'_pts'), ccPct=g(p+'_ccpct'), cred=g(p+'_cred');
+  const taxr=g(p+'_taxr'), mr=g(p+'_mr'), ins=g(p+'_ins'), hoa=g(p+'_hoa'), pmir=g(p+'_pmir');
+  const util=g(p+'_util');
+  const cmin=g(p+'_cmin');
+  const chrs = cmin*2*s.cdays/60;
+
+
+  // Loan
+  const dp = price*dpPct/100;
+  const loan = price - dp;
+  const n = term*12, r = rate/100/12;
+  const ptsCost = loan*pts/100;
+  const cc = loan*ccPct/100 + ptsCost;
+  const cash = Math.max(dp + cc - cred, 0);
+
+  const pi = pmt(r,n,loan);
+  const taxMo = price*taxr/100/12;
+  const pmi = dpPct<20 ? loan*pmir/100/12 : 0;
+  const total = pi + taxMo + mr + ins + hoa + pmi;
+
+  const mnt = price*s.maint/100/12;
+  const allin = total + util + mnt;
+  const left = s.takehome - allin;
+
+  // Horizon
+  const H = Math.max(1, s.horizon), hm = H*12;
+  const prinH = principalPaid(loan,r,n,hm);
+  const intH = pi*Math.min(hm,n) - prinH;
+  const appGain = price*(Math.pow(1+s.apprec/100,H)-1);
+  const eqH = dp + prinH + appGain;
+  const netH = cash + allin*hm - prinH - appGain;
+  const intAll = pi*n - loan;
+
+  set(p+'_ppsf', sqft>0 ? fmt.format(price/sqft)+'/sf' : '–');
+  set(p+'_chrs', cmin>0 ? chrs.toFixed(1)+' hrs' : '–');
+  set(p+'_dpamt', fmt.format(dp));
+  set(p+'_loan', fmt.format(loan));
+  set(p+'_cc', fmt.format(cc));
+  set(p+'_cash', fmt.format(cash));
+  set(p+'_pi', fmt.format(pi));
+  set(p+'_tax', fmt.format(taxMo));
+  set(p+'_pmi', fmt.format(pmi));
+  set(p+'_total', fmt.format(total));
+  set(p+'_mnt', fmt.format(mnt));
+  set(p+'_allin', fmt.format(allin));
+  set(p+'_pct', s.takehome>0 ? (allin/s.takehome*100).toFixed(1)+'%' : '–');
+  set(p+'_left', fmt.format(left));
+  set(p+'_intH', fmt.format(intH));
+  set(p+'_prinH', fmt.format(prinH));
+  set(p+'_eqH', fmt.format(eqH));
+  set(p+'_netH', fmt.format(netH));
+  set(p+'_intall', fmt.format(intAll));
+
+  return {p, price, sqft, dp, dpPct, loan, cash, pi, taxMo, mr, ins, hoa, pmi, total, util, mnt, allin, left, prinH, intH, eqH, netH, appGain, intAll, chrs};
+}
+
+function highlightRows(){
+  document.querySelectorAll('tr[data-cmp]').forEach(tr=>{
+    const cells = Array.from(tr.querySelectorAll('td')).slice(1, 1 + pCount());
+    cells.forEach(td=>{td.classList.remove('best');td.classList.remove('danger');});
+    const vals = cells.map(td=>{
+      const raw = td.querySelector('input').value.replace(/[^0-9.\-]/g,'');
+      return raw==='' ? NaN : parseFloat(raw);
+    });
+    if(vals.some(isNaN)) return;
+    const target = tr.dataset.cmp==='high' ? Math.max(...vals) : Math.min(...vals);
+    vals.forEach((v,i)=>{ if(Math.abs(v-target)<0.01) cells[i].classList.add('best'); });
+    // Danger flag on the leftover-cash row: red whenever a property leaves you negative
+    if(tr.querySelector('#p1_left') && g('takehome')>0){
+      vals.forEach((v,i)=>{ if(v<0){cells[i].classList.remove('best');cells[i].classList.add('danger');} });
+    }
+  });
+}
+
+
+
+
+// ---- Quick check: phone-friendly single-property view bound to Property 1 ----
+const Q_MAP = {price:'p1_price', dp:'p1_dp', rate:'p1_rate', term:'p1_term', taxr:'p1_taxr', ins:'p1_ins', hoa:'p1_hoa', mr:'p1_mr', util:'p1_util', pmir:'p1_pmir', ccpct:'p1_ccpct', year:'p1_year'};
+let pcountBeforeQuick = null;
+function openQuick(){
+  Object.entries(Q_MAP).forEach(([q,pid])=>{ document.getElementById('q_'+q).value = document.getElementById(pid).value; });
+  // Quick check is a one-property calculator — switch the engine to single-property mode
+  const sel = document.getElementById('s_pcount');
+  if(pcountBeforeQuick===null) pcountBeforeQuick = sel.value;
+  sel.value = '1'; applyPCount();
+  document.getElementById('quickOverlay').classList.add('open');
+  calc();
+}
+function closeQuick(){
+  document.getElementById('quickOverlay').classList.remove('open');
+  if(pcountBeforeQuick!==null){
+    document.getElementById('s_pcount').value = pcountBeforeQuick;
+    pcountBeforeQuick = null;
+    applyPCount(); calc();
+  }
+}
+function qSync(field){
+  document.getElementById(Q_MAP[field]).value = document.getElementById('q_'+field).value;
+  calc();
+}
+
+
+let qAnim = null, qCur = 0;
+function animateQTotal(target){
+  cancelAnimationFrame(qAnim);
+  const el = document.getElementById('q_total');
+  const from = qCur, to = target, t0 = performance.now(), dur = 500;
+  function step(t){
+    const k = Math.min((t-t0)/dur, 1);
+    const e = 1 - Math.pow(1-k, 3);
+    qCur = from + (to-from)*e;
+    el.textContent = fmt.format(qCur);
+    if(k<1) qAnim = requestAnimationFrame(step);
+  }
+  qAnim = requestAnimationFrame(step);
+}
+function updateQuick(){
+  if(!document.getElementById('quickOverlay').classList.contains('open')) return;
+  const r = RESULTS[0]; if(!r) return;
+  // reflect any import-applied values back into quick fields
+  Object.entries(Q_MAP).forEach(([q,pid])=>{ document.getElementById('q_'+q).value = document.getElementById(pid).value; });
+  animateQTotal(r.total);
+  document.getElementById('q_left').textContent = fmt.format(r.left);
+  document.getElementById('q_left').parentElement.classList.toggle('bad', r.left<0);
+  document.getElementById('q_cash').textContent = fmt.format(r.cash);
+  const rows = [['Principal & interest',r.pi],['Property tax',r.taxMo],['Home insurance',r.ins],['HOA',r.hoa],['Mello-Roos',r.mr],['PMI',r.pmi],['Utilities',r.util],['Maintenance reserve',r.mnt]];
+  document.getElementById('q_break').innerHTML = rows.filter(x=>x[1]>0).map(x=>
+    `<div style="display:flex;justify-content:space-between;padding:.22rem 0;border-bottom:1px dashed var(--line)"><span>${x[0]}</span><b style="font-family:'IBM Plex Mono',monospace">${fmt.format(x[1])}</b></div>`).join('')
+    + `<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-weight:700"><span>All-in total</span><b style="font-family:'IBM Plex Mono',monospace;color:var(--indigo)">${fmt.format(r.allin)}</b></div>`;
+  document.getElementById('q_pi').textContent = fmt.format(r.pi);
+  document.getElementById('q_allin').textContent = fmt.format(r.allin);
+  const sh = RESULTS.shared || {takehome:0};
+  const v = document.getElementById('q_verdict');
+  if(!(sh.takehome>0)){
+    v.className='qpill tight'; v.textContent = 'Set income in ⚙ for budget fit';
+    document.getElementById('q_left').textContent = '—';
+  } else if(r.left<0){ v.className='qpill over'; v.textContent = 'Over by ' + fmt.format(-r.left) + '/mo'; }
+  else if(sh.takehome>0 && r.left/sh.takehome<0.35){ v.className='qpill tight'; v.textContent = 'Tight · ' + fmt.format(r.left) + ' left'; }
+  else { v.className='qpill ok'; v.textContent = 'Fits · ' + fmt.format(r.left) + ' left'; }
+  const H = Math.max(1, sh.horizon || 30);
+  document.getElementById('q_suggs').innerHTML = r.price>0
+    ? computeSuggestions(r, sh, H).map(x=>`<div class="sg"><div>${x}</div></div>`).join('')
+    : '<div style="font-size:.72rem;color:var(--ink-soft)">Enter a price or paste a link to see suggestions.</div>';
+}
+
+// ---- Property count ----
+function pCount(){ return parseInt(document.getElementById('s_pcount').value) || 3; }
+function applyPCount(){
+  document.body.classList.remove('pc1','pc2');
+  const n = pCount();
+  if(n===1) document.body.classList.add('pc1');
+  if(n===2) document.body.classList.add('pc2');
+}
+
+// ---- Persistence: localStorage (best-effort) + JSON export/import ----
+const STORE_KEY = 'homeWorkbook_v1';
+let saveT = null;
+function collectState(){
+  const state = {inputs:{}, schools:SCHOOLS};
+  document.querySelectorAll('input[id], select[id]').forEach(el=>{
+    if(el.type==='file') return;
+    state.inputs[el.id] = el.value;
+  });
+  return state;
+}
+function restoreState(state){
+  if(!state) return;
+  Object.entries(state.inputs||{}).forEach(([id,v])=>{
+    const el = document.getElementById(id);
+    if(el) el.value = v;
+  });
+  if(state.schools) Object.assign(SCHOOLS, state.schools);
+  P.forEach(renderSchools);
+  applyPCount();
+}
+function saveState(manual){
+  try{
+    localStorage.setItem(STORE_KEY, JSON.stringify(collectState()));
+    if(manual) document.getElementById('storageNote').textContent = 'Saved to this browser at ' + new Date().toLocaleTimeString() + '.';
+  }catch(e){
+    document.getElementById('storageNote').textContent = 'This environment blocks browser storage (the Claude preview does). Use Export file to keep your data.';
+  }
+}
+function scheduleSave(){ clearTimeout(saveT); saveT = setTimeout(()=>saveState(false), 800); }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) restoreState(JSON.parse(raw));
+  }catch(e){ /* storage unavailable — start fresh */ }
+}
+function clearSaved(){
+  try{ localStorage.removeItem(STORE_KEY); document.getElementById('storageNote').textContent = 'Saved data cleared.'; }catch(e){}
+}
+function exportState(){
+  const blob = new Blob([JSON.stringify(collectState(), null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'home-comparison-data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importState(inp){
+  const file = inp.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{ restoreState(JSON.parse(r.result)); calc(); saveState(false);
+      document.getElementById('storageNote').textContent = 'Imported ' + file.name + '.';
+    }catch(e){ document.getElementById('storageNote').textContent = 'Import failed — not a valid export file.'; }
+  };
+  r.readAsText(file);
+  inp.value = '';
+}
+
+// ---- Settings ----
+function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
+let RESULTS = [];
+function calc(){
+  const s = {
+    horizon:g('horizon'), takehome:g('takehome'),
+    apprec:g('apprec'), maint:g('maint'), cdays:g('s_cdays')
+  };
+  const nm = document.getElementById('s_name').value.trim();
+  document.getElementById('forWhom').textContent = nm ? ' — ' + nm : '';
+  const wa = document.getElementById('s_workaddr').value.trim();
+  document.getElementById('workaddrHint').textContent = wa ? 'To: ' + wa : '';
+  document.querySelectorAll('.hz').forEach(el=>el.textContent=Math.max(1,s.horizon));
+  RESULTS = P.map(p=>calcProperty(p,s));
+  RESULTS.active = RESULTS.slice(0, pCount());
+  scheduleSave();
+  updateQuick();
+  RESULTS.shared = s;
+  highlightRows();
+  if(document.getElementById('analysisOverlay').classList.contains('open')) buildAnalysis();
+}
+
+function openAnalysis(){
+  buildAnalysis();
+  document.getElementById('analysisOverlay').classList.add('open');
+}
+function closeAnalysis(){ document.getElementById('analysisOverlay').classList.remove('open'); }
+
+function pname(p){ return document.getElementById('name_'+p).value || p; }
+
+function barChart(title, key, fmtFn, lowerBetter, note){
+  const vals = RESULTS.map(r=>r[key]);
+  const max = Math.max(...vals.map(Math.abs), 1);
+  const best = RESULTS.length>1 ? (lowerBetter ? Math.min(...vals) : Math.max(...vals)) : NaN;
+  let h = `<div class="an-sec"><h4>${title}</h4>`;
+  RESULTS.forEach((r,i)=>{
+    const w = Math.max(Math.abs(r[key])/max*100, 2);
+    h += `<div class="bar-row${r[key]===best?' best':''}">
+      <div>${pname(r.p)}</div>
+      <div class="bar-track"><div class="bar-fill ${r.p}" style="width:${w}%"></div></div>
+      <div class="bar-val">${fmtFn(r[key])}</div></div>`;
+  });
+  if(note) h += `<div class="legend">${note}</div>`;
+  return h + '</div>';
+}
+
+
+// Rule-based suggestion engine for one property (used by full analysis and quick check)
+function computeSuggestions(target, s, H){
+  const suggs = [];
+  if(!(s.takehome>0)){
+    suggs.push('Set your monthly take-home income in ⚙ Settings to unlock budget-fit checks and the affordability verdict.');
+  } else if(target.left<0){
+    const scale = (s.takehome*0.65)/Math.max(target.allin,1);
+    suggs.push(`This budget supports roughly a <b>${fmt.format(target.price*scale)}</b> home at current rates (keeping housing ≤65% of take-home). Either hunt in that range, grow the down payment, or add household income before committing.`);
+  } else if(s.takehome>0 && target.left/s.takehome<0.35){
+    suggs.push(`Housing would eat ${(target.allin/s.takehome*100).toFixed(0)}% of take-home, leaving <b>${fmt.format(target.left)}</b>/mo. Build a 3-month buffer of all-in cost (<b>${fmt.format(target.allin*3)}</b>) in savings before closing.`);
+  }
+  if(target.pmi>0){
+    const extra = target.price*0.2 - target.dp;
+    suggs.push(`Bring <b>${fmt.format(extra)}</b> more to reach 20% down: kills <b>${fmt.format(target.pmi)}</b>/mo PMI — roughly <b>${fmt.format(target.pmi*12*Math.min(H,7))}</b> saved over the first ${Math.min(H,7)} years.`);
+  }
+  const rateNow = g(target.p+'_rate'), termN = (g(target.p+'_term')||30)*12;
+  if(rateNow>5){
+    const piLow = pmt((rateNow-0.5)/100/12, termN, target.loan);
+    suggs.push(`Shop the rate. Half a point lower (${(rateNow-0.5).toFixed(2)}%) cuts P&I by <b>${fmt.format(target.pi-piLow)}</b>/mo — get 3+ Loan Estimates and make lenders beat each other.`);
+  }
+  suggs.push(`Negotiate seller credits toward your <b>${fmt.format(Math.max(target.cash-target.dp,0))}</b> in closing costs — 1–2% credits are commonly won and preserve your cash buffer.`);
+  if(target.hoa>0) suggs.push(`Pull the HOA's financials and minutes before offering: <b>${fmt.format(target.hoa)}</b>/mo is the floor; special assessments on underfunded HOAs add thousands.`);
+  if(target.mr===0) suggs.push(`Confirm on the county assessor page that the parcel truly has no Mello-Roos — listings omit them constantly.`);
+  else suggs.push(`Verify the <b>${fmt.format(target.mr)}</b>/mo Mello-Roos on the assessor page, including its expiry year.`);
+  const yb = g(target.p+'_year');
+  if(yb>1900 && yb<=1985) suggs.push(`Built ${yb}: get sewer-line, roof, and electrical-panel inspections — these are the four-figure surprises in homes this age.`);
+  suggs.push('Get 3 insurance quotes before waiving contingencies — CA insurability can be a deal-breaker by zip code.');
+  return suggs;
+}
+
+
+function scoreDonut(v){
+  const r=20, c=2*Math.PI*r, off=c*(1-v/100);
+  const col = v>=70 ? '#158a4a' : v>=45 ? '#f59e0b' : '#c62f27';
+  return `<svg width="52" height="52" viewBox="0 0 52 52">
+    <circle cx="26" cy="26" r="${r}" fill="none" stroke="#e8eaf2" stroke-width="6"/>
+    <circle cx="26" cy="26" r="${r}" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .8s cubic-bezier(.22,1,.36,1)"/>
+  </svg>`;
+}
+
+function buildAnalysis(){
+  const ALL = RESULTS;
+  const ACT = ALL.active || ALL;
+  ACT.shared = ALL.shared;
+  return buildAnalysisFor(ACT);
+}
+function buildAnalysisFor(RESULTS){
+  const s = RESULTS.shared, H = Math.max(1,s.horizon);
+  const segs = [
+    ['pi','P&I','#1b2733'],['taxMo','Tax','#0e6ba8'],['mr','Mello-Roos','#6b8aa8'],
+    ['ins','Insurance','#2e7d4f'],['hoa','HOA','#8a4fbe'],['pmi','PMI','#b3261e'],
+    ['util','Utilities','#c98a2c'],['mnt','Maintenance','#7a7f6a']
+  ];
+
+  // Pros / cons per property (rule-based on live numbers)
+  const lowest = k => Math.min(...RESULTS.map(r=>r[k]));
+  const highest = k => Math.max(...RESULTS.map(r=>r[k]));
+  let cards = '<div class="an-grid">';
+  RESULTS.forEach(r=>{
+    const pros=[], cons=[];
+    const multi = RESULTS.length>1;
+    if(multi && r.allin===lowest('allin')) pros.push('Lowest all-in monthly cost');
+    if(multi && r.cash===lowest('cash')) pros.push('Least cash needed to close');
+    if(multi && r.netH===lowest('netH')) pros.push(`Best net cost over ${H} years`);
+    if(multi && r.eqH===highest('eqH')) pros.push(`Most equity after ${H} years`);
+    const ppsfs = RESULTS.filter(x=>x.sqft>0).map(x=>x.price/x.sqft);
+    if(multi && r.sqft>0 && ppsfs.length>1 && r.price/r.sqft===Math.min(...ppsfs)) pros.push('Best price per sq ft');
+    if(r.hoa===0) pros.push('No HOA'); else cons.push(`HOA adds ${fmt.format(r.hoa)}/mo (${fmt.format(r.hoa*12*H)} over ${H} yrs)`);
+    if(r.pmi>0) cons.push(`PMI required: ${fmt.format(r.pmi)}/mo until ~20% equity`); else if(r.dpPct>=20) pros.push('No PMI (20%+ down)');
+    if(r.mr>0) cons.push(`Mello-Roos ${fmt.format(r.mr)}/mo`);
+    const yb = g(r.p+'_year');
+    if(yb>1900 && yb<=1985) cons.push(`Built ${yb} — budget for aging systems (roof, plumbing, electrical)`);
+    else if(yb>=2010) pros.push(`Built ${yb} — newer systems, lower near-term maintenance risk`);
+    if(multi && r.allin===highest('allin')) cons.push('Most expensive all-in monthly');
+    if(multi && r.cash===highest('cash')) cons.push('Highest cash to close');
+    if(multi && r.intH===highest('intH')) cons.push(`Most interest paid over ${H} yrs`);
+    if(r.left>=0 && s.takehome>0 && r.left/s.takehome < 0.25) cons.push(`Only ${fmt.format(r.left)}/mo left after housing`);
+
+    let vClass='ok', vText='Fits budget';
+    if(r.left<0){ vClass='over'; vText='Over budget'; cons.unshift(`Costs ${fmt.format(-r.left)}/mo MORE than take-home`); }
+    else if(s.takehome>0 && r.left/s.takehome<0.35){ vClass='tight'; vText='Tight'; }
+    else pros.push(`Leaves ${fmt.format(r.left)}/mo for everything else`);
+
+    cards += `<div class="an-card ${r.p}"><h3>${pname(r.p)}</h3>
+      <span class="an-verdict ${vClass}">${vText}</span>
+      <ul>${pros.map(x=>`<li class="pro">${x}</li>`).join('')}${cons.map(x=>`<li class="con">${x}</li>`).join('')}</ul></div>`;
+  });
+  cards += '</div>';
+
+  // Monthly composition stacked bars
+  const maxAllin = Math.max(...RESULTS.map(r=>r.allin),1);
+  let stack = `<div class="an-sec"><h4>Where each month's money goes</h4>`;
+  RESULTS.forEach(r=>{
+    stack += `<div class="stack"><div>${pname(r.p)}<br><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">${fmt.format(r.allin)}</span></div><div class="stack-bar" style="width:${r.allin/maxAllin*100}%">`;
+    segs.forEach(([k,label,c])=>{
+      if(r[k]>0) stack += `<div class="stack-seg" style="width:${r[k]/r.allin*100}%;background:${c}" title="${label}: ${fmt.format(r[k])}"></div>`;
+    });
+    stack += '</div></div>';
+  });
+  stack += `<div class="legend">${segs.map(([k,l,c])=>`<span><i style="background:${c}"></i>${l}</span>`).join('')}</div></div>`;
+
+
+  // ---- Scoring & recommendation ----
+  const norm = (vals, lowerBetter) => {
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    return vals.map(v => mx===mn ? 100 : Math.round((lowerBetter ? (mx-v)/(mx-mn) : (v-mn)/(mx-mn))*100));
+  };
+  const affScore = RESULTS.map(r => {
+    if(s.takehome<=0) return 50;
+    const ratio = r.left/s.takehome;               // fraction of income left
+    return Math.max(0, Math.min(100, Math.round(ratio/0.5*100))); // 50%+ left = 100
+  });
+  const monScore = norm(RESULTS.map(r=>r.allin), true);
+  const upScore  = norm(RESULTS.map(r=>r.cash), true);
+  const ltScore  = norm(RESULTS.map(r=>r.netH), true);
+  const hasCommute = RESULTS.some(r=>r.chrs>0);
+  const cmScore  = hasCommute ? norm(RESULTS.map(r=>r.chrs), true) : RESULTS.map(()=>null);
+  const dims = [
+    ['Budget fit', affScore, .35],
+    ['Monthly cost', monScore, .20],
+    ['Long-term value', ltScore, .25],
+    ['Upfront burden', upScore, .12],
+  ];
+  if(hasCommute) dims.push(['Commute', cmScore, .08]);
+  const wsum = dims.reduce((a,d)=>a+d[2],0);
+  const totals = RESULTS.map((r,i)=> Math.round(dims.reduce((a,d)=>a+d[1][i]*d[2],0)/wsum));
+
+  const affordable = RESULTS.map(r=>r.left>=0);
+  let winIdx = -1;
+  const eligible = totals.map((t,i)=>affordable[i]?t:-1);
+  if(eligible.some(t=>t>=0)) winIdx = eligible.indexOf(Math.max(...eligible));
+
+  let reco;
+  if(winIdx>=0){
+    const w = RESULTS[winIdx];
+    const solo = RESULTS.length===1;
+    const runner = totals.map((t,i)=>i===winIdx?-1:t);
+    const secondIdx = solo ? winIdx : runner.indexOf(Math.max(...runner));
+    const margin = solo ? 0 : totals[winIdx]-totals[secondIdx];
+    const whyBits = [];
+    if(affScore[winIdx]===Math.max(...affScore)) whyBits.push(`leaves the most breathing room (${fmt.format(w.left)}/mo after all housing costs)`);
+    if(ltScore[winIdx]===Math.max(...ltScore)) whyBits.push(`the lowest net cost over ${H} years (${fmt.format(w.netH)})`);
+    if(monScore[winIdx]===Math.max(...monScore)) whyBits.push(`the cheapest all-in month (${fmt.format(w.allin)})`);
+    if(upScore[winIdx]===Math.max(...upScore)) whyBits.push(`the least cash to close (${fmt.format(w.cash)})`);
+    if(!whyBits.length) whyBits.push('the best overall balance across budget, monthly cost, and long-term value');
+    reco = `<div class="reco">
+      <div class="r-eyebrow">Recommended</div>
+      <div class="r-name">🏆 ${pname(w.p)}</div>
+      <div class="donut" style="margin:.3rem 0 .5rem">${scoreDonut(totals[winIdx])}<span class="dval">${totals[winIdx]}/100 overall</span></div>
+      <div class="r-why">${solo ? `This property fits your budget` : `Scores <b>${totals[winIdx]}/100</b>${margin>0?` — ${margin} points ahead of ${pname(RESULTS[secondIdx].p)}`:` — in a near tie with ${pname(RESULTS[secondIdx].p)}, so let the lifestyle rows (schools, yard, commute) break it`}`}. ${solo ? `It leaves ${fmt.format(w.left)}/mo after all housing costs.` : `It offers ${whyBits.slice(0,2).join(' and ')}.`}${affScore[winIdx]<70?' Budget fit is workable but not comfortable — see the action list below before committing.':''}</div>
+      <div class="r-stats">
+        <div class="r-stat"><b>${fmt.format(w.allin)}</b><span>All-in / month</span></div>
+        <div class="r-stat"><b>${fmt.format(w.left)}</b><span>Left each month</span></div>
+        <div class="r-stat"><b>${fmt.format(w.cash)}</b><span>Cash to close</span></div>
+        <div class="r-stat"><b>${fmt.format(w.eqH)}</b><span>Equity in ${H} yrs</span></div>
+      </div></div>`;
+  } else {
+    const closest = RESULTS[totals.indexOf(Math.max(...totals))];
+    const gap = -Math.min(...RESULTS.map(r=>r.left));
+    reco = `<div class="reco none">
+      <div class="r-eyebrow">Recommendation</div>
+      <div class="r-name">None of these — yet</div>
+      <div class="r-why">Every option costs more per month than your take-home (worst gap: <b>${fmt.format(gap)}/mo</b>). Buying any of them means going backwards every payroll. The closest fit is ${pname(closest.p)}; the action list below shows what would have to change to make it work.</div></div>`;
+  }
+
+  // Scorecard grid
+  let score = RESULTS.length===1 ? '' : `<div class="an-sec"><h4>Scorecard (weighted: budget fit 35%, long-term 25%, monthly 20%, upfront 12%${hasCommute?', commute 8%':''})</h4>
+    <div class="score-grid">
+    <div></div>${RESULTS.map(r=>`<div class="shead">${pname(r.p)}</div>`).join('')}`;
+  dims.forEach(([label,vals])=>{
+    score += `<div>${label}</div>` + vals.map((v,i)=>`<div class="sbar" title="${v}/100"><i class="bar-fill ${RESULTS[i].p}" style="width:${v}%"></i></div>`).join('');
+  });
+  score += `<div style="font-weight:700">Total</div>` + totals.map((t,i)=>`<div class="stotal" style="color:var(--${RESULTS[i].p})">${t}<span style="font-size:.7rem;color:var(--ink-soft)">/100</span></div>`).join('');
+  score += '</div></div>';
+
+  // ---- Action list (rule-based, real numbers) ----
+  const target = winIdx>=0 ? RESULTS[winIdx] : RESULTS[totals.indexOf(Math.max(...totals))];
+  const suggs = computeSuggestions(target, s, H);
+  const sugg = `<div class="an-sec"><h4>What you should do${winIdx>=0?` (for ${pname(target.p)})`:''}</h4><div class="sugg">${suggs.map(x=>`<div class="sg"><div>${x}</div></div>`).join('')}</div></div>`;
+
+  document.getElementById('anTitle').textContent = RESULTS.map(r=>pname(r.p)).join(' vs ') + ` — ${H}-year view`;
+
+  const el = document.getElementById('analysis');
+  el.innerHTML =
+      `<div class="verdict-grid">${reco}${score}</div>`
+    + sugg
+    + cards
+    + stack
+    + `<div class="chart-grid">`
+        + barChart('Cash left each month (higher is better)', 'left', v=>fmt.format(v), false)
+        + barChart('Cash needed to close', 'cash', v=>fmt.format(v), true)
+        + barChart(`Net cost over ${H} years (after equity & appreciation)`, 'netH', v=>fmt.format(v), true,
+            'Cash to close + all monthly costs − principal − appreciation (an assumption, not a promise).')
+        + barChart(`Equity after ${H} years`, 'eqH', v=>fmt.format(v), false)
+        + barChart(`Interest paid over ${H} years`, 'intH', v=>fmt.format(v), true)
+    + `</div>`;
+}
+
+
+
+
+// ---- Schools ----
+const SCHOOLS = {p1:null, p2:null, p3:null};
+function schoolColor(r){ return r>=8 ? '#158a4a' : r>=6 ? '#f59e0b' : r!=null ? '#c62f27' : '#9ca3af'; }
+function gsLink(p){
+  const addr = document.getElementById(p+'_url').value.trim();
+  return 'https://www.greatschools.org/search/search.page?q=' + encodeURIComponent(addr || '');
+}
+function renderSchools(p){
+  const cell = document.getElementById(p+'_school_cell');
+  const list = SCHOOLS[p];
+  if(list && list.length){
+    const rated = list.filter(x=>x.rating!=null);
+    const avg = rated.length ? (rated.reduce((a,x)=>a+x.rating,0)/rated.length) : null;
+    cell.innerHTML = avg!=null
+      ? `<span class="school-chip" onclick="openSchools('${p}')">Avg ${avg.toFixed(1)}/10 ▸</span>`
+      : '—';
+  } else {
+    const addr = document.getElementById(p+'_url').value.trim();
+    cell.innerHTML = (addr && !schoolBusy[p])
+      ? `<span class="school-chip" onclick="fetchSchools('${p}', document.getElementById('${p}_url').value.trim())">Get ratings ▸</span>`
+      : '—';
+  }
+}
+function openSchools(p){
+  const list = SCHOOLS[p] || [];
+  document.getElementById('schTitle').textContent = 'Schools near ' + pname(p);
+  document.getElementById('schList').innerHTML = list.map(x=>
+    `<div class="sch-row"><div>${x.name}<span class="sch-type">${x.type||''}</span></div>
+     <span class="sch-score" style="background:${schoolColor(x.rating)}">${x.rating!=null ? x.rating + '/10' : 'n/a'}</span></div>`).join('')
+    || '<div style="font-size:.8rem;color:var(--ink-soft)">No school data captured for this listing.</div>';
+  document.getElementById('schMore').href = gsLink(p);
+  document.getElementById('schoolOverlay').classList.add('open');
+}
+
+
+// Dedicated school-rating lookup — a focused search finds scores far more reliably
+// than hoping they appear inside the general listing lookup.
+const schoolBusy = {p1:false, p2:false, p3:false};
+async function fetchSchools(p, address){
+  if(schoolBusy[p] || !address) return;
+  schoolBusy[p] = true;
+  const cell = document.getElementById(p+'_school_cell');
+  cell.innerHTML = '<span style="font-size:.72rem;color:var(--ink-soft)">Looking up schools…</span>';
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        messages: [{ role:'user', content:
+          `Search for the GreatSchools ratings of the public schools serving this address: ${address}\n` +
+          `Respond with ONLY a JSON object, no markdown fences, exactly: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null}]}\n` +
+          `rating = the GreatSchools 1-10 score. Use null if a school's score is not clearly found. Include only schools you can verify serve or are near this address. Be fast: 1-2 searches.`}],
+        tools: [{ type:'web_search_20250305', name:'web_search' }]
+      })
+    });
+    if(!resp.ok) throw new Error('API ' + resp.status);
+    const data = await resp.json();
+    const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
+    if(!m) throw new Error('no JSON');
+    const d = JSON.parse(m[0]);
+    if(d.schools && d.schools.length){
+      SCHOOLS[p] = d.schools;
+      scheduleSave();
+  updateQuick();
+    } else {
+      SCHOOLS[p] = null;
+    }
+  }catch(err){
+    SCHOOLS[p] = null;
+  }finally{
+    schoolBusy[p] = false;
+    renderSchools(p);
+  }
+}
+
+
+function apiHeaders(){
+  const h = {'Content-Type':'application/json'};
+  const k = document.getElementById('s_apikey').value.trim();
+  if(k){
+    h['x-api-key'] = k;
+    h['anthropic-version'] = '2023-06-01';
+    h['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  return h;
+}
+
+// On-device listing text parser — no AI, works anywhere including phones offline
+function parseListingLocal(text){
+  const d = {};
+  const t = text.replace(/\u00a0/g,' ');
+  const money = re => { const m = t.match(re); return m ? parseInt(m[1].replace(/,/g,'')) : null; };
+  // price: first standalone $ amount that looks like a home price
+  const pm = t.match(/\$\s?([1-9][\d,]{5,9})(?!\d)/);
+  if(pm){ const v = parseInt(pm[1].replace(/,/g,'')); if(v>=50000 && v<=20000000) d.price = v; }
+  const sq = t.match(/([\d,]{3,6})\s*(?:sq\.?\s?ft|sqft|square feet)/i);
+  if(sq){ const v = parseInt(sq[1].replace(/,/g,'')); if(v>=300 && v<=20000) d.sqft = v; }
+  const bd = t.match(/(\d+)\s*(?:bd|beds?|bedrooms?)\b/i);
+  const ba = t.match(/(\d+(?:\.\d)?)\s*(?:ba|baths?|bathrooms?)\b/i);
+  if(bd || ba) d.beds_layout = [bd?bd[1]+' bed':null, ba?ba[1]+' bath':null].filter(Boolean).join(' / ');
+  const yb = t.match(/(?:built in|year built[:\s]*)\s*(19\d\d|20\d\d)/i);
+  if(yb) d.year_built = parseInt(yb[1]);
+  const hoa = t.match(/HOA[^$\n]{0,40}\$\s?([\d,]+)/i);
+  if(hoa){ const v = parseInt(hoa[1].replace(/,/g,'')); if(v<3000) d.hoa_monthly = v; }
+  else if(/HOA[^$\n]{0,30}(?:none|no HOA|\$0)/i.test(t)) d.hoa_monthly = 0;
+  const tax = t.match(/(?:annual tax(?:es)? amount|property taxes)[^$\n]{0,30}\$\s?([\d,]+)/i);
+  if(tax) d.annual_tax_amount = parseInt(tax[1].replace(/,/g,''));
+  const lot = t.match(/([\d.,]+)\s*(acres?|sq\.?\s?ft lot)/i);
+  if(lot) d.yard_lot = lot[1] + ' ' + lot[2];
+  const addr = t.match(/\d+[^,\n]{3,50},\s*[A-Za-z .]+,\s*[A-Z]{2}\s*\d{5}/);
+  if(addr) d.address = addr[0].trim();
+  return d;
+}
+// ---- Listing import via Claude API (works when this file runs inside Claude) ----
+let lastTarget = 'p1';
+const busyP = {p1:false, p2:false, p3:false};
+const statusTimers = {};
+const PENDING = {p1:null, p2:null, p3:null};
+function setPStatusHTML(p, html){
+  document.getElementById('importBar').style.display = 'block';
+  const el = document.getElementById('imp_'+p);
+  clearInterval(statusTimers[p]);
+  el.innerHTML = html;
+}
+const UNDO = {p1:null, p2:null, p3:null};
+function snapshot(p){
+  const ids = ['_price','_sqft','_hoa','_mr','_taxr','_ins','_cmin','_year'].map(x=>p+x);
+  const texts = ['name_'+p, p+'_url', p+'_beds', p+'_yard'];
+  return {
+    nums: Object.fromEntries(ids.map(id=>[id, document.getElementById(id).value])),
+    texts: Object.fromEntries(texts.map(id=>[id, document.getElementById(id).value])),
+    schools: SCHOOLS[p]
+  };
+}
+function applyImport(p){
+  const d = PENDING[p]; if(!d) return;
+  UNDO[p] = snapshot(p);
+  const filled = [];
+  if(d.address){
+    const shortName = d.address.split(',')[0].trim();
+    if(shortName){ document.getElementById('name_'+p).value = shortName; filled.push('name'); }
+    if(!document.getElementById(p+'_url').value.trim()) document.getElementById(p+'_url').value = d.address;
+  }
+  if(d.price){ set(p+'_price', d.price); filled.push('price'); }
+  if(d.sqft){ set(p+'_sqft', d.sqft); filled.push('sqft'); }
+  if(d.beds_layout){ document.getElementById(p+'_beds').value = d.beds_layout; filled.push('beds'); }
+  if(d.year_built){ set(p+'_year', d.year_built); filled.push('year built'); }
+  if(d.schools && d.schools.length){ SCHOOLS[p] = d.schools; renderSchools(p); filled.push('schools'); }
+  else if(d.address){ fetchSchools(p, d.address); }
+  if(d.yard_lot){ document.getElementById(p+'_yard').value = d.yard_lot; filled.push('yard/lot'); }
+  if(d.hoa_monthly!=null){ set(p+'_hoa', d.hoa_monthly); filled.push('HOA'); }
+  if(d.mello_roos_monthly!=null){ set(p+'_mr', d.mello_roos_monthly); filled.push('Mello-Roos'); }
+  if(d.property_tax_rate_pct){ set(p+'_taxr', d.property_tax_rate_pct); filled.push('tax rate'); }
+  else if(d.annual_tax_amount && d.price){ set(p+'_taxr', +(d.annual_tax_amount/d.price*100).toFixed(2)); filled.push('tax rate'); }
+  if(d.insurance_monthly_estimate){ set(p+'_ins', d.insurance_monthly_estimate); filled.push('insurance est.'); }
+  if(d.commute_minutes_oneway){ set(p+'_cmin', d.commute_minutes_oneway); filled.push('commute est.'); }
+  PENDING[p] = null;
+  calc();
+}
+function undoImport(p){
+  const u = UNDO[p]; if(!u) return;
+  Object.entries(u.nums).forEach(([id,v])=>document.getElementById(id).value=v);
+  Object.entries(u.texts).forEach(([id,v])=>document.getElementById(id).value=v);
+  SCHOOLS[p]=u.schools; renderSchools(p);
+  UNDO[p]=null; importedUrls[p]=null;
+  calc();
+  setPStatus(p, p.replace('p','Property ') + ': import undone.');
+}
+function discardImport(p){
+  PENDING[p] = null;
+  importedUrls[p] = null;  // allow re-import (e.g., via pasted text)
+  setPStatus(p, p.replace('p','Property ') + ': discarded. Paste the listing page text below for an exact parse.');
+  showFallback(true);
+}
+
+function setPStatus(p, msg, ticking){
+  document.getElementById('importBar').style.display = 'block';
+  const el = document.getElementById('imp_'+p);
+  el.textContent = msg;
+  clearInterval(statusTimers[p]);
+  if(ticking){
+    const t0 = Date.now();
+    statusTimers[p] = setInterval(()=>{
+      el.textContent = msg + ' ' + Math.round((Date.now()-t0)/1000) + 's';
+    }, 1000);
+  }
+}
+function setStatus(msg, ticking){ setPStatus(lastTarget || 'p1', msg, ticking); }
+function showFallback(show){ document.getElementById('importFallback').style.display = show ? 'block' : 'none'; }
+
+const importedUrls = {};
+function urlChanged(p){
+  const v = document.getElementById(p+'_url').value.trim();
+  if(!/^https?:\/\/\S+$/.test(v)) return;
+  if(importedUrls[p]===v) return;   // already imported this exact URL for this property
+  importedUrls[p] = v;
+  importFor(p, v);
+}
+
+function importPastedText(){
+  const input = document.getElementById('importIn').value.trim();
+  if(!input){ setStatus('Paste the listing page text first.'); return; }
+  const p = lastTarget;
+  const d = parseListingLocal(input);
+  const found = Object.keys(d).length;
+  if(found){
+    PENDING[p] = d;
+    applyImport(p);
+    setPStatus(p, `✓ ${p.replace('p','Property ')} parsed on-device: ${Object.keys(d).join(', ')}. Verify the price.`);
+    showFallback(false);
+  } else {
+    // nothing matched locally — try AI if available
+    importFor(p, input);
+  }
+}
+
+async function importFor(p, input){
+  if(busyP[p]){ setPStatus(p, p.replace('p','Property ') + ': already importing — hang on.'); return; }
+  busyP[p] = true;
+  lastTarget = p;
+  const isUrl = /^https?:\/\/\S+$/.test(input);
+  setPStatus(p, (isUrl ? 'Looking up' : 'Parsing') + ' ' + p.replace('p','Property ') + ' — usually 10–30s…', true);
+
+  const schema = '{"address": string|null, "price": number|null, "sqft": number|null, "beds_layout": string|null, "year_built": number|null, "hoa_monthly": number|null, "mello_roos_monthly": number|null, "property_tax_rate_pct": number|null, "annual_tax_amount": number|null, "schools": [{"name": string, "type": string, "rating": number|null}]|null, "yard_lot": string|null, "insurance_monthly_estimate": number|null, "commute_minutes_oneway": number|null}';
+  const rules = 'CRITICAL ACCURACY RULES: (1) Extract ONLY from the exact listing at this URL/address — if search results are about a different address, a similar home, or you cannot confirm the address matches, return null for every field. (2) price = the CURRENT asking/list price only. NEVER use a Zestimate, estimated value, prior sold price, price history, or nearby-home prices. If the current list price is not clearly visible, price = null. (3) Numbers only for numeric fields (no $ or commas). beds_layout like "4 bed / 3 bath". schools = schools shown on the listing with GreatSchools-style 1-10 rating or null. yard_lot = lot size + outdoor features. property_tax_rate_pct = effective annual rate from the tax history if derivable, else null. Include the exact address you matched in the address field. commute_minutes_oneway = typical off-peak driving time in minutes from the listing address to OFFICE_ADDRESS (a realistic route estimate is acceptable for this field only; null if the listing address is unknown). Never guess any other value.';
+  const office = document.getElementById('s_workaddr').value.trim() || 'the user office (not set)';
+  const rulesFinal = rules.replace('OFFICE_ADDRESS', office);
+  const prompt = isUrl
+    ? `Search the web for this real estate listing and extract its details: ${input}\nBe fast: use at most 2 searches and do not browse beyond what is needed.\nRespond with ONLY a JSON object, no markdown fences, no commentary, exactly this schema: ${schema}\n${rulesFinal}`
+    : `Extract real estate listing details from this pasted listing text.\nRespond with ONLY a JSON object, no markdown fences, no commentary, exactly this schema: ${schema}\n${rulesFinal}\n\nLISTING TEXT:\n${input.slice(0,8000)}`;
+
+  const body = {
+    model: 'claude-sonnet-4-6',
+    max_tokens: 700,
+    messages: [{ role: 'user', content: prompt }]
+  };
+  if(isUrl) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify(body)
+    });
+    if(!resp.ok){
+      let detail = '';
+      try{ const e = await resp.json(); detail = e?.error?.message || ''; }catch(_){}
+      throw new Error('API ' + resp.status + (detail ? ': ' + detail : ''));
+    }
+    const data = await resp.json();
+    const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    const clean = text.replace(/```json|```/g,'').trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON in response');
+    const d = JSON.parse(jsonMatch[0]);
+
+    PENDING[p] = d;
+    const preview = [];
+    if(d.address) preview.push(d.address.split(',')[0]);
+    if(d.price) preview.push('price ' + fmt.format(d.price));
+    if(d.sqft) preview.push(d.sqft + ' sf');
+    if(d.beds_layout) preview.push(d.beds_layout);
+    if(d.hoa_monthly!=null) preview.push('HOA ' + fmt.format(d.hoa_monthly) + '/mo');
+    if(!preview.length){
+      setPStatus(p, p.replace('p','Property ') + ': nothing extractable found. Paste the listing page text below.');
+      showFallback(true);
+      importedUrls[p] = null;
+      busyP[p] = false;
+      return;
+    }
+    applyImport(p);
+    setPStatusHTML(p, `✓ <b>${p.replace('p','Property ')} filled:</b> ${preview.join(' · ')}
+      <button onclick="undoImport('${p}')" style="font-family:inherit;font-weight:600;font-size:.72rem;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;padding:.25rem .6rem;border-radius:6px;cursor:pointer;margin-left:.4rem">Undo</button>`);
+  }catch(err){
+    setPStatus(p, '✕ ' + p.replace('p','Property ') + ' failed (' + (err.message||'network blocked') + '). Outside Claude, lookups cannot run. Paste the listing page text below:');
+    showFallback(true);
+    importedUrls[p] = null;  // allow retrying the same URL
+  }finally{
+    busyP[p] = false;
+  }
+}
+
+
+// Enter behaves like Tab everywhere: commit the value, recalculate, move to the next field
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    document.getElementById('analysisOverlay').classList.remove('open');
+    document.getElementById('settingsOverlay').classList.remove('open');
+    document.getElementById('schoolOverlay').classList.remove('open');
+    return;
+  }
+  if(e.key !== 'Enter') return;
+  const t = e.target;
+  if(t.tagName !== 'INPUT') return;          // textareas keep Enter for newlines
+  e.preventDefault();
+  if(/^p[123]_url$/.test(t.id)){ urlChanged(t.id.slice(0,2)); }
+  calc();
+  const inputs = Array.from(document.querySelectorAll('input:not([readonly]):not([type=hidden])'))
+    .filter(el => el.offsetParent !== null);  // visible only
+  const i = inputs.indexOf(t);
+  if(i > -1 && i < inputs.length - 1) inputs[i+1].focus();
+});
+
+// Collapsible table sections: click a dark header row to fold it
+function initSections(){
+  document.querySelectorAll('tr.sec').forEach(sec=>{
+    sec.addEventListener('click', ()=>{
+      sec.classList.toggle('closed');
+      const closed = sec.classList.contains('closed');
+      let row = sec.nextElementSibling;
+      while(row && !row.classList.contains('sec')){
+        row.classList.toggle('hidden-row', closed);
+        row = row.nextElementSibling;
+      }
+    });
+  });
+}
+window.onload = function(){
+  initSections(); loadState(); applyPCount(); calc();
+  if(window.innerWidth < 700) openQuick();
+};
+</script>
+</body>
+</html>

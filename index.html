@@ -369,6 +369,10 @@ html.is-mobile #analysisOverlay .amodal{max-width:none;width:100%;max-height:100
 html.is-mobile .set-topbar{position:sticky;top:-0.875rem;margin:-0.875rem -0.875rem 0.75rem;background:var(--grad-hero);color:#fff;padding:0.875rem 1rem;display:flex;justify-content:space-between;align-items:center;z-index:3}
 html.is-mobile .set-topbar b{font-size:1.125rem}
 html.is-mobile .set-topbar button{font-family:inherit;font-size:0.9375rem;font-weight:800;border:none;background:rgba(255,255,255,.18);color:#fff;padding:0.5rem 1rem;border-radius:0.625rem}
+
+html.is-mobile #settingsOverlay{background:var(--paper) !important}
+html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
+.smodal{background:#fff}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1078,8 +1082,9 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <!-- Settings modal -->
 <div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="smodal">
-    <div class="set-topbar"><b>⚙ Settings</b><button onclick="closeSettings()">Done</button></div>
-<h2>Settings</h2>
+<div class="set-topbar"><b>⚙ Settings</b><button onclick="closeSettings()">Done</button></div>
+
+    <h2>Settings</h2>
     <h3>Profile</h3>
     <div class="sgrid">
       <label class="field full">Your name<input type="text" class="free" id="s_name" oninput="calc()"></label>
@@ -2160,7 +2165,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v18 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v19 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2478,6 +2483,18 @@ async function findWorkspace(){
   const k = cleanKey(document.getElementById('s_apikey').value);
   if(!k){ out.innerHTML = '<span style="color:var(--warn-ink)">Enter your API key first.</span>'; return; }
   out.textContent = 'Looking up your workspaces…';
+  // Docs: responses carry the resolved workspace in the anthropic-workspace-id header
+  try{
+    const r0 = await fetch('https://api.anthropic.com/v1/models?limit=1', {
+      headers: {'x-api-key': k, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'}
+    });
+    const wid = r0.headers.get('anthropic-workspace-id');
+    if(wid && /^wrkspc_/.test(wid)){
+      document.getElementById('s_wsid').value = wid; scheduleSave();
+      out.innerHTML = '<span style="color:var(--win-ink);font-weight:700">✓ Found and filled: ' + wid + '</span> — now tap Test my key.';
+      return;
+    }
+  }catch(e){}
   try{
     const resp = await fetch('https://api.anthropic.com/v1/organizations/workspaces?limit=5', {
       headers: {'x-api-key': k, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'}
@@ -2494,7 +2511,7 @@ async function findWorkspace(){
     }
     throw new Error(body?.error?.message || ('lookup not permitted for this key (' + resp.status + ')'));
   }catch(err){
-    out.innerHTML = '<span style="color:var(--warn-ink)">Couldn\'t auto-discover (' + (err.message||'blocked') + ').</span><br>Manual: console.anthropic.com → <b>Settings → Workspaces</b> → tap your workspace → copy the ID starting with <b>wrkspc_</b> into the field above. Or create a new key <b>inside</b> a workspace — those need no ID.';
+    out.innerHTML = '<span style="color:var(--warn-ink)">Couldn\'t auto-discover (' + (err.message||'blocked') + ').</span><br><b>Simplest fix (recommended):</b> at console.anthropic.com, open a <b>workspace first</b>, then create the API key there — a workspace-scoped key never needs an ID. Or manually: Settings → Workspaces → copy the <b>wrkspc_…</b> ID into the field above.';
   }
 }
 
@@ -2599,7 +2616,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v18 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v19 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

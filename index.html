@@ -1375,9 +1375,7 @@ async function scanListing(inp){
       if(!resp.ok){ let d=''; try{ const e=await resp.json(); d=e?.error?.message||''; }catch(_){} throw new Error('API '+resp.status+(d?': '+d:'')); }
       const data = await resp.json();
       const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-      const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
-      if(!m) throw new Error('no JSON');
-      const parsed = JSON.parse(m[0]);
+      const parsed = parseAIJson(text);
       PENDING[p] = parsed;
       applyImport(p);
       updateQuick();
@@ -1618,9 +1616,7 @@ async function commScan(id, inp){
       if(!resp.ok){ let d=''; try{const e=await resp.json(); d=e?.error?.message||'';}catch(_){} throw new Error('API '+resp.status+(d?': '+d:'')); }
       const data = await resp.json();
       const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-      const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
-      if(!m) throw new Error('no JSON');
-      const d = JSON.parse(m[0]);
+      const d = parseAIJson(text);
       entryTxt = [d.summary, d.detail].filter(Boolean).join('\n');
     } else {
       busy.textContent = 'Reading text off the screenshot on-device…';
@@ -1838,17 +1834,49 @@ function buildAIContext(){
     checklist_done: ckDone, checklist_pending: CK_ITEMS.filter((_,i)=>!CK[i]),
   };
 }
+
+// Extract JSON from a model reply, repairing truncation (cut-off arrays/objects)
+function parseAIJson(text){
+  let t = (text||'').replace(/```json|```/g,'');
+  const start = t.indexOf('{');
+  if(start < 0) throw new Error('no JSON in reply');
+  t = t.slice(start);
+  const attempt = str => { try{ return JSON.parse(str); }catch(e){ return undefined; } };
+  let v = attempt(t);
+  if(v !== undefined) return v;
+  // repair: truncate to a clean boundary, then close all open strings/brackets
+  const closers = str => {
+    const stack = []; let inStr = false, escp = false;
+    for(const ch of str){
+      if(escp){ escp = false; continue; }
+      if(ch === '\\'){ escp = true; continue; }
+      if(ch === '"'){ inStr = !inStr; continue; }
+      if(inStr) continue;
+      if(ch === '{' || ch === '[') stack.push(ch === '{' ? '}' : ']');
+      else if(ch === '}' || ch === ']') stack.pop();
+    }
+    return (inStr ? '"' : '') + stack.reverse().join('');
+  };
+  for(let cut = t.length; cut > 2; ){
+    const seg = t.slice(0, cut).replace(/,\s*$/, '');
+    v = attempt(seg + closers(seg));
+    if(v !== undefined) return v;
+    const prev = Math.max(seg.lastIndexOf(','), seg.lastIndexOf('}'), seg.lastIndexOf(']'));
+    if(prev <= 0) break;
+    cut = prev;
+  }
+  throw new Error('reply was cut off and could not be repaired — try again');
+}
+
 async function callAI(messages, useSearch){
-  const body = {model:'claude-sonnet-4-6', max_tokens:1200, messages};
+  const body = {model:'claude-sonnet-4-6', max_tokens: useSearch ? 4000 : 2500, messages};
   if(useSearch) body.tools = [{type:'web_search_20250305', name:'web_search'}];
   const resp = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:apiHeaders(), body:JSON.stringify(body)});
   if(!resp.ok){ let d=''; try{const e=await resp.json(); d=e?.error?.message||'';}catch(_){}
     throw new Error('API '+resp.status+(d?': '+d:'')); }
   const data = await resp.json();
   const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
-  if(!m) throw new Error('no JSON in reply');
-  return JSON.parse(m[0]);
+  return parseAIJson(text);
 }
 async function runCoach(){
   const el = document.getElementById('d_coach'), btn = document.getElementById('coachBtn');
@@ -2165,7 +2193,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v19 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v20 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2616,7 +2644,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v19 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v20 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

@@ -2455,7 +2455,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v10-phone · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v11 · zoom ' + (document.documentElement.style.zoom||'1') + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -3036,7 +3036,7 @@ function initSections(){
 }
 
 let lastMobile = window.innerWidth < 700;
-window.addEventListener('resize', ()=>{ applyDeviceLayout();
+window.addEventListener('resize', ()=>{ applyDeviceLayout(); fitPortrait();
   const m = window.innerWidth < 700;
   if(m !== lastMobile){
     lastMobile = m;
@@ -3058,6 +3058,18 @@ if('serviceWorker' in navigator && location.protocol==='https:'){
 // Physical screen width — cannot be distorted by layout-viewport zoom (the trap
 // that made CSS media queries unreliable here).
 function isMobileDevice(){ return true; }  // phone-only app by design
+
+// ---- Portrait render lock ----
+// The app is designed for a ~412px-wide phone canvas. If the browser hands us a
+// wider layout viewport (e.g. Chrome's "Desktop site" toggle, which ignores the
+// viewport meta), zoom the whole UI up so physical sizes stay phone-correct.
+function fitPortrait(){
+  const target = 412;
+  const w = window.innerWidth;
+  const z = w > 470 ? (w / target) : 1;
+  document.documentElement.style.zoom = z;
+}
+
 function applyDeviceLayout(){
   const wb = document.getElementById('workbookWrap'); if(wb) wb.style.display = 'none';
   const tw = document.getElementById('tab_work'); if(tw) tw.style.display = 'none';
@@ -3076,6 +3088,7 @@ function detachShell(){
 window.onload = function(){
   detachShell();
   applyDeviceLayout();
+  fitPortrait();
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };

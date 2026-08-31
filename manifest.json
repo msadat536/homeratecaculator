@@ -1,21 +1,43 @@
 {
-  "name": "Home Check",
+  "id": "/index.html",
+  "name": "Home Check \u2014 First-Time Buyer Companion",
   "short_name": "Home Check",
-  "description": "Home purchase calculator \u2014 payment, budget fit, and action plan",
+  "description": "Evaluate any home in seconds: full monthly cost, budget fit, escrow deadlines, and an AI coach for first-time buyers.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f4f6fb",
-  "theme_color": "#4f46e5",
+  "theme_color": "#f4f6fb",
+  "categories": [
+    "finance",
+    "lifestyle",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

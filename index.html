@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Home Check">
 <meta name="application-name" content="Home Check">
-<meta name="theme-color" content="#4f46e5">
+<meta name="theme-color" content="#f4f6fb">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
 <title>Home Purchase Comparison Workbook</title>
@@ -252,11 +252,17 @@ html,body{min-height:100%}
 /* The workbook table is 900px wide and would force the whole document wide on a
    phone (browser zooms out, media queries mis-fire). Remove it from layout there. */
 @media (max-width:700px){
-  /* hide only the wide workbook content, never the app shell */
-  #workbookWrap > header, #workbookWrap > .card, #workbookWrap > div[style*="text-align:center"]{display:none !important}
+  #workbookWrap{display:none !important}
   body{padding:0 0 4.5rem;overflow-x:hidden}
   table{min-width:0 !important}
 }
+html.is-mobile #workbookWrap{display:none !important}
+html.is-mobile body{padding:0 0 4.5rem;overflow-x:hidden}
+html.is-mobile table{min-width:0 !important}
+html.is-mobile #tab_work{display:none !important}
+html.is-mobile .qwrap{max-width:none;padding:.7rem .7rem 5.5rem}
+html.is-mobile .qhead{margin:-.7rem -.7rem .7rem}
+html.is-mobile .tabbar-inner{max-width:none}
 /* Property library */
 .lib-sortbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
 .lib-sortbar label{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);flex-shrink:0}
@@ -1834,7 +1840,7 @@ function showPane(which){
   document.getElementById('libOverlay').classList.toggle('open', which==='lib');
   document.getElementById('journeyOverlay').style.display = which==='journey' ? 'block' : 'none';
   const wb = document.getElementById('workbookWrap');
-  if(wb && window.innerWidth >= 700) wb.style.display = (which==='work') ? 'block' : 'none';
+  if(wb) wb.style.display = (!isMobileDevice() && which==='work') ? 'block' : 'none';
   if(which==='journey') renderCK();
   calc();
   if(which==='dash') renderDash();
@@ -2156,7 +2162,7 @@ function renderLib(){
   list.innerHTML = sorted.map(r=>{
     const m = computeRec(r, sh);
     const v = fmtVisit(r.visitAt);
-    const isMobile = window.innerWidth < 700;
+    const isMobile = isMobileDevice();
     return `<div class="lib-card ${r.shortlisted?'shortlisted':''}">
       <div class="lib-top">
         <div><div class="lib-name">${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
@@ -2929,7 +2935,7 @@ function initSections(){
 }
 
 let lastMobile = window.innerWidth < 700;
-window.addEventListener('resize', ()=>{
+window.addEventListener('resize', ()=>{ applyDeviceLayout();
   const m = window.innerWidth < 700;
   if(m !== lastMobile){
     lastMobile = m;
@@ -2947,6 +2953,19 @@ if('serviceWorker' in navigator && location.protocol==='https:'){
 
 // The overlays and tab bar must be direct children of <body>: on phones the workbook
 // container is hidden, and anything nested inside it would be hidden too.
+
+// Physical screen width — cannot be distorted by layout-viewport zoom (the trap
+// that made CSS media queries unreliable here).
+function isMobileDevice(){ return Math.min(window.screen.width, window.screen.height) < 700; }
+function applyDeviceLayout(){
+  const mobile = isMobileDevice();
+  const wb = document.getElementById('workbookWrap');
+  if(wb) wb.style.display = mobile ? 'none' : (currentPane==='work' ? 'block' : 'none');
+  const tw = document.getElementById('tab_work');
+  if(tw) tw.style.display = mobile ? 'none' : '';
+  document.documentElement.classList.toggle('is-mobile', mobile);
+}
+
 function detachShell(){
   ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','analysisOverlay','importBar'].forEach(id=>{
     const el = document.getElementById(id);
@@ -2958,6 +2977,7 @@ function detachShell(){
 
 window.onload = function(){
   detachShell();
+  applyDeviceLayout();
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };

@@ -133,6 +133,143 @@ body.pc2 th:nth-child(4), body.pc2 td:nth-child(4){display:none}
 .qin input{border:none;box-shadow:none !important;margin-bottom:0 !important;padding:.6rem .55rem;min-width:0}
 .qin input:focus{outline:none}
 @media (max-width:700px){.qfull{display:none}.view-only-desktop{display:none}}
+
+
+/* App tabs (mobile) */
+.tabbar{display:block;position:fixed;bottom:0;left:0;right:0;z-index:66;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:.35rem .5rem calc(.35rem + env(safe-area-inset-bottom))}
+.tabbar-inner{display:flex;max-width:480px;margin:0 auto}
+.tabbtn{flex:1;background:none;border:none;font-family:inherit;font-size:.62rem;font-weight:700;color:var(--ink-soft);cursor:pointer;padding:.3rem 0;display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.tabbtn i{font-style:normal;font-size:1.15rem}
+.tabbtn.on{color:var(--indigo)}
+.qwrap{padding-bottom:5rem}
+body{padding-bottom:4.5rem}
+/* Dashboard */
+#dashOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:64;overflow-y:auto}
+#dashOverlay.open{display:block}
+.dstats{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.9rem}
+.dstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:.7rem .4rem;text-align:center;box-shadow:0 4px 14px rgba(28,37,64,.06)}
+.dstat b{display:block;font-family:'Fraunces',serif;font-size:1.35rem;background:var(--grad-hero);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.dstat span{font-size:.56rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700}
+.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.chip{display:inline-flex;align-items:center;gap:.25rem;font-size:.62rem;font-weight:700;padding:.2rem .5rem;border-radius:99px;margin:.12rem .18rem .12rem 0}
+.chip.ok{background:var(--win);color:var(--win-ink)}
+.chip.no{background:var(--warn);color:var(--warn-ink)}
+.fitpill{font-size:.64rem;font-weight:800;padding:.25rem .55rem;border-radius:99px;display:inline-block;margin-bottom:.35rem}
+.fitpill.all{background:var(--win);color:var(--win-ink)}
+.fitpill.some{background:#fef3e2;color:#92600a}
+.fitpill.none{background:var(--warn);color:var(--warn-ink)}
+.drank{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px dashed var(--line);font-size:.8rem;gap:.5rem}
+.drank:last-child{border-bottom:none}
+
+/* Escrow / stage tracker */
+.stage-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px dashed var(--line);font-size:.76rem}
+.stage-row:last-child{border-bottom:none}
+.stage-row input[type=checkbox]{width:1.05rem;height:1.05rem;accent-color:#158a4a;flex-shrink:0;margin:0}
+.stage-row.done{opacity:.55;text-decoration:line-through}
+.stage-due{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:.66rem;font-weight:700;padding:.18rem .45rem;border-radius:6px;background:#eef2ff;color:var(--indigo);flex-shrink:0}
+.stage-due.warn{background:#fef3e2;color:#92600a}
+.stage-due.late{background:var(--warn);color:var(--warn-ink)}
+.stage-days{width:3.2rem !important;font-size:.7rem !important;padding:.2rem .3rem !important;text-align:center}
+.escrow-badge{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.04em;background:linear-gradient(120deg,#158a4a,#0d9488);color:#fff;padding:.22rem .55rem;border-radius:99px;margin-bottom:.35rem}
+
+.pbar{background:#eef0ee;border-radius:99px;height:12px;overflow:hidden;margin:.35rem 0 .15rem}
+.pbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#158a4a,#0d9488);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.step-hint{display:flex;gap:.5rem;align-items:flex-start;padding:.38rem 0;border-bottom:1px dashed var(--line);font-size:.76rem;line-height:1.4}
+.step-hint:last-child{border-bottom:none}
+.step-hint i{font-style:normal;flex-shrink:0}
+.ck-row{display:flex;align-items:center;gap:.55rem;padding:.34rem 0;font-size:.78rem;border-bottom:1px dashed var(--line)}
+.ck-row:last-child{border-bottom:none}
+.ck-row input{width:1.05rem;height:1.05rem;accent-color:#4f46e5;flex-shrink:0;margin:0}
+.ck-row.done span{opacity:.5;text-decoration:line-through}
+.mstat{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px dashed var(--line);font-size:.76rem}
+.mstat:last-child{border-bottom:none}
+.mstat b{font-family:'IBM Plex Mono',monospace}
+
+.aibtn{margin-top:.6rem;width:100%;font-family:inherit;font-weight:800;font-size:.82rem;border:none;background:var(--grad-cta);color:#fff;padding:.6rem;border-radius:10px;cursor:pointer;box-shadow:0 4px 14px rgba(79,70,229,.3)}
+.aibtn:disabled{opacity:.55;cursor:wait}
+.ai-list div{display:flex;gap:.5rem;padding:.36rem 0;border-bottom:1px dashed var(--line);font-size:.76rem;line-height:1.45}
+.ai-list div:last-child{border-bottom:none}
+.find-card{border:1px solid var(--line);border-radius:12px;padding:.7rem .8rem;margin:.5rem 0;background:var(--calc)}
+.find-card b{font-size:.84rem}
+.find-card .fc-why{font-size:.72rem;color:var(--ink-soft);margin:.25rem 0 .4rem;line-height:1.4}
+.find-card .fc-row{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.find-card .fc-row button,.find-card .fc-row a{font-family:inherit;font-size:.68rem;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:.32rem .6rem;border-radius:8px;cursor:pointer;text-decoration:none}
+
+/* Photos, compare, comms, criteria detail */
+.ph-strip{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0}
+.ph-thumb{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:pointer}
+.ph-add{width:64px;height:64px;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--ink-soft);cursor:pointer;background:#fff}
+#photoView{display:none;position:fixed;inset:0;background:rgba(10,14,25,.92);z-index:99;align-items:center;justify-content:center;flex-direction:column;gap:.8rem}
+#photoView.open{display:flex}
+#photoView img{max-width:94vw;max-height:80vh;border-radius:12px}
+#photoView .pv-bar{display:flex;gap:.6rem}
+#photoView button{font-family:inherit;font-weight:700;font-size:.78rem;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);color:#fff;padding:.45rem .9rem;border-radius:8px;cursor:pointer}
+.lib-details{margin-top:.4rem;border:1px dashed var(--line);border-radius:10px;padding:.15rem .6rem}
+.lib-details summary{font-size:.7rem;font-weight:800;color:var(--ink-soft);cursor:pointer;padding:.3rem 0;user-select:none}
+.crit-row{display:flex;gap:.4rem;font-size:.72rem;padding:.18rem 0}
+.comm{border-bottom:1px dashed var(--line);padding:.35rem 0;font-size:.74rem}
+.comm:last-child{border-bottom:none}
+.comm .c-meta{font-size:.6rem;color:var(--ink-soft);display:flex;justify-content:space-between}
+.comm .c-meta button{border:none;background:none;color:var(--warn-ink);cursor:pointer;font-size:.65rem;padding:0}
+.comm-add{display:flex;gap:.4rem;margin-top:.4rem}
+.comm-add textarea{flex:1;min-height:36px;font-family:'Archivo',sans-serif;font-size:.74rem;border:1px solid var(--line);border-radius:8px;padding:.35rem .45rem;resize:vertical}
+.comm-add button{font-family:inherit;font-weight:800;font-size:.72rem;border:none;background:var(--indigo);color:#fff;border-radius:8px;padding:0 .8rem;cursor:pointer}
+.price-delta{font-size:.64rem;font-weight:800;padding:.15rem .45rem;border-radius:99px;margin-left:.35rem}
+.price-delta.down{background:var(--win);color:var(--win-ink)}
+.price-delta.up{background:var(--warn);color:var(--warn-ink)}
+.cmp-bar{position:sticky;top:56px;z-index:5;background:var(--ink);color:#fff;border-radius:12px;padding:.55rem .8rem;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;font-weight:700}
+.cmp-bar button{font-family:inherit;font-weight:800;font-size:.72rem;border:none;background:#fff;color:var(--ink);padding:.35rem .8rem;border-radius:8px;cursor:pointer}
+#cmpOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:80;overflow:auto}
+#cmpOverlay.open{display:block}
+.cmp-table{width:100%;border-collapse:collapse;font-size:.76rem}
+.cmp-table th,.cmp-table td{border-bottom:1px solid var(--line);padding:.45rem .5rem;text-align:left}
+.cmp-table th{font-weight:800}
+.cmp-table td.win{background:var(--win);color:var(--win-ink);font-weight:700}
+.cmp-table td{font-family:'IBM Plex Mono',monospace}
+.cmp-table td:first-child{font-family:'Archivo',sans-serif;font-weight:600;color:var(--ink-soft)}
+
+.na-chip{display:flex;justify-content:space-between;align-items:center;gap:.5rem;background:#eef2ff;color:var(--indigo);font-size:.72rem;font-weight:700;padding:.4rem .6rem;border-radius:10px;margin-top:.45rem}
+.na-chip.warn{background:#fef3e2;color:#92600a}
+.na-chip.late{background:var(--warn);color:var(--warn-ink)}
+.na-chip button{border:none;background:#fff;color:inherit;font-weight:800;border-radius:6px;width:1.5rem;height:1.5rem;cursor:pointer;flex-shrink:0}
+/* Property library */
+.lib-sortbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
+.lib-sortbar label{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);flex-shrink:0}
+.lib-sortbar select{flex:1;font-family:inherit;font-size:.8rem;font-weight:600;padding:.5rem .6rem;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.lib-addr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lib-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.55rem 0}
+@media (max-width:420px){.lib-nums{grid-template-columns:repeat(2,1fr)}}
+.lib-num{background:var(--calc);border-radius:10px;padding:.4rem .5rem}
+.lib-ctl{display:grid;grid-template-columns:auto 1fr;gap:.3rem .5rem;align-items:center;margin-top:.45rem}
+.lib-ctl label{font-size:.62rem;font-weight:700;color:var(--ink-soft)}
+.lib-ctl .lib-dt{width:100%}
+.lib-top{min-width:0}
+.lib-top > div:first-child{min-width:0;flex:1}
+
+#libOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:64;overflow-y:auto}
+#libOverlay.open{display:block}
+.lib-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:.9rem 1rem;margin-bottom:.8rem;box-shadow:0 1px 2px rgba(28,37,64,.04),0 6px 20px rgba(28,37,64,.06);position:relative}
+.lib-card.shortlisted{border-color:#f59e0b;background:linear-gradient(135deg,#fff,#fffaf0)}
+.lib-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem}
+.lib-name{font-weight:800;font-size:.95rem}
+.lib-addr{font-size:.68rem;color:var(--ink-soft);margin-top:.1rem;word-break:break-word}
+.lib-star{background:none;border:none;font-size:1.25rem;cursor:pointer;line-height:1;padding:.1rem;filter:grayscale(1);opacity:.45}
+.lib-star.on{filter:none;opacity:1}
+.lib-nums{display:flex;gap:1.1rem;margin:.55rem 0;flex-wrap:wrap}
+.lib-num b{display:block;font-family:'IBM Plex Mono',monospace;font-size:.9rem}
+.lib-num span{font-size:.58rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+.lib-num.neg b{color:var(--warn-ink)}
+.lib-visit{font-size:.72rem;background:#eef2ff;color:var(--indigo);font-weight:700;padding:.3rem .6rem;border-radius:8px;display:inline-flex;align-items:center;gap:.35rem;margin-bottom:.4rem}
+.lib-visit.soon{background:#fef3e2;color:#92600a}
+.lib-actions{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.lib-actions button,.lib-actions label{font-family:inherit;font-size:.68rem;font-weight:700;border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:.35rem .6rem;border-radius:8px;cursor:pointer}
+.lib-actions button:hover{border-color:var(--indigo);color:var(--indigo)}
+.lib-actions .del{color:var(--warn-ink)}
+.lib-actions .del.confirm{background:var(--warn-ink);color:#fff;border-color:var(--warn-ink)}
+.lib-empty{text-align:center;color:var(--ink-soft);font-size:.8rem;padding:2.5rem 1rem}
+.lib-notes{width:100%;font-family:'Archivo',sans-serif;font-size:.75rem;border:1px dashed var(--line);border-radius:8px;padding:.4rem .5rem;margin-top:.4rem;resize:vertical;min-height:34px}
+.lib-dt{font-family:'IBM Plex Mono',monospace;font-size:.72rem;border:1px solid var(--line);border-radius:8px;padding:.3rem .4rem}
+.qsave{background:linear-gradient(120deg,#158a4a,#0d9488) !important;color:#fff !important;border:none !important}
 /* Quick check (mobile) */
 #quickOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:65;overflow-y:auto}
 #quickOverlay.open{display:block}
@@ -339,7 +476,6 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   </div>
   <div class="actions">
     <button onclick="window.print()">Print / Save PDF</button>
-    <button onclick="openQuick()">⚡ Quick check</button>
     <button onclick="openSettings()" title="Your profile, commute, income">&#9881; Settings</button>
   </div>
 </header>
@@ -445,10 +581,18 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   <td><input type="number" step="0.1" id="p1_ccpct" value="2.5" oninput="calc()"></td>
   <td><input type="number" step="0.1" id="p2_ccpct" value="2.5" oninput="calc()"></td>
   <td><input type="number" step="0.1" id="p3_ccpct" value="2.5" oninput="calc()"></td></tr>
-<tr><td class="rowlabel">Lender / seller credits ($)</td>
+<tr><td class="rowlabel">Seller / builder credits ($)<span class="hint">Closing-cost credits — reduces cash to close</span></td>
   <td><input type="number" id="p1_cred" value="0" oninput="calc()"></td>
   <td><input type="number" id="p2_cred" value="0" oninput="calc()"></td>
   <td><input type="number" id="p3_cred" value="0" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Other incentives value ($)<span class="hint">Rate buydown, free upgrades, appliances, HOA months — estimated worth (recorded, not in the math)</span></td>
+  <td><input type="number" id="p1_incval" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p2_incval" value="0" oninput="calc()"></td>
+  <td><input type="number" id="p3_incval" value="0" oninput="calc()"></td></tr>
+<tr><td class="rowlabel">Incentive notes</td>
+  <td><input type="text" class="free" id="p1_incnote"></td>
+  <td><input type="text" class="free" id="p2_incnote"></td>
+  <td><input type="text" class="free" id="p3_incnote"></td></tr>
 <tr class="calcrow"><td class="rowlabel">Closing costs + points ($)</td>
   <td><input class="out" id="p1_cc" readonly></td>
   <td><input class="out" id="p2_cc" readonly></td>
@@ -583,8 +727,10 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="qhead">
       <b>🏠 Home Check</b>
       <div style="display:flex;gap:.4rem">
+        <button class="qsave" onclick="savePropFromP1()">💾 Save</button>
+        <button onclick="openLib()">🏘</button>
         <button onclick="openSettings()">&#9881;</button>
-        <button class="qfull" onclick="closeQuick()">Full workbook</button>
+        
       </div>
     </div>
 
@@ -600,6 +746,13 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <!-- Inputs, grouped -->
     <div class="qcard">
       <div class="qgroup">🏠 The home</div>
+      <div style="margin-bottom:.5rem"><label>Listing link</label>
+        <div style="display:flex;gap:.4rem">
+          <div class="qin" style="flex:1"><input type="text" inputmode="url" id="q_url" oninput="qSync('url')" onkeydown="if(event.key==='Enter')qUrlGo()" onpaste="setTimeout(qUrlGo,60)"></div>
+          <label style="display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;border:1.5px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:10px;padding:0 .7rem;cursor:pointer;flex-shrink:0">📷 Scan<input type="file" accept="image/*" style="display:none" onchange="scanListing(this)"></label>
+        </div>
+        <div id="q_url_hint" style="font-size:.6rem;color:var(--ink-soft);margin-top:.15rem">Saved with the property${''}</div>
+      </div>
       <div class="qrow2">
         <div><label>Price</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_price" oninput="qSync('price')"></div></div>
         <div><label>Year built</label><div class="qin"><input type="number" inputmode="numeric" id="q_year" oninput="qSync('year')"></div></div>
@@ -612,6 +765,12 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <div><label>Closing costs</label><div class="qin"><input type="number" step="0.1" inputmode="decimal" id="q_ccpct" oninput="qSync('ccpct')"><span>%</span></div></div>
         <div><label>PMI rate</label><div class="qin"><input type="number" step="0.05" inputmode="decimal" id="q_pmir" oninput="qSync('pmir')"><span>%</span></div></div>
       </div>
+      <div class="qgroup">🎁 Incentives</div>
+      <div class="qrow2">
+        <div><label>Seller credit</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_cred" oninput="qSync('cred')"></div></div>
+        <div><label>Other incentives value</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_incval" oninput="qSync('incval')"></div></div>
+      </div>
+      <div style="margin-bottom:.2rem"><label>Incentive notes</label><div class="qin"><input type="text" id="q_incnote" oninput="qSync('incnote')"></div></div>
       <div class="qgroup">📆 Ongoing costs</div>
       <div class="qrow2">
         <div><label>Property tax</label><div class="qin"><input type="number" step="0.01" inputmode="decimal" id="q_taxr" oninput="qSync('taxr')"><span>%/yr</span></div></div>
@@ -641,6 +800,130 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   </div>
 </div>
 
+<!-- Property library -->
+<div id="libOverlay">
+  <div class="qwrap">
+    <div class="qhead">
+      <b>🏘 My properties</b>
+      <div style="display:flex;gap:.4rem">
+        <button onclick="exportPropsCSV()">CSV</button>
+        <button onclick="openSettings()">&#9881;</button>
+      </div>
+    </div>
+    <div class="cmp-bar" id="cmpBar" style="display:none"><span id="cmpBarTxt"></span><button onclick="openCompare()">Compare →</button></div>
+    <div class="lib-sortbar">
+      <label>Sort by</label>
+      <select id="libSort" onchange="renderLib();scheduleSave()">
+        <option value="default">⭐ Shortlist first</option>
+        <option value="fit">Best fit (criteria score)</option>
+        <option value="price_lo">Price · low → high</option>
+        <option value="price_hi">Price · high → low</option>
+        <option value="allin">Lowest monthly (all-in)</option>
+        <option value="left">Most cash left / mo</option>
+        <option value="cash">Lowest cash to close</option>
+        <option value="ppsf">Best $ / sq ft</option>
+        <option value="school">School rating</option>
+        <option value="commute">Shortest commute</option>
+        <option value="rate">Lowest rate (APR)</option>
+        <option value="visit">Visit date</option>
+        <option value="newest">Recently added</option>
+      </select>
+    </div>
+    <div id="libList"></div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashOverlay">
+  <div class="qwrap">
+    <div class="qhead"><b>📊 Dashboard</b><div style="display:flex;gap:.4rem">
+  <button onclick="openSettings()">&#9881;</button>
+</div></div>
+    <div class="dstats" id="d_stats"></div>
+    <div class="qcard" id="d_escrow_card" style="display:none">
+      <div class="qgroup" style="margin-top:0">🏁 In escrow — next deadlines</div>
+      <div id="d_escrow"></div>
+    </div>
+    <div class="qcard" id="d_actions_card" style="display:none">
+      <div class="qgroup" style="margin-top:0">☑️ Next actions on homes</div>
+      <div id="d_actions"></div>
+    </div>
+    <div class="qcard" id="d_visits_card" style="display:none">
+      <div class="qgroup" style="margin-top:0">📅 Upcoming visits</div>
+      <div id="d_visits"></div>
+    </div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">💰 Buying power</div>
+      <div id="d_power"></div>
+      <div style="display:flex;gap:.5rem;align-items:center;margin-top:.6rem">
+        <label style="font-size:.66rem;font-weight:700;color:var(--ink-soft);flex-shrink:0">Saved for down payment</label>
+        <div class="qin" style="flex:1"><span>$</span><input type="number" inputmode="numeric" id="d_saved" oninput="renderDash();scheduleSave()"></div>
+      </div>
+      <div id="d_savings"></div>
+    </div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">🧭 Next steps</div>
+      <div id="d_steps"></div>
+    </div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">🤖 AI coach</div>
+      <div id="d_coach"><div style="font-size:.74rem;color:var(--ink-soft)">Get personalized advice from everything the app knows — your requirements, saved homes, budget, and where you are in the process.</div></div>
+      <button class="aibtn" id="coachBtn" onclick="runCoach()">Ask the AI coach</button>
+    </div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">🔍 Find homes for me</div>
+      <div id="d_find"><div style="font-size:.74rem;color:var(--ink-soft)">Searches current listings that match your requirements and budget, ready to save and visit.</div></div>
+      <button class="aibtn" id="findBtn" onclick="runFinder()">Search the market</button>
+    </div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">🏆 Best fits</div>
+      <div id="d_rank"></div>
+    </div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">📈 Your search in numbers</div>
+      <div id="d_market"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Journey (checklist) -->
+<div id="journeyOverlay" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:64;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b>🧭 Journey</b><div style="display:flex;gap:.4rem"><button onclick="openSettings()">&#9881;</button></div></div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">✅ First-time buyer checklist</div>
+      <div id="d_check"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile tab bar -->
+<div class="tabbar"><div class="tabbar-inner">
+  <button class="tabbtn on" id="tab_dash" onclick="showPane('dash')"><i>📊</i>Dashboard</button>
+  <button class="tabbtn" id="tab_check" onclick="showPane('check')"><i>⚡</i>Check</button>
+  <button class="tabbtn" id="tab_lib" onclick="showPane('lib')"><i>🏘</i>Homes</button>
+  <button class="tabbtn" id="tab_journey" onclick="showPane('journey')"><i>🧭</i>Journey</button>
+  <button class="tabbtn view-only-desktop" id="tab_work" onclick="showPane('work')"><i>📋</i>Workbook</button>
+</div></div>
+
+<!-- Photo viewer -->
+<div id="photoView" onclick="if(event.target===this)this.classList.remove('open')">
+  <img id="pv_img" alt="">
+  <div class="pv-bar">
+    <button onclick="pvDelete()">🗑 Delete</button>
+    <button onclick="document.getElementById('photoView').classList.remove('open')">Close</button>
+  </div>
+</div>
+
+<!-- Compare view -->
+<div id="cmpOverlay">
+  <div class="qwrap">
+    <div class="qhead"><b>⚖️ Compare</b><div><button onclick="document.getElementById('cmpOverlay').classList.remove('open')">← Back</button></div></div>
+    <div class="qcard" style="overflow-x:auto"><div id="cmpBody"></div></div>
+  </div>
+</div>
+
 <!-- Settings modal -->
 <div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="smodal">
@@ -658,6 +941,22 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="sgrid">
       <label class="field">Monthly income ($, take-home)<input type="number" id="takehome" value="" oninput="calc()"><span class="fhint">What actually hits your account</span></label>
     </div>
+    <h3>🎯 My requirements</h3>
+    <div class="req-grid">
+      <label class="field">Max price ($)<input type="number" inputmode="numeric" id="rq_price" oninput="saveReqs()"></label>
+      <label class="field">Max all-in ($/mo)<input type="number" inputmode="numeric" id="rq_allin" oninput="saveReqs()"></label>
+      <label class="field">Min bedrooms<input type="number" inputmode="numeric" id="rq_beds" oninput="saveReqs()"></label>
+      <label class="field">Min sq ft<input type="number" inputmode="numeric" id="rq_sqft" oninput="saveReqs()"></label>
+      <label class="field">Max HOA ($/mo)<input type="number" inputmode="numeric" id="rq_hoa" oninput="saveReqs()"></label>
+      <label class="field">Min school avg (/10)<input type="number" step="0.5" inputmode="decimal" id="rq_school" oninput="saveReqs()"></label>
+      <label class="field">Max commute (min)<input type="number" inputmode="numeric" id="rq_cmin" oninput="saveReqs()"></label>
+      <label class="field">Built after (year)<input type="number" inputmode="numeric" id="rq_year" oninput="saveReqs()"></label>
+    </div>
+    <div class="fhint" style="margin-top:.35rem">Blank = skip that criterion. Saved homes are graded against these on the Dashboard and Homes tabs.</div>
+    <label class="field full" style="margin-top:.6rem">Describe what you're looking for (free text)
+      <textarea id="s_reqtext" style="width:100%;min-height:64px;font-family:'Archivo',sans-serif;font-size:.8rem;padding:.5rem;border:1px solid var(--line);border-radius:8px;resize:vertical" oninput="scheduleSave()"></textarea>
+      <span class="fhint">e.g. "Single-story preferred, good elementary school, quiet street, need a home office, close to Costa Mesa, new construction OK if incentives are strong." The AI coach and market finder use this.</span>
+    </label>
     <h3 class="view-only-desktop">View</h3>
     <div class="sgrid view-only-desktop">
       <label class="field">Properties to compare<select id="s_pcount" onchange="applyPCount();calc()" style="font-family:'IBM Plex Mono',monospace;font-size:.84rem;padding:.42rem .55rem;border:1px solid var(--line);border-radius:6px;background:#fff">
@@ -674,7 +973,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     </div>
     <h3>Phone / standalone use</h3>
     <div class="sgrid">
-      <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="scheduleSave()"><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only in this browser — don't use on shared devices. Without it, paste listing text instead: it parses instantly on-device.</span></label>
+      <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="saveApiKey()" autocomplete="off"><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only on this device, masked, and excluded from all exports and backups — other visitors to this site can never see it. Don't enter it on shared devices. Without a key, paste listing text instead: it parses instantly on-device.</span></label>
     </div>
     <h3>Data</h3>
     <div style="display:flex;flex-wrap:wrap;gap:.5rem">
@@ -789,23 +1088,95 @@ function highlightRows(){
 
 
 // ---- Quick check: phone-friendly single-property view bound to Property 1 ----
-const Q_MAP = {price:'p1_price', dp:'p1_dp', rate:'p1_rate', term:'p1_term', taxr:'p1_taxr', ins:'p1_ins', hoa:'p1_hoa', mr:'p1_mr', util:'p1_util', pmir:'p1_pmir', ccpct:'p1_ccpct', year:'p1_year'};
+const Q_MAP = {price:'p1_price', dp:'p1_dp', rate:'p1_rate', term:'p1_term', taxr:'p1_taxr', ins:'p1_ins', hoa:'p1_hoa', mr:'p1_mr', util:'p1_util', pmir:'p1_pmir', ccpct:'p1_ccpct', year:'p1_year', cred:'p1_cred', incval:'p1_incval', incnote:'p1_incnote', url:'p1_url'};
 let pcountBeforeQuick = null;
-function openQuick(){
-  Object.entries(Q_MAP).forEach(([q,pid])=>{ document.getElementById('q_'+q).value = document.getElementById(pid).value; });
-  // Quick check is a one-property calculator — switch the engine to single-property mode
-  const sel = document.getElementById('s_pcount');
-  if(pcountBeforeQuick===null) pcountBeforeQuick = sel.value;
-  sel.value = '1'; applyPCount();
-  document.getElementById('quickOverlay').classList.add('open');
-  calc();
+function openQuick(){ showPane('check'); }
+function closeQuick(){ showPane('work'); }
+
+
+// ================= Photo / screenshot import =================
+function fileToScaledB64(file){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxDim = 1600;
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const dataUrl = c.toDataURL('image/jpeg', 0.85);
+      resolve(dataUrl.split(',')[1]);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
 }
-function closeQuick(){
-  document.getElementById('quickOverlay').classList.remove('open');
-  if(pcountBeforeQuick!==null){
-    document.getElementById('s_pcount').value = pcountBeforeQuick;
-    pcountBeforeQuick = null;
-    applyPCount(); calc();
+
+async function scanListing(inp){
+  const file = inp.files[0]; inp.value = '';
+  if(!file) return;
+  const p = 'p1';
+  const hasKey = !!document.getElementById('s_apikey').value.trim();
+  const hosted = /github\.io|githubusercontent/.test(location.hostname) || location.protocol==='file:';
+  try{
+    if(hasKey || !hosted){
+      // ---- AI vision path ----
+      setPStatus(p, '📷 Reading the image with AI… 10–20s', true);
+      const b64 = await fileToScaledB64(file);
+      const schema = '{"address": string|null, "price": number|null, "sqft": number|null, "beds_layout": string|null, "year_built": number|null, "hoa_monthly": number|null, "mello_roos_monthly": number|null, "annual_tax_amount": number|null, "schools": [{"name": string, "type": string, "rating": number|null}]|null, "yard_lot": string|null, "incentives": string|null, "seller_credit": number|null}';
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers: apiHeaders(),
+        body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:700,
+          messages:[{role:'user', content:[
+            {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
+            {type:'text', text:'This is a photo or screenshot of a real-estate listing. Extract the details visible in the image. Respond with ONLY a JSON object, no markdown fences, exactly this schema: '+schema+'\nNumbers only for numeric fields (no $ or commas). price = the asking/list price shown, NEVER an estimate/Zestimate. Use null for anything not clearly visible — never guess.'}
+          ]}]})
+      });
+      if(!resp.ok){ let d=''; try{ const e=await resp.json(); d=e?.error?.message||''; }catch(_){} throw new Error('API '+resp.status+(d?': '+d:'')); }
+      const data = await resp.json();
+      const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+      const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
+      if(!m) throw new Error('no JSON');
+      PENDING[p] = JSON.parse(m[0]);
+      applyImport(p);
+      updateQuick();
+      setPStatus(p, '✓ Scanned and filled from the image. Verify the price against the listing.');
+    } else {
+      // ---- On-device OCR path (no key needed) ----
+      setPStatus(p, '📷 Reading text off the image on-device… first run downloads the OCR engine (~15s)', true);
+      if(!window.Tesseract){
+        await new Promise((res, rej)=>{
+          const sc = document.createElement('script');
+          sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js';
+          sc.onload = res; sc.onerror = ()=>rej(new Error('OCR engine failed to load — check connection'));
+          document.head.appendChild(sc);
+        });
+      }
+      const {data:{text}} = await Tesseract.recognize(file, 'eng');
+      const d = parseListingLocal(text||'');
+      if(!Object.keys(d).length) throw new Error('no listing details recognized — try a sharper, closer screenshot');
+      PENDING[p] = d;
+      applyImport(p);
+      updateQuick();
+      setPStatus(p, '✓ Scanned on-device: ' + Object.keys(d).join(', ') + '. Verify the price — OCR can misread digits.');
+    }
+  }catch(err){
+    setPStatus(p, '📷 Scan failed (' + (err.message||'error') + '). Try a clearer screenshot, or type the numbers.');
+  }
+}
+
+function qUrlGo(){
+  const v = document.getElementById('q_url').value.trim();
+  document.getElementById('p1_url').value = v;
+  if(!/^https?:\/\/\S+$/.test(v)){ calc(); return; }
+  const hasKey = !!document.getElementById('s_apikey').value.trim();
+  const hosted = /github\.io|githubusercontent/.test(location.hostname) || location.protocol==='file:';
+  if(hasKey || !hosted){
+    urlChanged('p1');   // AI lookup available — fetch and fill
+  } else {
+    document.getElementById('q_url_hint').textContent = 'Link saved. Auto-fill needs an API key (⚙) — otherwise enter the numbers below.';
+    calc();
   }
 }
 function qSync(field){
@@ -831,8 +1202,14 @@ function animateQTotal(target){
 function updateQuick(){
   if(!document.getElementById('quickOverlay').classList.contains('open')) return;
   const r = RESULTS[0]; if(!r) return;
-  // reflect any import-applied values back into quick fields
-  Object.entries(Q_MAP).forEach(([q,pid])=>{ document.getElementById('q_'+q).value = document.getElementById(pid).value; });
+  // reflect import-applied values back into quick fields — but NEVER touch the field
+  // being typed in (rewriting it mid-keystroke garbles values and jumps the cursor)
+  Object.entries(Q_MAP).forEach(([q,pid])=>{
+    const el = document.getElementById('q_'+q);
+    if(el === document.activeElement) return;
+    const v = document.getElementById(pid).value;
+    if(el.value !== v) el.value = v;
+  });
   animateQTotal(r.allin);
   document.getElementById('q_left').textContent = fmt.format(r.left);
   document.getElementById('q_left').parentElement.classList.toggle('bad', r.left<0);
@@ -857,6 +1234,927 @@ function updateQuick(){
     : '<div style="font-size:.72rem;color:var(--ink-soft)">Enter a price or paste a link to see suggestions.</div>';
 }
 
+
+
+
+
+// ================= Photos, price history, comms, compare, criteria detail =================
+const esc = t => String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// ---- Photos (downscaled thumbnails in local storage; capped to protect quota) ----
+let pvCtx = null;
+async function addPhoto(id, inp){
+  const file = inp.files[0]; inp.value='';
+  const r = PROPS.find(x=>x.id===id); if(!r || !file) return;
+  r.photos = r.photos || [];
+  if(r.photos.length >= 6){ alert('6 photos max per home — delete one first.'); return; }
+  const b64 = await new Promise((res, rej)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const scale = Math.min(1, 900/Math.max(img.width,img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL('image/jpeg', .72)); URL.revokeObjectURL(img.src);
+    };
+    img.onerror = rej; img.src = URL.createObjectURL(file);
+  });
+  r.photos.push(b64);
+  try{ persistProps(); }catch(e){}
+  try{ localStorage.setItem(PROP_KEY, JSON.stringify(PROPS)); }
+  catch(e){ r.photos.pop(); alert('Storage is full — delete some photos or export a backup first.'); }
+  renderLib();
+}
+function viewPhoto(id, i){
+  document.querySelector('#photoView .pv-bar button').style.display='';
+  const r = PROPS.find(x=>x.id===id); if(!r?.photos?.[i]) return;
+  pvCtx = {id, i};
+  document.getElementById('pv_img').src = r.photos[i];
+  document.getElementById('photoView').classList.add('open');
+}
+function pvDelete(){
+  if(!pvCtx) return;
+  const r = PROPS.find(x=>x.id===pvCtx.id);
+  if(r?.photos){ r.photos.splice(pvCtx.i,1); persistProps(); renderLib(); }
+  document.getElementById('photoView').classList.remove('open');
+}
+
+// ---- Price history ----
+function trackPrice(rec, newPrice){
+  if(!newPrice) return;
+  rec.priceHist = rec.priceHist || [];
+  const last = rec.priceHist[rec.priceHist.length-1];
+  if(!last){ rec.priceHist.push({t:Date.now(), p:newPrice}); }
+  else if(last.p !== newPrice){ rec.priceHist.push({t:Date.now(), p:newPrice}); }
+}
+function priceDeltaChip(r){
+  const h = r.priceHist||[];
+  if(h.length<2) return '';
+  const d = h[h.length-1].p - h[0].p;
+  if(!d) return '';
+  const down = d<0;
+  return `<span class="price-delta ${down?'down':'up'}" title="Since first saved">${down?'▼':'▲'} ${fmt.format(Math.abs(d))}</span>`;
+}
+function priceHistList(r){
+  const h = r.priceHist||[];
+  if(h.length<2) return '';
+  return `<details class="lib-details"><summary>📉 Price history (${h.length})</summary>${
+    h.slice().reverse().map(x=>`<div class="crit-row"><span style="color:var(--ink-soft)">${new Date(x.t).toLocaleDateString([],{month:'short',day:'numeric'})}</span><b style="font-family:'IBM Plex Mono',monospace">${fmt.format(x.p)}</b></div>`).join('')
+  }</details>`;
+}
+
+
+// ---- Next action per home ----
+function setAction(id, txt, due){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.nextAction = r.nextAction || {txt:'', due:'', done:false};
+  if(txt!==null) r.nextAction.txt = txt.trim();
+  if(due!==null) r.nextAction.due = due;
+  r.nextAction.done = false;
+  if(!r.nextAction.txt && !r.nextAction.due) r.nextAction = null;
+  persistProps(); renderLib(); 
+}
+function doneAction(id){
+  const r = PROPS.find(x=>x.id===id); if(!r?.nextAction) return;
+  // completed actions join the trail automatically
+  r.comms = r.comms || [];
+  r.comms.push({t:Date.now(), txt:'✔ Done: ' + r.nextAction.txt});
+  r.nextAction = null;
+  persistProps(); renderLib(); renderDash();
+}
+
+// ---- Conversation log ----
+function addComm(id){
+  const ta = document.getElementById('comm_in_'+id);
+  const txt = (ta?.value||'').trim(); if(!txt) return;
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.comms = r.comms || [];
+  r.comms.push({t:Date.now(), txt});
+  persistProps(); renderLib();
+}
+function delComm(id, i){
+  const r = PROPS.find(x=>x.id===id);
+  if(r?.comms){ r.comms.splice(i,1); persistProps(); renderLib(); }
+}
+function commsBlock(r){
+  const cs = r.comms||[];
+  return `<details class="lib-details"><summary>💬 Conversations (${cs.length})</summary>
+    ${cs.slice().reverse().map((c)=>{ const idx = cs.indexOf(c);
+      return `<div class="comm"><div class="c-meta"><span>${new Date(c.t).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}${c.src==='scan'?' · 📷 from screenshot':''}</span><button onclick="delComm('${r.id}',${idx})">delete</button></div>${esc(c.txt).replace(/\n/g,'<br>')}${c.img?`<img src="${c.img}" style="max-width:110px;border-radius:8px;border:1px solid var(--line);margin-top:.3rem;cursor:pointer" onclick="viewCommImg('${r.id}',${idx})">`:''}</div>`;}).join('')}
+    <div class="comm-add"><textarea id="comm_in_${r.id}" placeholder="Paste a text/email from your agent, or note a call…"></textarea>
+      <label style="display:flex;align-items:center;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:0 .5rem;cursor:pointer;font-size:.9rem" title="Scan a screenshot of the conversation">📷<input type="file" accept="image/*" style="display:none" onchange="commScan('${r.id}', this)"></label>
+      <button onclick="addComm('${r.id}')">Add</button></div>
+    <div id="comm_busy_${r.id}" style="font-size:.62rem;color:var(--ink-soft)"></div>
+  </details>`;
+}
+
+
+function viewCommImg(id, i){
+  const r = PROPS.find(x=>x.id===id); const c = r?.comms?.[i]; if(!c?.img) return;
+  pvCtx = null;
+  document.querySelector('#photoView .pv-bar button').style.display='none';
+  document.getElementById('pv_img').src = c.img;
+  document.getElementById('photoView').classList.add('open');
+}
+async function commScan(id, inp){
+  const file = inp.files[0]; inp.value='';
+  const r = PROPS.find(x=>x.id===id); if(!r || !file) return;
+  const busy = document.getElementById('comm_busy_'+id);
+  const hasKey = !!document.getElementById('s_apikey').value.trim();
+  const hosted = /github\.io|githubusercontent/.test(location.hostname) || location.protocol==='file:';
+  try{
+    // small thumb for the trail (evidence)
+    const thumb = await new Promise((res, rej)=>{
+      const img = new Image();
+      img.onload = ()=>{ const sc=Math.min(1, 480/Math.max(img.width,img.height));
+        const c=document.createElement('canvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.6)); URL.revokeObjectURL(img.src); };
+      img.onerror=rej; img.src=URL.createObjectURL(file);
+    });
+    let entryTxt = '';
+    if(hasKey || !hosted){
+      busy.textContent = 'Reading the conversation with AI… ~15s';
+      const b64 = await fileToScaledB64(file);
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:apiHeaders(),
+        body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:700,
+          messages:[{role:'user', content:[
+            {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
+            {type:'text', text:'This is a screenshot of a conversation (text messages or email) related to a home purchase. Respond with ONLY JSON, no fences: {"summary": string, "detail": string}\nsummary = one line: who said what that matters (offers, prices, credits, dates, commitments). detail = condensed transcription of the relevant messages with speakers. If nothing home-related is visible, summary explains that and detail is empty.'}]}]})
+      });
+      if(!resp.ok){ let d=''; try{const e=await resp.json(); d=e?.error?.message||'';}catch(_){} throw new Error('API '+resp.status+(d?': '+d:'')); }
+      const data = await resp.json();
+      const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+      const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
+      if(!m) throw new Error('no JSON');
+      const d = JSON.parse(m[0]);
+      entryTxt = [d.summary, d.detail].filter(Boolean).join('\n');
+    } else {
+      busy.textContent = 'Reading text off the screenshot on-device…';
+      if(!window.Tesseract){
+        await new Promise((res, rej)=>{ const sc=document.createElement('script');
+          sc.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js';
+          sc.onload=res; sc.onerror=()=>rej(new Error('OCR engine failed to load')); document.head.appendChild(sc); });
+      }
+      const {data:{text}} = await Tesseract.recognize(file, 'eng');
+      entryTxt = (text||'').replace(/\n{3,}/g,'\n\n').trim().slice(0, 1200);
+      if(!entryTxt) throw new Error('no readable text in the image');
+    }
+    r.comms = r.comms || [];
+    r.comms.push({t:Date.now(), txt:entryTxt, img:thumb, src:'scan'});
+    try{ persistProps(); }
+    catch(e){ r.comms[r.comms.length-1].img = null; persistProps(); }
+    busy.textContent = '';
+    renderLib();
+  }catch(err){
+    busy.textContent = 'Scan failed: ' + (err.message||'error');
+  }
+}
+
+// ---- Criteria detail (which checkboxes hit) ----
+function critBlock(r, m){
+  const checks = evalReqs(r, m);
+  if(!checks.length) return '';
+  return `<details class="lib-details"><summary>🎯 Requirements check (${checks.filter(c=>c.ok).length}/${checks.length})</summary>${
+    checks.map(c=>`<div class="crit-row">${c.ok?'✅':'❌'} <span>${esc(c.txt)}</span></div>`).join('')
+  }</details>`;
+}
+
+// ---- Photos block ----
+function photosBlock(r){
+  const ph = r.photos||[];
+  return `<div class="ph-strip">${ph.map((p,i)=>`<img class="ph-thumb" src="${p}" onclick="viewPhoto('${r.id}',${i})">`).join('')}
+    <label class="ph-add" title="Add photo">＋<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${r.id}', this)"></label></div>`;
+}
+
+
+async function shareCard(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const m = computeRec(r, sh);
+  const f2 = fitSummary(evalReqs(r, m));
+  const c = document.createElement('canvas'); c.width=1000; c.height=560;
+  const x = c.getContext('2d');
+  // background + header band
+  x.fillStyle='#f4f6fb'; x.fillRect(0,0,1000,560);
+  const grad = x.createLinearGradient(0,0,1000,0);
+  grad.addColorStop(0,'#4f46e5'); grad.addColorStop(.5,'#0284c7'); grad.addColorStop(1,'#0d9488');
+  x.fillStyle=grad; x.fillRect(0,0,1000,110);
+  x.fillStyle='#fff'; x.font='800 40px Archivo, sans-serif';
+  x.fillText((r.name||'Property').slice(0,34), 40, 68);
+  x.font='500 20px Archivo, sans-serif'; x.globalAlpha=.85;
+  x.fillText(cleanUrl(r.url).slice(0,70), 40, 96); x.globalAlpha=1;
+  // photo if any
+  let tx = 40;
+  if(r.photos?.length){
+    const img = new Image(); img.src = r.photos[0];
+    await new Promise(res=>{ img.onload=res; img.onerror=res; });
+    try{ x.drawImage(img, 620, 140, 340, 250); x.strokeStyle='#dcdfe8'; x.strokeRect(620,140,340,250); tx = 40; }catch(e){}
+  }
+  // metrics
+  const rows = [['Price', fmt.format(r.price||0)], ['All-in / month', fmt.format(m.allin)],
+    ['Left each month', fmt.format(m.left)], ['Cash to close', fmt.format(m.cash)]];
+  x.fillStyle='#1c2540';
+  rows.forEach((row,i)=>{
+    x.font='600 20px Archivo, sans-serif'; x.fillStyle='#5b6b7a'; x.fillText(row[0], tx, 180+i*62);
+    x.font='700 34px "IBM Plex Mono", monospace'; x.fillStyle = (i===2 && m.left<0)?'#c62f27':'#1c2540';
+    x.fillText(row[1], tx, 212+i*62);
+  });
+  if(f2){ x.font='700 22px Archivo, sans-serif'; x.fillStyle = f2.ok===f2.total?'#158a4a':'#92600a';
+    x.fillText(`${f2.ok}/${f2.total} of my criteria met`, 40, 470); }
+  x.font='500 16px Archivo, sans-serif'; x.fillStyle='#5b6b7a';
+  x.fillText('Home Check · numbers based on my budget & assumptions', 40, 530);
+  const blob = await new Promise(res=>c.toBlob(res,'image/png'));
+  const file = new File([blob], (r.name||'home').replace(/[^a-z0-9]+/gi,'-')+'.png', {type:'image/png'});
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:r.name||'Home'}); return; }catch(e){}
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=file.name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ---- Compare picker ----
+let CMP = new Set();
+function toggleCmp(id, on){
+  if(on){ if(CMP.size>=3){ alert('Compare up to 3 homes.'); renderLib(); return; } CMP.add(id); }
+  else CMP.delete(id);
+  renderLib();
+}
+function openCompare(){
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const rs = PROPS.filter(r=>CMP.has(r.id));
+  if(rs.length<2) return;
+  const ms = rs.map(r=>({r, m:computeRec(r, sh)}));
+  const row = (label, vals, fmtFn, lowerBetter) => {
+    const nums = vals.filter(v=>typeof v==='number' && isFinite(v));
+    const best = nums.length>1 ? (lowerBetter?Math.min(...nums):Math.max(...nums)) : NaN;
+    return `<tr><td>${label}</td>${vals.map(v=>`<td class="${(typeof v==='number' && v===best)?'win':''}">${v==null||v===''?'—':(fmtFn?fmtFn(v):v)}</td>`).join('')}</tr>`;
+  };
+  const bedsOf = r => { const m2=(r.beds||'').match(/(\d+)\s*bed/i); return m2?parseInt(m2[1]):null; };
+  document.getElementById('cmpBody').innerHTML = `<table class="cmp-table">
+    <tr><th></th>${ms.map(x=>`<th>${esc(x.r.name||'Home')}</th>`).join('')}</tr>
+    ${row('Price', ms.map(x=>x.r.price||null), v=>fmt.format(v), true)}
+    ${row('All-in / mo', ms.map(x=>x.m.allin), v=>fmt.format(v), true)}
+    ${row('Left / mo', ms.map(x=>x.m.left), v=>fmt.format(v), false)}
+    ${row('Cash to close', ms.map(x=>x.m.cash), v=>fmt.format(v), true)}
+    ${row('$ / sq ft', ms.map(x=>x.r.sqft>0?Math.round(x.r.price/x.r.sqft):null), v=>fmt.format(v), true)}
+    ${row('Sq ft', ms.map(x=>x.r.sqft||null), null, false)}
+    ${row('Beds', ms.map(x=>bedsOf(x.r)), null, false)}
+    ${row('Year built', ms.map(x=>x.r.year||null), null, false)}
+    ${row('HOA / mo', ms.map(x=>x.r.hoa||0), v=>fmt.format(v), true)}
+    ${row('Commute (min)', ms.map(x=>x.r.cmin||null), null, true)}
+    ${row('School avg', ms.map(x=>{const a=schoolAvg(x.r); return a!=null?+a.toFixed(1):null;}), null, false)}
+    ${row('Criteria met', ms.map(x=>{const f=fitSummary(evalReqs(x.r,x.m)); return f?f.ok:null;}), null, false)}
+    ${row('Incentives', ms.map(x=>[x.r.cred>0?fmt.format(x.r.cred)+' credit':null, x.r.incnote||null].filter(Boolean).join('; ')||null), null, false)}
+  </table>
+  <div style="font-size:.62rem;color:var(--ink-soft);margin-top:.5rem">Green = best value in that row.</div>`;
+  document.getElementById('cmpOverlay').classList.add('open');
+}
+
+// ================= Escrow stage tracker =================
+// Defaults follow the CA RPA-style contingency clock, counted from offer acceptance.
+const STAGE_DEFS = [
+  {key:'deposit',    label:'Earnest money deposit',   days:3},
+  {key:'disclosures',label:'Review seller disclosures',days:7},
+  {key:'inspection', label:'Inspection contingency',  days:17},
+  {key:'appraisal',  label:'Appraisal contingency',   days:17},
+  {key:'loan',       label:'Loan contingency',        days:21},
+  {key:'walkthrough',label:'Final walkthrough',       days:28},
+  {key:'closing',    label:'Close of escrow',         days:30},
+];
+function setOffer(id, dateStr){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.offerDate = dateStr || '';
+  if(dateStr && !r.stages){
+    r.stages = {};
+    STAGE_DEFS.forEach(d=>{ r.stages[d.key] = {days:d.days, done:false}; });
+  }
+  persistProps(); renderLib(); renderDash();
+}
+function toggleStage(id, key, done){
+  const r = PROPS.find(x=>x.id===id); if(r && r.stages && r.stages[key]){ r.stages[key].done = done; persistProps(); renderDash(); renderLib(); }
+}
+function setStageDays(id, key, days){
+  const r = PROPS.find(x=>x.id===id); if(r && r.stages && r.stages[key]){ r.stages[key].days = parseInt(days)||0; persistProps(); renderLib(); renderDash(); }
+}
+function stageDue(r, key){
+  const st = r.stages?.[key]; if(!r.offerDate || !st) return null;
+  const d = new Date(r.offerDate + 'T00:00:00');
+  d.setDate(d.getDate() + (st.days||0));
+  const days = Math.ceil((d - Date.now())/86400000);
+  return {date:d, days, label:d.toLocaleDateString([], {month:'short', day:'numeric'}), late:days<0, warn:days>=0&&days<=3};
+}
+function renderStages(r){
+  if(!r.offerDate) return '';
+  return `<div style="margin-top:.5rem">
+    <span class="escrow-badge">🏁 In escrow · offer accepted ${new Date(r.offerDate+'T00:00:00').toLocaleDateString([], {month:'short', day:'numeric'})}</span>
+    ${STAGE_DEFS.map(d=>{
+      const st = r.stages?.[d.key]; if(!st) return '';
+      const due = stageDue(r, d.key);
+      return `<div class="stage-row ${st.done?'done':''}">
+        <input type="checkbox" ${st.done?'checked':''} onchange="toggleStage('${r.id}','${d.key}',this.checked)">
+        <span>${d.label}</span>
+        <input type="number" class="lib-dt stage-days" value="${st.days}" title="Days from acceptance" onchange="setStageDays('${r.id}','${d.key}',this.value)">
+        <span class="stage-due ${st.done?'':(due.late?'late':due.warn?'warn':'')}">${due.label}${st.done?'':(due.late?' · '+(-due.days)+'d late':' · '+due.days+'d')}</span>
+        <button style="border:none;background:none;cursor:pointer;font-size:.8rem;padding:0" title="Add deadline to calendar" onclick="stageICS('${r.id}','${d.key}','${d.label.replace(/'/g,'')}')">📅</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function stageICS(id, key, label){
+  const r = PROPS.find(x=>x.id===id); const due = stageDue(r, key); if(!due) return;
+  const d = due.date; d.setHours(9,0,0,0);
+  const p = n => String(n).padStart(2,'0');
+  const stamp = x => x.getFullYear()+p(x.getMonth()+1)+p(x.getDate())+'T'+p(x.getHours())+p(x.getMinutes())+'00';
+  const end = new Date(d.getTime()+30*60000);
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//HomeCheck//EN','BEGIN:VEVENT',
+    'UID:'+id+'-'+key+'@homecheck','DTSTART:'+stamp(d),'DTEND:'+stamp(end),
+    'SUMMARY:🏠 '+label+' deadline — '+(r.name||'property'),
+    'DESCRIPTION:Contingency deadline. Talk to your agent BEFORE this date if you need more time — deadlines pass silently.',
+    'BEGIN:VALARM','TRIGGER:-P2D','ACTION:DISPLAY','DESCRIPTION:Deadline in 2 days','END:VALARM',
+    'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Deadline tomorrow','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
+  a.download = (label+'-'+(r.name||'')).replace(/[^a-z0-9]+/gi,'-') + '.ics';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+
+// ================= AI coach & market finder =================
+function aiAvailable(){
+  const hasKey = !!document.getElementById('s_apikey').value.trim();
+  const hosted = /github\.io|githubusercontent/.test(location.hostname) || location.protocol==='file:';
+  return hasKey || !hosted;
+}
+function buildAIContext(){
+  const sh = {takehome:g('takehome'), maint:g('maint'), horizon:g('horizon')};
+  const reqs = {}; REQ_IDS.forEach(id=>{ const v=document.getElementById(id).value; if(v) reqs[id.replace('rq_','')] = v; });
+  const homes = PROPS.slice(0,12).map(r=>{
+    const m = computeRec(r, sh);
+    const checks = evalReqs(r, m);
+    return {name:r.name, price:r.price, allin:Math.round(m.allin), left:Math.round(m.left), cash:Math.round(m.cash),
+      shortlisted:!!r.shortlisted, visited:!!(r.visitAt && new Date(r.visitAt)<Date.now()),
+      visitPlanned:!!(r.visitAt && new Date(r.visitAt)>=Date.now()),
+      inEscrow:!!r.offerDate, failedCriteria:checks.filter(c=>!c.ok).map(c=>c.txt),
+      incentives:[r.cred>0?('$'+r.cred+' credit'):null, r.incnote||null].filter(Boolean).join('; ')||null,
+      notes:(r.notes||'').slice(0,200)||null, commuteMin:r.cmin||null, year:r.year||null};
+  });
+  const ckDone = CK_ITEMS.filter((_,i)=>CK[i]);
+  return {
+    monthly_takehome: sh.takehome||null,
+    structured_requirements: reqs,
+    detailed_requirements: document.getElementById('s_reqtext').value.trim()||null,
+    office_address: document.getElementById('s_workaddr').value.trim()||null,
+    saved_homes: homes,
+    checklist_done: ckDone, checklist_pending: CK_ITEMS.filter((_,i)=>!CK[i]),
+  };
+}
+async function callAI(messages, useSearch){
+  const body = {model:'claude-sonnet-4-6', max_tokens:1200, messages};
+  if(useSearch) body.tools = [{type:'web_search_20250305', name:'web_search'}];
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:apiHeaders(), body:JSON.stringify(body)});
+  if(!resp.ok){ let d=''; try{const e=await resp.json(); d=e?.error?.message||'';}catch(_){}
+    throw new Error('API '+resp.status+(d?': '+d:'')); }
+  const data = await resp.json();
+  const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
+  if(!m) throw new Error('no JSON in reply');
+  return JSON.parse(m[0]);
+}
+async function runCoach(){
+  const el = document.getElementById('d_coach'), btn = document.getElementById('coachBtn');
+  if(!aiAvailable()){ el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Needs the AI: add your API key in ⚙ (Phone / standalone use).</div>'; return; }
+  btn.disabled = true; el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">Thinking through your search… ~15s</div>';
+  try{
+    const ctx = buildAIContext();
+    const d = await callAI([{role:'user', content:
+      'You are a pragmatic first-time-home-buyer coach. Here is the buyer\'s full situation as JSON:\n'+JSON.stringify(ctx)+
+      '\nRespond with ONLY JSON, no fences: {"next_steps":[string], "missing":[string], "warnings":[string]}\n'+
+      'next_steps: 3-5 specific, prioritized actions based on THEIR data (name specific homes where relevant). missing: information gaps in their saved data or requirements that would change decisions. warnings: honest risks they may not see (budget stretch, criteria conflicts, escrow deadlines). Be concrete, use their numbers, no generic advice.'}], false);
+    el.innerHTML =
+      (d.next_steps?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.2rem 0 .3rem">Do next</div><div class="ai-list">'+d.next_steps.map(x=>'<div>👉 <div>'+x+'</div></div>').join('')+'</div>':'')+
+      (d.missing?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">You\'re missing</div><div class="ai-list">'+d.missing.map(x=>'<div>🔍 <div>'+x+'</div></div>').join('')+'</div>':'')+
+      (d.warnings?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">Watch out</div><div class="ai-list">'+d.warnings.map(x=>'<div>⚠️ <div>'+x+'</div></div>').join('')+'</div>':'');
+  }catch(err){
+    el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Coach failed: '+(err.message||'error')+'</div>';
+  }finally{ btn.disabled = false; }
+}
+async function runFinder(){
+  const el = document.getElementById('d_find'), btn = document.getElementById('findBtn');
+  if(!aiAvailable()){ el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Needs the AI: add your API key in ⚙ (Phone / standalone use).</div>'; return; }
+  btn.disabled = true; el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">Searching current listings for you… 20–40s</div>';
+  try{
+    const ctx = buildAIContext();
+    const d = await callAI([{role:'user', content:
+      'Search the web for CURRENT for-sale home listings matching this buyer. Buyer profile JSON:\n'+JSON.stringify({
+        budget_max: ctx.structured_requirements.price || null,
+        monthly_takehome: ctx.monthly_takehome,
+        requirements: ctx.structured_requirements,
+        detailed_requirements: ctx.detailed_requirements,
+        near: ctx.office_address || 'Orange County, CA',
+        already_saved: ctx.saved_homes.map(h=>h.name)
+      })+
+      '\nFind 3-5 real, currently listed homes that fit (exclude ones already_saved). Respond with ONLY JSON, no fences: {"listings":[{"name": string (street address), "area": string, "price": number, "url": string|null, "why": string (1-2 sentences tied to THEIR requirements)}]}\nOnly include listings you actually found in search results with real prices. Never invent listings or URLs.'}], true);
+    if(!d.listings?.length){ el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">No solid matches found this pass — try broadening requirements or run it again (listings change daily).</div>'; }
+    else{
+      window._found = d.listings;
+      el.innerHTML = d.listings.map((L,i)=>
+        `<div class="find-card"><b>${L.name}</b> <span style="font-size:.68rem;color:var(--ink-soft)">· ${L.area||''}</span>
+         <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;margin:.15rem 0">${L.price?fmt.format(L.price):''}</div>
+         <div class="fc-why">${L.why||''}</div>
+         <div class="fc-row">
+           <button onclick="saveFound(${i})">💾 Save to my homes</button>
+           ${L.url?`<a href="${L.url}" target="_blank">Listing ↗</a>`:''}
+         </div></div>`).join('')
+        + '<div style="font-size:.62rem;color:var(--ink-soft);margin-top:.4rem">Web results — verify price and availability on the listing before planning a visit.</div>';
+    }
+  }catch(err){
+    el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Search failed: '+(err.message||'error')+'</div>';
+  }finally{ btn.disabled = false; }
+}
+function saveFound(i){
+  const L = (window._found||[])[i]; if(!L) return;
+  PROPS.unshift({id:'pr'+Date.now()+i, name:L.name, url:L.url||'', price:L.price||0,
+    dp:20, rate:6.75, term:30, taxr:1.15, ccpct:2.5, pmir:0.5,
+    shortlisted:false, visitAt:'', notes:'Found by AI market search: '+(L.why||''), createdAt:Date.now()});
+  persistProps(); renderDash();
+  setPStatus('p1', '✓ Saved "'+L.name+'" — open it in Homes, then Scan or import to fill the rest.');
+}
+
+// ================= Requirements & Dashboard =================
+const REQ_KEY = 'homeReqs_v1';
+const REQ_IDS = ['rq_price','rq_allin','rq_beds','rq_sqft','rq_hoa','rq_school','rq_cmin','rq_year'];
+function saveReqs(){
+  const o = {}; REQ_IDS.forEach(id=>o[id]=document.getElementById(id).value);
+  try{ localStorage.setItem(REQ_KEY, JSON.stringify(o)); }catch(e){}
+  renderDash(); if(document.getElementById('libOverlay').classList.contains('open')) renderLib();
+}
+function loadReqs(){
+  try{ const o = JSON.parse(localStorage.getItem(REQ_KEY))||{};
+    REQ_IDS.forEach(id=>{ if(o[id]!=null) document.getElementById(id).value = o[id]; });
+  }catch(e){}
+}
+function rqv(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; }
+function schoolAvg(rec){
+  if(!rec.schools || !rec.schools.length) return null;
+  const rated = rec.schools.filter(x=>x.rating!=null);
+  return rated.length ? rated.reduce((a,x)=>a+x.rating,0)/rated.length : null;
+}
+function evalReqs(rec, m){
+  const checks = [];
+  const add=(cond,label,okTxt,noTxt)=>{ if(cond===null) return; checks.push({ok:cond, txt:cond?okTxt:noTxt, label}); };
+  const mx = rqv('rq_price');   add(mx===null?null:(rec.price||0)<=mx, 'price', 'Price ✓', 'Price '+fmt.format(rec.price||0)+' > '+fmt.format(mx));
+  const ma = rqv('rq_allin');   add(ma===null?null:m.allin<=ma, 'all-in', 'All-in ✓', 'All-in '+fmt.format(m.allin)+' > '+fmt.format(ma));
+  const mb = rqv('rq_beds');    const beds = (rec.beds||'').match(/(\d+)\s*bed/i); add(mb===null?null:(beds?parseInt(beds[1])>=mb:false), 'beds', 'Beds ✓', beds?('Beds '+beds[1]+' < '+mb):'Beds unknown');
+  const ms = rqv('rq_sqft');    add(ms===null?null:(rec.sqft||0)>=ms, 'sqft', 'Sq ft ✓', 'Sq ft '+(rec.sqft||'?')+' < '+ms);
+  const mh = rqv('rq_hoa');     add(mh===null?null:(rec.hoa||0)<=mh, 'HOA', 'HOA ✓', 'HOA '+fmt.format(rec.hoa||0)+' > '+fmt.format(mh));
+  const sc = rqv('rq_school');  const av = schoolAvg(rec); add(sc===null?null:(av!=null?av>=sc:false), 'schools', 'Schools ✓', av!=null?('Schools '+av.toFixed(1)+' < '+sc):'Schools unknown');
+  const mc = rqv('rq_cmin');    add(mc===null?null:(rec.cmin>0 && rec.cmin<=mc), 'commute', 'Commute ✓', rec.cmin?('Commute '+rec.cmin+'m > '+mc+'m'):'Commute unknown');
+  const my = rqv('rq_year');    add(my===null?null:(rec.year||0)>=my, 'year', 'Year ✓', rec.year?('Built '+rec.year+' < '+my):'Year unknown');
+  return checks;
+}
+function fitSummary(checks){
+  const total = checks.length, ok = checks.filter(c=>c.ok).length;
+  if(!total) return null;
+  return {ok, total, cls: ok===total?'all': ok>0?'some':'none'};
+}
+let currentPane = 'dash';
+function showPane(which){
+  // entering the calculator forces single-property mode; leaving restores the selection
+  if(which==='check' && currentPane!=='check'){
+    Object.entries(Q_MAP).forEach(([q,pid])=>{ document.getElementById('q_'+q).value = document.getElementById(pid).value; });
+    const sel = document.getElementById('s_pcount');
+    if(pcountBeforeQuick===null) pcountBeforeQuick = sel.value;
+    sel.value = '1'; applyPCount();
+  }
+  if(which!=='check' && currentPane==='check' && pcountBeforeQuick!==null){
+    document.getElementById('s_pcount').value = pcountBeforeQuick;
+    pcountBeforeQuick = null; applyPCount();
+  }
+  currentPane = which;
+  ['check','dash','lib','journey','work'].forEach(k=>{
+    document.getElementById('tab_'+k)?.classList.toggle('on', k===which);
+  });
+  document.getElementById('quickOverlay').classList.toggle('open', which==='check');
+  document.getElementById('dashOverlay').classList.toggle('open', which==='dash');
+  document.getElementById('libOverlay').classList.toggle('open', which==='lib');
+  document.getElementById('journeyOverlay').style.display = which==='journey' ? 'block' : 'none';
+  if(which==='journey') renderCK();
+  calc();
+  if(which==='dash') renderDash();
+  if(which==='lib') renderLib();
+}
+function openDash(){ showPane('dash'); }
+function closeDash(){ showPane('work'); }
+
+// ---- First-time buyer checklist ----
+const CK_KEY = 'homeChecklist_v1';
+const CK_ITEMS = [
+  'Check credit score & fix errors',
+  'Set monthly budget (income in ⚙)',
+  'Get pre-approval letters from 2–3 lenders',
+  'Define requirements (⚙ → My requirements)',
+  'Choose a buyer\'s agent',
+  'Tour homes & take notes',
+  'Research neighborhoods at different times of day',
+  'Get insurance quotes early (CA!)',
+  'Make an offer',
+  'Book the home inspection immediately after acceptance',
+  'Do the final walkthrough',
+  'Close & get the keys 🎉',
+];
+let CK = {};
+function loadCK(){ try{ CK = JSON.parse(localStorage.getItem(CK_KEY))||{}; }catch(e){ CK={}; } }
+function toggleCK(i, v){ CK[i]=v; try{ localStorage.setItem(CK_KEY, JSON.stringify(CK)); }catch(e){} renderCK(); }
+
+
+function renderCK(){
+  const done = CK_ITEMS.filter((_,i)=>CK[i]).length;
+  document.getElementById('d_check').innerHTML =
+    `<div class="pbar"><i style="width:${done/CK_ITEMS.length*100}%"></i></div>
+     <div style="font-size:.64rem;color:var(--ink-soft);margin-bottom:.4rem">${done} of ${CK_ITEMS.length} done</div>` +
+    CK_ITEMS.map((t,i)=>`<label class="ck-row ${CK[i]?'done':''}"><input type="checkbox" ${CK[i]?'checked':''} onchange="toggleCK(${i}, this.checked)"><span>${t}</span></label>`).join('');
+}
+
+function renderDashExtras(sh){
+  // Buying power
+  const rate = 6.75, term = 30, taxr = 1.15;
+  const canAllin = sh.takehome * 0.65;
+  // invert: allin ≈ pi + tax + ins(150) + maint; solve price roughly
+  let power = 0;
+  if(sh.takehome>0){
+    let lo=50000, hi=5000000;
+    for(let i=0;i<40;i++){
+      const mid=(lo+hi)/2, loan=mid*0.8;
+      const a = pmt(rate/100/12, term*12, loan) + mid*taxr/100/12 + 150 + mid*(sh.maint||1)/100/12 + 300;
+      if(a>canAllin) hi=mid; else lo=mid;
+    }
+    power = lo;
+  }
+  const pricedAll = PROPS.filter(r=>r.price>0);
+  const fitBudget = sh.takehome>0 ? pricedAll.filter(r=>computeRec(r,sh).left>=0).length : 0;
+  const fitAll = pricedAll.filter(r=>{ const f=fitSummary(evalReqs(r, computeRec(r,sh))); return f && f.ok===f.total; }).length;
+  document.getElementById('d_power').innerHTML = sh.takehome>0
+    ? `<div class="mstat"><span>Est. max price (65% of take-home, 20% down, ${rate}%)</span><b>${fmt.format(power)}</b></div>
+       <div class="mstat"><span>Comfortable all-in ceiling</span><b>${fmt.format(canAllin)}/mo</b></div>
+       ${pricedAll.length?`<div class="mstat"><span>Saved homes that fit your budget</span><b>${fitBudget} of ${pricedAll.length}</b></div>
+       <div class="mstat"><span>Meet every criterion</span><b>${fitAll} of ${pricedAll.length}</b></div>`:''}`
+    : '<div style="font-size:.74rem;color:var(--ink-soft)">Set your income in ⚙ to see your buying power.</div>';
+  // Savings progress vs cheapest shortlisted (or cheapest saved) cash-to-close
+  const saved = g('d_saved');
+  const pool = (PROPS.filter(r=>r.shortlisted).length?PROPS.filter(r=>r.shortlisted):PROPS).filter(r=>r.price>0);
+  const sv = document.getElementById('d_savings');
+  if(pool.length && saved>0){
+    const target = Math.min(...pool.map(r=>computeRec(r, sh).cash));
+    const pct = Math.min(saved/target*100, 100);
+    sv.innerHTML = `<div class="pbar"><i style="width:${pct}%"></i></div>
+      <div style="font-size:.66rem;color:var(--ink-soft)">${fmt.format(saved)} of ~${fmt.format(target)} needed to close the cheapest ${PROPS.some(r=>r.shortlisted)?'shortlisted':'saved'} home (${pct.toFixed(0)}%)${saved>=target?' — you\'re there 🎉':''}</div>`;
+  } else sv.innerHTML = '';
+  // Next steps (generated from data gaps)
+  const steps = [];
+  if(!(sh.takehome>0)) steps.push(['⚙','Set your monthly income — every verdict depends on it.']);
+  if(!REQ_IDS.some(id=>document.getElementById(id).value)) steps.push(['🎯','Define your requirements in ⚙ so homes get graded automatically.']);
+  const noVisit = PROPS.filter(r=>r.shortlisted && !r.visitAt);
+  if(noVisit.length) steps.push(['📅',`${noVisit.length} shortlisted home${noVisit.length>1?'s have':' has'} no visit scheduled: ${noVisit.slice(0,2).map(r=>r.name||'unnamed').join(', ')}.`]);
+  const noNotes = PROPS.filter(r=>r.visitAt && new Date(r.visitAt)<Date.now() && !r.notes);
+  if(noNotes.length) steps.push(['📝',`Add notes for ${noNotes.length} visited home${noNotes.length>1?'s':''} while memory is fresh.`]);
+  const noSchool = PROPS.filter(r=>r.price>0 && !r.schools);
+  if(noSchool.length) steps.push(['🏫',`${noSchool.length} saved home${noSchool.length>1?'s':''} missing school data.`]);
+  const noCommute = PROPS.filter(r=>r.price>0 && !r.cmin);
+  if(noCommute.length) steps.push(['🚗',`${noCommute.length} home${noCommute.length>1?'s':''} missing commute time — do a test drive at rush hour.`]);
+  if(!PROPS.length) steps.push(['⚡','Save your first property from the Check tab.']);
+  document.getElementById('d_steps').innerHTML = steps.length
+    ? steps.map(x=>`<div class="step-hint"><i>${x[0]}</i><div>${x[1]}</div></div>`).join('')
+    : '<div class="step-hint"><i>✨</i><div>Nothing pending — your search data is complete. Go tour some homes.</div></div>';
+  // Search in numbers
+  const priced = PROPS.filter(r=>r.price>0);
+  const mk = document.getElementById('d_market');
+  if(priced.length>=2){
+    const prices = priced.map(r=>r.price).sort((a,b)=>a-b);
+    const med = prices[Math.floor(prices.length/2)];
+    const ppsf = priced.filter(r=>r.sqft>0).map(r=>r.price/r.sqft);
+    const allins = priced.map(r=>computeRec(r,sh).allin);
+    mk.innerHTML = `<div class="mstat"><span>Price range you're seeing</span><b>${fmt.format(prices[0])} – ${fmt.format(prices[prices.length-1])}</b></div>
+      <div class="mstat"><span>Median price</span><b>${fmt.format(med)}</b></div>
+      ${ppsf.length?`<div class="mstat"><span>Avg price / sq ft</span><b>${fmt.format(ppsf.reduce((a,b)=>a+b,0)/ppsf.length)}</b></div>`:''}
+      <div class="mstat"><span>Avg all-in across saved homes</span><b>${fmt.format(allins.reduce((a,b)=>a+b,0)/allins.length)}/mo</b></div>`;
+    mk.parentElement.style.display='block';
+  } else mk.parentElement.style.display='none';
+}
+
+function renderDash(){
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const now = Date.now();
+  const visited = PROPS.filter(r=>r.visitAt && new Date(r.visitAt) < now);
+  const upcoming = PROPS.filter(r=>r.visitAt && new Date(r.visitAt) >= now).sort((a,b)=>new Date(a.visitAt)-new Date(b.visitAt));
+  const short = PROPS.filter(r=>r.shortlisted);
+  document.getElementById('d_stats').innerHTML =
+    `<div class="dstat"><b>${PROPS.length}</b><span>Saved</span></div>
+     <div class="dstat"><b>${short.length}</b><span>⭐ Shortlist</span></div>
+     <div class="dstat"><b>${upcoming.length}</b><span>Visits ahead</span></div>
+     <div class="dstat"><b>${visited.length}</b><span>Visited</span></div>`;
+  // Escrow deadlines
+  const inEscrow = PROPS.filter(r=>r.offerDate);
+  const ec = document.getElementById('d_escrow_card');
+  if(inEscrow.length){
+    ec.style.display='block';
+    const items = [];
+    inEscrow.forEach(r=>{
+      STAGE_DEFS.forEach(d=>{
+        const st = r.stages?.[d.key];
+        if(st && !st.done){ const due = stageDue(r, d.key); items.push({r, d, due}); }
+      });
+    });
+    items.sort((a,b)=>a.due.date-b.due.date);
+    document.getElementById('d_escrow').innerHTML = items.slice(0,5).map(x=>
+      `<div class="drank"><div><b>${x.d.label}</b><div style="font-size:.66rem;color:var(--ink-soft)">${x.r.name||'Property'}</div></div>
+       <span class="stage-due ${x.due.late?'late':x.due.warn?'warn':''}">${x.due.label}${x.due.late?' · '+(-x.due.days)+'d late':' · '+x.due.days+'d'}</span></div>`
+    ).join('') || '<div style="font-size:.74rem;color:var(--ink-soft)">All milestones checked off 🎉</div>';
+  } else ec.style.display='none';
+  // Next actions across homes
+  const acts = PROPS.filter(r=>r.nextAction && !r.nextAction.done)
+    .map(r=>({r, a:r.nextAction, d: r.nextAction.due ? Math.ceil((new Date(r.nextAction.due+'T23:59:00')-Date.now())/86400000) : null}))
+    .sort((x,y)=> (x.d??999)-(y.d??999));
+  const ac = document.getElementById('d_actions_card');
+  if(acts.length){
+    ac.style.display='block';
+    document.getElementById('d_actions').innerHTML = acts.slice(0,6).map(x=>
+      `<div class="drank"><div><b>${esc(x.a.txt)}</b><div style="font-size:.66rem;color:var(--ink-soft)">${esc(x.r.name||'Property')}</div></div>
+       <div style="display:flex;gap:.4rem;align-items:center;flex-shrink:0">
+         ${x.d!=null?`<span class="stage-due ${x.d<0?'late':x.d<=2?'warn':''}">${x.d<0?(-x.d)+'d late':'in '+x.d+'d'}</span>`:''}
+         <button style="border:1.5px solid var(--line);background:#fff;border-radius:8px;width:1.7rem;height:1.7rem;cursor:pointer;font-weight:800" onclick="doneAction('${x.r.id}')">✓</button>
+       </div></div>`).join('');
+  } else ac.style.display='none';
+  const vc = document.getElementById('d_visits_card');
+  if(upcoming.length){
+    vc.style.display='block';
+    document.getElementById('d_visits').innerHTML = upcoming.slice(0,3).map(r=>{
+      const v = fmtVisit(r.visitAt);
+      return `<div class="drank"><div><b>${r.name||'Property'}</b><div style="font-size:.66rem;color:var(--ink-soft)">${v.when}${v.days>=0?' · in '+v.days+'d':''}</div></div>
+        <button style="font-size:.64rem;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:.3rem .55rem;cursor:pointer;font-weight:700" onclick="downloadICS('${r.id}')">📅</button></div>`;
+    }).join('');
+  } else vc.style.display='none';
+  // Best fits ranking: requirements met desc, then cash-left desc
+  const rank = PROPS.map(r=>{
+    const m = computeRec(r, sh);
+    const checks = evalReqs(r, m);
+    const fitN = fitSummary(checks);
+    return {r, m, checks, fit: fitN ? fitN.ok/fitN.total : 0, fitN};
+  }).sort((a,b)=> b.fit - a.fit || b.m.left - a.m.left);
+  document.getElementById('d_rank').innerHTML = rank.length ? rank.map(x=>{
+    const f = x.fitN;
+    return `<div class="drank">
+      <div style="min-width:0">
+        <b>${x.r.shortlisted?'⭐ ':''}${x.r.name||'Property'}</b>
+        ${f?`<span class="fitpill ${f.cls}" style="margin-left:.4rem">${f.ok}/${f.total} criteria</span>`:''}
+        <div style="margin-top:.15rem">${x.checks.filter(c=>!c.ok).map(c=>`<span class="chip no">✗ ${c.txt}</span>`).join('') || (f?'<span class="chip ok">✓ Meets everything</span>':'')}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0"><b style="font-family:'IBM Plex Mono',monospace;font-size:.85rem">${fmt.format(x.m.allin)}</b><div style="font-size:.6rem;color:var(--ink-soft)">all-in/mo</div></div>
+    </div>`;
+  }).join('') : '<div style="font-size:.76rem;color:var(--ink-soft)">Save properties first — they get ranked against your requirements here.</div>';
+  renderDashExtras(sh);
+}
+
+// ================= Property library =================
+const PROP_KEY = 'homeProps_v1';
+const PROP_FIELDS = ['price','dp','rate','term','taxr','ins','hoa','mr','util','pmir','ccpct','year','cmin','cred','incval'];
+let PROPS = [];
+let slotPropId = {p1:null, p2:null, p3:null};
+function loadProps(){ try{ PROPS = JSON.parse(localStorage.getItem(PROP_KEY)) || []; }catch(e){ PROPS = []; } }
+function persistProps(){ try{ localStorage.setItem(PROP_KEY, JSON.stringify(PROPS)); }catch(e){} }
+
+
+function stripTracking(u){
+  try{
+    const x = new URL(u);
+    ['_gl','_ga','gclid','fbclid','utm_source','utm_medium','utm_campaign','utm_term','utm_content','market','mc','cid'].forEach(k=>x.searchParams.delete(k));
+    [...x.searchParams.keys()].forEach(k=>{ if(k.startsWith('_ga') || k.startsWith('utm')) x.searchParams.delete(k); });
+    return x.toString();
+  }catch(e){ return u; }
+}
+
+function cleanUrl(u){
+  if(!u) return '';
+  try{
+    const x = new URL(u);
+    let path = decodeURIComponent(x.pathname).replace(/\/$/,'');
+    if(path.length > 42) path = path.slice(0, 42) + '…';
+    return x.hostname.replace(/^www\./,'') + path;
+  }catch(e){ return u.split('?')[0]; }
+}
+
+function collectProp(p){
+  const rec = {name: document.getElementById('name_'+p).value,
+    url: stripTracking(document.getElementById(p+'_url').value),
+    beds: document.getElementById(p+'_beds').value,
+    yard: document.getElementById(p+'_yard').value,
+    incnote: document.getElementById(p+'_incnote').value,
+    schools: SCHOOLS[p] || null};
+  PROP_FIELDS.forEach(k=>rec[k] = g(p+'_'+k));
+  return rec;
+}
+function upsertProp(p){
+  const data = collectProp(p);
+  if(!data.price) return null;
+  let rec = PROPS.find(x=>x.id===slotPropId[p]);
+  if(!rec && data.url) rec = PROPS.find(x=>x.url && x.url===data.url);
+  if(rec){ if(data.price && data.price!==rec.price) trackPrice(rec, rec.price||data.price); Object.assign(rec, data); trackPrice(rec, rec.price); }
+  else{
+    rec = Object.assign({id:'pr'+Date.now()+Math.floor(Math.random()*999), shortlisted:false, visitAt:'', notes:'', createdAt:Date.now()}, data);
+    trackPrice(rec, rec.price);
+    PROPS.unshift(rec);
+  }
+  slotPropId[p] = rec.id;
+  persistProps();
+  return rec;
+}
+function savePropFromP1(){
+  const rec = upsertProp('p1');
+  const b = document.querySelector('.qsave');
+  if(rec){ b.textContent = '✓ Saved'; setTimeout(()=>b.textContent='💾 Save', 1400); }
+  else { b.textContent = 'Enter a price'; setTimeout(()=>b.textContent='💾 Save', 1400); }
+}
+function loadPropInto(id, p){
+  const rec = PROPS.find(x=>x.id===id); if(!rec) return;
+  document.getElementById('name_'+p).value = rec.name || '';
+  document.getElementById(p+'_url').value = rec.url || '';
+  document.getElementById(p+'_beds').value = rec.beds || '';
+  document.getElementById(p+'_yard').value = rec.yard || '';
+  document.getElementById(p+'_incnote').value = rec.incnote || '';
+  PROP_FIELDS.forEach(k=>{ document.getElementById(p+'_'+k).value = rec[k] || ''; });
+  SCHOOLS[p] = rec.schools || null; renderSchools(p);
+  slotPropId[p] = id;
+  calc();
+}
+// pure math for library cards (mirrors calcProperty)
+function computeRec(rec, sh){
+  const price=rec.price||0, dpPct=rec.dp||20, rate=rec.rate||6.75, term=rec.term||30;
+  const loan = price*(1-dpPct/100);
+  const pi = pmt(rate/100/12, term*12, loan);
+  const tax = price*(rec.taxr||0)/100/12;
+  const pmi = dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0;
+  const total = pi + tax + (rec.mr||0) + (rec.ins||0) + (rec.hoa||0) + pmi;
+  const mnt = price*(sh.maint||0)/100/12;
+  const allin = total + (rec.util||0) + mnt;
+  const cash = Math.max(price*dpPct/100 + loan*(rec.ccpct||0)/100 - (rec.cred||0), 0);
+  const left = (sh.takehome||0) - allin;
+  return {allin, cash, left, total};
+}
+function fmtVisit(v){
+  if(!v) return '';
+  const d = new Date(v), now = new Date();
+  const days = Math.ceil((d - now)/86400000);
+  const when = d.toLocaleString([], {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+  return {when, days, soon: days<=2 && days>=0, past: d < now};
+}
+function renderLib(){
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const list = document.getElementById('libList');
+  if(!PROPS.length){
+    list.innerHTML = '<div class="lib-empty">No saved properties yet.<br><br>Enter a home in the calculator and tap <b>💾 Save</b> — it stays here until you delete it.</div>';
+    return;
+  }
+  const bar = document.getElementById('cmpBar');
+  bar.style.display = CMP.size>=2 ? 'flex' : 'none';
+  document.getElementById('cmpBarTxt').textContent = CMP.size + ' homes selected';
+  const mode = document.getElementById('libSort')?.value || 'default';
+  const metric = r => computeRec(r, sh);
+  const fitScore = r => { const f = fitSummary(evalReqs(r, metric(r))); return f ? f.ok/f.total : -1; };
+  const cmp = {
+    default: (a,b)=>(b.shortlisted-a.shortlisted) || ((a.visitAt&&!b.visitAt)?-1:(!a.visitAt&&b.visitAt)?1:0) || (b.createdAt-a.createdAt),
+    fit:     (a,b)=> fitScore(b)-fitScore(a) || metric(b).left-metric(a).left,
+    price_lo:(a,b)=> (a.price||1e12)-(b.price||1e12),
+    price_hi:(a,b)=> (b.price||0)-(a.price||0),
+    allin:   (a,b)=> metric(a).allin-metric(b).allin,
+    left:    (a,b)=> metric(b).left-metric(a).left,
+    cash:    (a,b)=> metric(a).cash-metric(b).cash,
+    ppsf:    (a,b)=> ((a.sqft>0?a.price/a.sqft:1e9))-((b.sqft>0?b.price/b.sqft:1e9)),
+    school:  (a,b)=> (schoolAvg(b)??-1)-(schoolAvg(a)??-1),
+    commute: (a,b)=> (a.cmin||1e9)-(b.cmin||1e9),
+    rate:    (a,b)=> (a.rate||1e9)-(b.rate||1e9),
+    visit:   (a,b)=> (a.visitAt?new Date(a.visitAt):8.64e15)-(b.visitAt?new Date(b.visitAt):8.64e15),
+    newest:  (a,b)=> (b.createdAt||0)-(a.createdAt||0),
+  };
+  const sorted = [...PROPS].sort(cmp[mode] || cmp.default);
+  list.innerHTML = sorted.map(r=>{
+    const m = computeRec(r, sh);
+    const v = fmtVisit(r.visitAt);
+    const isMobile = window.innerWidth < 700;
+    return `<div class="lib-card ${r.shortlisted?'shortlisted':''}">
+      <div class="lib-top">
+        <div><div class="lib-name">${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
+        <div class="lib-addr" title="${(r.url||'').replace(/"/g,'')}">${cleanUrl(r.url)}</div></div>
+        <div style="display:flex;align-items:center;gap:.15rem;flex-shrink:0">
+          <label style="display:flex;align-items:center;gap:.2rem;font-size:.58rem;font-weight:700;color:var(--ink-soft);cursor:pointer">⚖️<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:.95rem;height:.95rem;accent-color:var(--indigo);margin:0"></label>
+          <button class="lib-star ${r.shortlisted?'on':''}" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
+        </div>
+      </div>
+      ${(()=>{const f=fitSummary(evalReqs(r, m)); return f?`<span class="fitpill ${f.cls}">${f.ok}/${f.total} criteria met</span>`:''})()}
+      ${(r.cred>0||r.incval>0||r.incnote)?`<div style="font-size:.68rem;background:linear-gradient(120deg,#fff7ed,#fef3e2);border:1px solid #fde3b8;color:#92600a;border-radius:8px;padding:.3rem .55rem;margin:.15rem 0 .35rem;font-weight:600">🎁 ${[r.cred>0?fmt.format(r.cred)+' credit at close':null, r.incval>0?fmt.format(r.incval)+' other incentives':null, r.incnote||null].filter(Boolean).join(' · ')}</div>`:''}
+      ${v ? `<div class="lib-visit ${v.soon?'soon':''}">📅 ${v.past?'Visited':'Visiting'} ${v.when}${(!v.past && v.days>=0)?` · in ${v.days}d`:''}</div>` : ''}
+      <div class="lib-nums">
+        <div class="lib-num"><b>${fmt.format(r.price||0)}</b><span>Price</span></div>
+        <div class="lib-num"><b>${fmt.format(m.allin)}</b><span>All-in / mo</span></div>
+        <div class="lib-num ${m.left<0?'neg':''}"><b>${sh.takehome>0?fmt.format(m.left):'—'}</b><span>Left / mo</span></div>
+        <div class="lib-num"><b>${fmt.format(m.cash)}</b><span>Cash to close</span></div>
+      </div>
+      ${photosBlock(r)}
+      ${critBlock(r, m)}
+      ${priceHistList(r)}
+      ${commsBlock(r)}
+      ${renderStages(r)}
+      ${r.nextAction && !r.nextAction.done ? (()=>{
+        const d = r.nextAction.due ? Math.ceil((new Date(r.nextAction.due+'T23:59:00')-Date.now())/86400000) : null;
+        return `<div class="na-chip ${d!=null&&d<0?'late':d!=null&&d<=2?'warn':''}">
+          <span>☑️ ${esc(r.nextAction.txt)}${d!=null?` · ${d<0?(-d)+'d overdue':'due in '+d+'d'}`:''}</span>
+          <button onclick="doneAction('${r.id}')" title="Mark done">✓</button></div>`;})() : ''}
+      <div class="lib-ctl">
+        <label>Next</label>
+        <div style="display:flex;gap:.35rem;min-width:0">
+          <input type="text" class="lib-dt" style="flex:1;font-family:'Archivo',sans-serif" placeholder="e.g. Call listing agent about credits" value="${esc(r.nextAction?.txt||'')}" onchange="setAction('${r.id}', this.value, null)">
+          <input type="date" class="lib-dt" style="width:8.4rem;flex-shrink:0" value="${r.nextAction?.due||''}" onchange="setAction('${r.id}', null, this.value)" title="ETA">
+        </div>
+        <label>Visit</label>
+        <div style="display:flex;gap:.35rem;min-width:0"><input type="datetime-local" class="lib-dt" value="${r.visitAt||''}" onchange="setVisit('${r.id}', this.value)">${r.visitAt?`<button style="font-size:.7rem;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:.3rem .5rem;cursor:pointer;flex-shrink:0" title="Add to calendar" onclick="downloadICS('${r.id}')">📅</button>`:''}</div>
+        <label>Offer</label>
+        <input type="date" class="lib-dt" value="${r.offerDate||''}" onchange="setOffer('${r.id}', this.value)">
+      </div>
+      <textarea class="lib-notes" placeholder="Notes — what you liked, concerns, agent name…" onchange="setNotes('${r.id}', this.value)">${r.notes||''}</textarea>
+      <div class="lib-actions">
+        ${isMobile
+          ? `<button onclick="loadPropInto('${r.id}','p1');closeLib();">Open in calculator</button>`
+          : `<button onclick="loadPropInto('${r.id}','p1');closeLib();">→ Slot 1</button>
+             <button onclick="loadPropInto('${r.id}','p2');closeLib();">→ Slot 2</button>
+             <button onclick="loadPropInto('${r.id}','p3');closeLib();">→ Slot 3</button>`}
+        ${r.url && /^https?:/.test(r.url) ? `<button onclick="window.open('${r.url}','_blank')">Listing ↗</button>` : ''}
+        <button onclick="shareCard('${r.id}')">📤 Share</button>
+        <button class="del" onclick="delProp(this,'${r.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleShort(id){ const r=PROPS.find(x=>x.id===id); if(r){ r.shortlisted=!r.shortlisted; persistProps(); renderLib(); } }
+function setVisit(id,v){ const r=PROPS.find(x=>x.id===id); if(r){ r.visitAt=v; persistProps(); renderLib();
+  if(v && 'Notification' in window && Notification.permission==='default'){ try{ Notification.requestPermission(); }catch(e){} } } }
+function setNotes(id,v){ const r=PROPS.find(x=>x.id===id); if(r){ r.notes=v; persistProps(); } }
+function delProp(btn,id){
+  if(!btn.classList.contains('confirm')){ btn.classList.add('confirm'); btn.textContent='Delete — sure?'; setTimeout(()=>{btn.classList.remove('confirm');btn.textContent='Delete';}, 2600); return; }
+  PROPS = PROPS.filter(x=>x.id!==id);
+  Object.keys(slotPropId).forEach(p=>{ if(slotPropId[p]===id) slotPropId[p]=null; });
+  persistProps(); renderLib();
+}
+function openLib(){ showPane('lib'); }
+function closeLib(){ document.getElementById('libOverlay').classList.remove('open'); }
+function downloadICS(id){
+  const r = PROPS.find(x=>x.id===id); if(!r || !r.visitAt) return;
+  const dt = new Date(r.visitAt);
+  const p = n => String(n).padStart(2,'0');
+  const stamp = d => d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'T'+p(d.getHours())+p(d.getMinutes())+'00';
+  const end = new Date(dt.getTime()+45*60000);
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//HomeCheck//EN','BEGIN:VEVENT',
+    'UID:'+r.id+'@homecheck','DTSTART:'+stamp(dt),'DTEND:'+stamp(end),
+    'SUMMARY:House visit — '+(r.name||'property'),
+    'DESCRIPTION:'+(r.url||'')+(r.notes?'\\n'+r.notes.replace(/\\n/g,' '):''),
+    'LOCATION:'+(r.url||''),
+    'BEGIN:VALARM','TRIGGER:-PT2H','ACTION:DISPLAY','DESCRIPTION:House visit in 2 hours','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].join('\\r\\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], {type:'text/calendar'}));
+  a.download = (r.name||'visit').replace(/[^a-z0-9]+/gi,'-') + '.ics';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function exportPropsCSV(){
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const rows = [['Name','Link/Address','Price','All-in monthly','Left monthly','Cash to close','Incentives','Shortlisted','Visit','Notes']];
+  PROPS.forEach(r=>{ const m=computeRec(r,sh);
+    rows.push([r.name,r.url,r.price,Math.round(m.allin),Math.round(m.left),Math.round(m.cash),r.shortlisted?'yes':'',r.visitAt,(r.notes||'').replace(/\\n/g,' ')]);
+  });
+  const csv = rows.map(row=>row.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(',')).join('\\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'my-properties.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+// visit reminder on open (best-effort, fires when app is opened)
+function checkVisitReminders(){
+  // escrow deadlines within 3 days get surfaced on open
+  const dueSoon = [];
+  PROPS.filter(r=>r.offerDate).forEach(r=>{
+    STAGE_DEFS.forEach(d=>{ const st=r.stages?.[d.key];
+      if(st && !st.done){ const due=stageDue(r,d.key); if(due.days<=3) dueSoon.push(d.label+' ('+(r.name||'property')+') '+(due.late?(-due.days)+'d LATE':'in '+due.days+'d')); }
+    });
+  });
+  if(dueSoon.length) setPStatus('p2', '🏁 Escrow: ' + dueSoon.slice(0,3).join('; '));
+  const lateActs = PROPS.filter(r=>r.nextAction && !r.nextAction.done && r.nextAction.due && new Date(r.nextAction.due+'T23:59:00') < Date.now());
+  if(lateActs.length) setPStatus('p3', '☑️ Overdue: ' + lateActs.slice(0,2).map(r=>r.nextAction.txt+' ('+(r.name||'home')+')').join('; '));
+  const soon = PROPS.filter(r=>{ if(!r.visitAt) return false; const d=new Date(r.visitAt)-Date.now(); return d>0 && d<86400000; });
+  if(!soon.length) return;
+  const msg = soon.map(r=>(r.name||'a property')+' — '+new Date(r.visitAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})).join('; ');
+  if('Notification' in window && Notification.permission==='granted'){ try{ new Notification('🏠 House visit coming up', {body: msg}); }catch(e){} }
+  setPStatus('p1', '📅 Upcoming visit: ' + msg);
+}
+
 // ---- Property count ----
 function pCount(){ return parseInt(document.getElementById('s_pcount').value) || 3; }
 function applyPCount(){
@@ -869,21 +2167,31 @@ function applyPCount(){
 // ---- Persistence: localStorage (best-effort) + JSON export/import ----
 const STORE_KEY = 'homeWorkbook_v1';
 let saveT = null;
+const KEY_STORE = 'homeApiKey_v1';  // stored separately, NEVER included in exports
 function collectState(){
-  const state = {inputs:{}, schools:SCHOOLS};
-  document.querySelectorAll('input[id], select[id]').forEach(el=>{
+  const state = {inputs:{}, schools:SCHOOLS, props:PROPS};
+  document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el=>{
     if(el.type==='file') return;
+    if(el.id==='s_apikey') return;   // the API key never leaves this device
     state.inputs[el.id] = el.value;
   });
   return state;
 }
+function saveApiKey(){
+  try{ localStorage.setItem(KEY_STORE, document.getElementById('s_apikey').value); }catch(e){}
+}
+function loadApiKey(){
+  try{ const k = localStorage.getItem(KEY_STORE); if(k) document.getElementById('s_apikey').value = k; }catch(e){}
+}
 function restoreState(state){
   if(!state) return;
   Object.entries(state.inputs||{}).forEach(([id,v])=>{
+    if(id==='s_apikey') return;  // keys are never accepted from files
     const el = document.getElementById(id);
     if(el) el.value = v;
   });
   if(state.schools) Object.assign(SCHOOLS, state.schools);
+  if(state.props){ PROPS = state.props; persistProps(); }
   P.forEach(renderSchools);
   applyPCount();
 }
@@ -903,7 +2211,7 @@ function loadState(){
   }catch(e){ /* storage unavailable — start fresh */ }
 }
 function clearSaved(){
-  try{ localStorage.removeItem(STORE_KEY); document.getElementById('storageNote').textContent = 'Saved data cleared.'; }catch(e){}
+  try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(KEY_STORE); document.getElementById('s_apikey').value=''; document.getElementById('storageNote').textContent = 'Saved data cleared (including API key).'; }catch(e){}
 }
 function exportState(){
   const blob = new Blob([JSON.stringify(collectState(), null, 2)], {type:'application/json'});
@@ -1334,8 +2642,11 @@ function applyImport(p){
   else if(d.annual_tax_amount && d.price){ set(p+'_taxr', +(d.annual_tax_amount/d.price*100).toFixed(2)); filled.push('tax rate'); }
   if(d.insurance_monthly_estimate){ set(p+'_ins', d.insurance_monthly_estimate); filled.push('insurance est.'); }
   if(d.commute_minutes_oneway){ set(p+'_cmin', d.commute_minutes_oneway); filled.push('commute est.'); }
+  if(d.seller_credit){ set(p+'_cred', d.seller_credit); filled.push('seller credit'); }
+  if(d.incentives){ document.getElementById(p+'_incnote').value = d.incentives; filled.push('incentives'); }
   PENDING[p] = null;
   calc();
+  upsertProp(p);  // an imported listing is a property worth keeping
 }
 function undoImport(p){
   const u = UNDO[p]; if(!u) return;
@@ -1401,7 +2712,7 @@ async function importFor(p, input){
   const isUrl = /^https?:\/\/\S+$/.test(input);
   setPStatus(p, (isUrl ? 'Looking up' : 'Parsing') + ' ' + p.replace('p','Property ') + ' — usually 10–30s…', true);
 
-  const schema = '{"address": string|null, "price": number|null, "sqft": number|null, "beds_layout": string|null, "year_built": number|null, "hoa_monthly": number|null, "mello_roos_monthly": number|null, "property_tax_rate_pct": number|null, "annual_tax_amount": number|null, "schools": [{"name": string, "type": string, "rating": number|null}]|null, "yard_lot": string|null, "insurance_monthly_estimate": number|null, "commute_minutes_oneway": number|null}';
+  const schema = '{"address": string|null, "price": number|null, "sqft": number|null, "beds_layout": string|null, "year_built": number|null, "hoa_monthly": number|null, "mello_roos_monthly": number|null, "property_tax_rate_pct": number|null, "annual_tax_amount": number|null, "schools": [{"name": string, "type": string, "rating": number|null}]|null, "yard_lot": string|null, "insurance_monthly_estimate": number|null, "incentives": string|null, "seller_credit": number|null, "commute_minutes_oneway": number|null}';
   const rules = 'CRITICAL ACCURACY RULES: (1) Extract ONLY from the exact listing at this URL/address — if search results are about a different address, a similar home, or you cannot confirm the address matches, return null for every field. (2) price = the CURRENT asking/list price only. NEVER use a Zestimate, estimated value, prior sold price, price history, or nearby-home prices. If the current list price is not clearly visible, price = null. (3) Numbers only for numeric fields (no $ or commas). beds_layout like "4 bed / 3 bath". schools = schools shown on the listing with GreatSchools-style 1-10 rating or null. yard_lot = lot size + outdoor features. property_tax_rate_pct = effective annual rate from the tax history if derivable, else null. Include the exact address you matched in the address field. commute_minutes_oneway = typical off-peak driving time in minutes from the listing address to OFFICE_ADDRESS (a realistic route estimate is acceptable for this field only; null if the listing address is unknown). Never guess any other value.';
   const office = document.getElementById('s_workaddr').value.trim() || 'the user office (not set)';
   const rulesFinal = rules.replace('OFFICE_ADDRESS', office);
@@ -1467,6 +2778,7 @@ document.addEventListener('keydown', function(e){
     document.getElementById('analysisOverlay').classList.remove('open');
     document.getElementById('settingsOverlay').classList.remove('open');
     document.getElementById('schoolOverlay').classList.remove('open');
+    if(window.innerWidth >= 700 && currentPane!=='work') showPane('work');
     return;
   }
   if(e.key !== 'Enter') return;
@@ -1495,9 +2807,26 @@ function initSections(){
     });
   });
 }
+
+let lastMobile = window.innerWidth < 700;
+window.addEventListener('resize', ()=>{
+  const m = window.innerWidth < 700;
+  if(m !== lastMobile){
+    lastMobile = m;
+    if(document.getElementById('libOverlay').classList.contains('open')) renderLib();
+    if(document.getElementById('dashOverlay').classList.contains('open')) renderDash();
+  }
+});
+
+
+// PWA: service worker for offline support & Play Store packaging
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+
 window.onload = function(){
-  initSections(); loadState(); applyPCount(); calc();
-  if(window.innerWidth < 700) openQuick();
+  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); applyPCount(); calc(); checkVisitReminders();
+  showPane('dash');
 };
 </script>
 </body>

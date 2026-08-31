@@ -335,6 +335,24 @@ html.is-mobile .smodal h3{font-size:15px}
 html.is-mobile .req-grid{gap:10px}
 html.is-mobile .databtn{font-size:14.5px;padding:11px 14px}
 
+
+/* Native-feel polish */
+html.is-mobile .qhead{padding:12px 14px;margin:-12px -12px 12px}
+html.is-mobile .qhead b{font-size:18px;letter-spacing:-.01em}
+html.is-mobile .dstat{padding:12px 4px}
+html.is-mobile .dstat b{font-size:24px;font-family:'Archivo',sans-serif;font-weight:800}
+html.is-mobile .dstat span{font-size:10px}
+html.is-mobile .qcard{box-shadow:0 1px 3px rgba(28,37,64,.07);border:1px solid rgba(28,37,64,.05)}
+html.is-mobile .qgroup{font-size:12px;color:#7b8794}
+html.is-mobile .mstat{font-size:14.5px}
+html.is-mobile .mstat b{font-size:15px}
+html.is-mobile .step-hint{font-size:14.5px}
+html.is-mobile .aibtn{font-size:16px;padding:14px;border-radius:12px;box-shadow:none}
+html.is-mobile .qin input,html.is-mobile .qin select{padding:11px 10px}
+html.is-mobile .tabbar{box-shadow:0 -1px 0 rgba(28,37,64,.08)}
+html.is-mobile .tabbtn{font-size:10.5px}
+html.is-mobile .tabbtn i{font-size:20px}
+html.is-mobile .qcard{margin-bottom:12px}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1091,6 +1109,8 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="sgrid">
       <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="saveApiKey()" autocomplete="off">
 <div id="keyStatus" style="font-size:.68rem;margin-top:.3rem"></div>
+<input type="text" class="free" id="s_wsid" placeholder="Workspace ID (only if your key requires it)" oninput="scheduleSave()" autocomplete="off" style="margin-top:.45rem">
+<span class="fhint">If AI calls fail with "workspace-id is required": console.anthropic.com → Settings → Workspaces → copy the ID (starts with wrkspc_). Keys created inside a specific workspace usually don't need this.</span>
 <button type="button" class="databtn" style="margin-top:.35rem" onclick="removeApiKey()">Remove key from this device</button><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only on this device, masked, and excluded from all exports and backups — other visitors to this site can never see it. Don't enter it on shared devices. Without a key, paste listing text instead: it parses instantly on-device.</span></label>
     </div>
     <h3>Data</h3>
@@ -2455,7 +2475,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v11 · zoom ' + (document.documentElement.style.zoom||'1') + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v12 · zoom ' + (document.documentElement.style.zoom||'1') + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -2792,6 +2812,8 @@ function apiHeaders(){
     h['x-api-key'] = k;
     h['anthropic-version'] = '2023-06-01';
     h['anthropic-dangerous-direct-browser-access'] = 'true';
+    const ws = (document.getElementById('s_wsid')?.value || '').trim();
+    if(ws) h['anthropic-workspace-id'] = ws;
   }
   return h;
 }

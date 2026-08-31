@@ -362,8 +362,8 @@ html.is-mobile .qwrap{padding-bottom:110px}
 html.is-mobile .qwrap::after{content:'';display:block;height:env(safe-area-inset-bottom)}
 
 /* Modals become full-screen pages on the phone */
-html.is-mobile #settingsOverlay{padding:0;align-items:stretch}
-html.is-mobile #settingsOverlay .smodal{max-width:none;width:100%;max-height:none;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 14px 140px}
+html.is-mobile #settingsOverlay{padding:0;align-items:stretch;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+html.is-mobile #settingsOverlay .smodal{max-width:none;width:100%;max-height:none;height:auto;min-height:100vh;border-radius:0;overflow:visible;padding:14px 14px 140px;box-shadow:none}
 html.is-mobile #schoolOverlay .schmodal{max-width:none;width:100%;max-height:100dvh;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 120px}
 html.is-mobile #analysisOverlay .amodal{max-width:none;width:100%;max-height:100dvh;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 120px}
 html.is-mobile .set-topbar{position:sticky;top:-14px;margin:-14px -14px 12px;background:var(--grad-hero);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:3}
@@ -2420,8 +2420,13 @@ function collectState(){
   });
   return state;
 }
+function cleanKey(v){
+  // strip everything outside printable ASCII (kills …, smart quotes, zero-width chars, newlines)
+  return (v||'').replace(/[^\x21-\x7E]/g, '');
+}
 function saveApiKey(){
-  let v = document.getElementById('s_apikey').value.trim();
+  let v = cleanKey(document.getElementById('s_apikey').value);
+  document.getElementById('s_apikey').value = v;
   if(/^wrkspc_/i.test(v)){
     const ws = document.getElementById('s_wsid'); if(ws){ ws.value = v; scheduleSave(); }
     document.getElementById('s_apikey').value = '';
@@ -2437,7 +2442,14 @@ function removeApiKey(){
   keyStatus();
 }
 function loadApiKey(){
-  try{ const k = localStorage.getItem(KEY_STORE); if(k) document.getElementById('s_apikey').value = k; }catch(e){}
+  try{
+    let k = localStorage.getItem(KEY_STORE);
+    if(k){
+      const c = cleanKey(k);
+      if(c !== k){ localStorage.setItem(KEY_STORE, c); k = c; }
+      document.getElementById('s_apikey').value = k;
+    }
+  }catch(e){}
   keyStatus();
 }
 
@@ -2491,8 +2503,11 @@ function hintFor(status, msg){
 function keyStatus(){
   const el = document.getElementById('keyStatus'); if(!el) return;
   let k = ''; try{ k = localStorage.getItem(KEY_STORE) || ''; }catch(e){}
+  const suspicious = k && (k.length < 40 || /\.\.\.$/.test(k));
   el.innerHTML = k
-    ? '<span style="color:var(--win-ink);font-weight:700">✓ Key saved on this device</span> (ends ···' + k.slice(-4) + ')'
+    ? (suspicious
+        ? '<span style="color:var(--warn-ink);font-weight:700">⚠ Key looks incomplete</span> (' + k.length + ' chars). Re-copy the FULL key using the copy button at console.anthropic.com — never from a screenshot or truncated text.'
+        : '<span style="color:var(--win-ink);font-weight:700">✓ Key saved on this device</span> (ends ···' + k.slice(-4) + ')')
     : '<span style="color:var(--warn-ink);font-weight:700">No key saved.</span> AI features are off outside Claude.';
 }
 function restoreState(state){
@@ -2548,7 +2563,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v15 · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v16 · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -2880,12 +2895,12 @@ async function fetchSchools(p, address){
 
 function apiHeaders(){
   const h = {'Content-Type':'application/json'};
-  const k = document.getElementById('s_apikey').value.trim();
+  const k = cleanKey(document.getElementById('s_apikey').value);
   if(k){
     h['x-api-key'] = k;
     h['anthropic-version'] = '2023-06-01';
     h['anthropic-dangerous-direct-browser-access'] = 'true';
-    const ws = (document.getElementById('s_wsid')?.value || '').trim();
+    const ws = cleanKey(document.getElementById('s_wsid')?.value || '');
     if(ws) h['anthropic-workspace-id'] = ws;
   }
   return h;

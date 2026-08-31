@@ -176,9 +176,7 @@ body{padding-bottom:4.5rem}
 .step-hint{display:flex;gap:.5rem;align-items:flex-start;padding:.38rem 0;border-bottom:1px dashed var(--line);font-size:.76rem;line-height:1.4}
 .step-hint:last-child{border-bottom:none}
 .step-hint i{font-style:normal;flex-shrink:0}
-.ck-row{display:flex;align-items:center;gap:.55rem;padding:.34rem 0;font-size:.78rem;border-bottom:1px dashed var(--line)}
 .ck-row:last-child{border-bottom:none}
-.ck-row input{width:1.05rem;height:1.05rem;accent-color:#4f46e5;flex-shrink:0;margin:0}
 .ck-row.done span{opacity:.5;text-decoration:line-through}
 .mstat{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px dashed var(--line);font-size:.76rem}
 .mstat:last-child{border-bottom:none}
@@ -376,6 +374,39 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 
 .portalbtn{font-family:inherit;font-size:.82rem;font-weight:800;border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:.65rem .3rem;border-radius:11px;cursor:pointer}
 .portalbtn:active{background:var(--calc)}
+
+.lib-card.slim{padding:0;overflow:hidden}
+.lib-rowbtn{display:flex;width:100%;align-items:center;gap:.5rem;background:none;border:none;font-family:inherit;text-align:left;padding:.8rem .85rem;cursor:pointer}
+.lr-main{flex:1;min-width:0}
+.lr-name{font-size:1rem;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-sub{font-size:.78rem;color:var(--ink-soft);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-sub .lr-fit-good{color:var(--win-ink);font-weight:700}
+.lr-sub .lr-fit-bad{color:var(--warn-ink);font-weight:700}
+.lr-sub .lr-fit-mid{color:#92600a;font-weight:700}
+.lr-chev{color:var(--ink-soft);font-size:1rem;flex-shrink:0}
+.ck-row{display:flex;align-items:flex-start;gap:.6rem;padding:.55rem 0;font-size:1rem;border-bottom:1px dashed var(--line);line-height:1.4}
+.ck-row input{width:1.3rem;height:1.3rem;accent-color:#4f46e5;flex-shrink:0;margin:.1rem 0 0}
+.ck-row span{flex:1;min-width:0}
+
+.offer-slider{width:100%;margin:.5rem 0 .3rem;accent-color:var(--indigo);height:1.6rem}
+.wi-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.wi-stat{background:var(--calc);border-radius:10px;padding:.45rem .55rem}
+.wi-stat b{display:block;font-family:'IBM Plex Mono',monospace;font-size:.95rem}
+.wi-stat span{font-size:.6rem;color:var(--ink-soft)}
+.wi-stat.neg b{color:var(--warn-ink)}
+.flex-tbl{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:.2rem}
+.flex-tbl th{text-align:left;font-size:.62rem;color:var(--ink-soft);padding:.25rem .3rem}
+.flex-tbl td{border-top:1px dashed var(--line);padding:.4rem .3rem;font-family:'IBM Plex Mono',monospace}
+.flex-tbl td:first-child{font-family:'Archivo',sans-serif;font-weight:600}
+.flex-tbl td.win{background:var(--win);color:var(--win-ink);font-weight:700;border-radius:6px}
+.insp-row{display:flex;width:100%;align-items:center;gap:.55rem;background:none;border:none;border-bottom:1px dashed var(--line);font-family:inherit;font-size:.82rem;text-align:left;padding:.5rem 0;cursor:pointer;color:var(--ink)}
+.insp-row:last-of-type{border-bottom:none}
+.insp-row .insp-mark{flex-shrink:0;width:1.4rem;text-align:center}
+.insp-row.warn span:last-child{color:#92600a;font-weight:600}
+.insp-row.bad span:last-child{color:var(--warn-ink);font-weight:600}
+.micbtn{border:1.5px solid var(--line);background:#fff;border-radius:10px;width:2.6rem;flex-shrink:0;font-size:1.1rem;cursor:pointer}
+.micbtn.rec{background:var(--warn);border-color:var(--warn-ink);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.55}}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1018,11 +1049,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <div class="qgroup" style="margin-top:0">🧭 Next steps</div>
       <div id="d_steps"></div>
     </div>
-    <div class="qcard">
-      <div class="qgroup" style="margin-top:0">🤖 AI coach</div>
-      <div id="d_coach"><div style="font-size:.74rem;color:var(--ink-soft)">Get personalized advice from everything the app knows — your requirements, saved homes, budget, and where you are in the process.</div></div>
-      <button class="aibtn" id="coachBtn" onclick="runCoach()">Ask the AI coach</button>
-    </div>
+
     <div class="qcard">
       <div class="qgroup" style="margin-top:0">🔍 Find homes</div>
       <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
@@ -1036,7 +1063,6 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <button class="portalbtn" onclick="openPortal('homes')">Homes</button>
       </div>
       <div id="d_find"></div>
-      <button class="aibtn" id="findBtn" onclick="runFinder()" style="background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none;margin-top:.55rem">🤖 AI search instead (~5¢)</button>
     </div>
     <div class="qcard">
       <div class="qgroup" style="margin-top:0">🏆 Best fits</div>
@@ -1059,6 +1085,14 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <div id="journeyOverlay" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:64;overflow-y:auto">
   <div class="qwrap">
     <div class="qhead"><b>🧭 Journey</b><div style="display:flex;gap:.4rem"><button onclick="openSettings()">&#9881;</button></div></div>
+    <div class="qcard">
+      <div class="qgroup" style="margin-top:0">📄 Pre-approval</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <label style="font-size:.68rem;font-weight:700;color:var(--ink-soft);flex-shrink:0">Letter dated</label>
+        <input type="date" class="lib-dt" id="j_preapp" style="flex:1" onchange="scheduleSave();renderPreapp()">
+      </div>
+      <div id="j_preapp_out" style="font-size:.78rem;margin-top:.4rem"></div>
+    </div>
     <div class="qcard">
       <div class="qgroup" style="margin-top:0">✅ First-time buyer checklist</div>
       <div id="d_check"></div>
@@ -1485,6 +1519,150 @@ function updateQuick(){
 // ================= Photos, price history, comms, compare, criteria detail =================
 const esc = t => String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
+
+// ===== Offer what-if slider =====
+function computeRecAt(r, sh, price){ return computeRec(Object.assign({}, r, {price}), sh); }
+function offerSliderBlock(r, m){
+  if(!(r.price>0)) return '';
+  const cur = r.whatIf || r.price;
+  return `<details class="lib-details" ${r.whatIf?'open':''}><summary>🎚 Try an offer</summary>
+    <input type="range" class="offer-slider" min="${Math.round(r.price*0.85)}" max="${Math.round(r.price*1.05)}" step="1000" value="${cur}"
+      oninput="whatIf('${r.id}', +this.value)">
+    <div class="wi-grid" id="wi_${r.id}">${whatIfRow(r, cur)}</div>
+  </details>`;
+}
+function whatIfRow(r, offer){
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const w = computeRecAt(r, sh, offer);
+  const base = computeRec(r, sh);
+  const dAll = w.allin - base.allin, dCash = w.cash - base.cash;
+  const sign = x => (x>0?'+':'') + fmt.format(x);
+  return `<div class="wi-stat"><b>${fmt.format(offer)}</b><span>your offer (${offer<r.price?'-':''}${fmt.format(Math.abs(offer-r.price))} vs ask)</span></div>
+    <div class="wi-stat"><b>${fmt.format(w.allin)}</b><span>all-in / mo (${sign(dAll)})</span></div>
+    <div class="wi-stat"><b>${fmt.format(w.cash)}</b><span>cash to close (${sign(dCash)})</span></div>
+    <div class="wi-stat ${w.left<0?'neg':''}"><b>${g('takehome')>0?fmt.format(w.left):'—'}</b><span>left / mo</span></div>`;
+}
+function whatIf(id, offer){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.whatIf = offer;               // remembered, but never changes the real numbers
+  persistProps();
+  const el = document.getElementById('wi_'+id);
+  if(el) el.innerHTML = whatIfRow(r, offer);   // live update, no re-render (slider keeps focus)
+}
+
+// ===== Incentive comparator: same dollars, three shapes =====
+function incentiveCompareBlock(r){
+  if(!(r.price>0)) return '';
+  const flex = r.flexAmt || r.cred || r.incval || 20000;
+  return `<details class="lib-details"><summary>🎁 Best use of incentive $</summary>
+    <div style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0">
+      <label style="font-size:.7rem;font-weight:700;color:var(--ink-soft);flex-shrink:0">Incentive amount</label>
+      <div class="qin" style="flex:1"><span>$</span><input type="number" inputmode="numeric" value="${flex}" onchange="setFlex('${r.id}', +this.value)"></div>
+    </div>
+    <div id="flex_${r.id}">${flexTable(r, flex)}</div>
+  </details>`;
+}
+function flexTable(r, X){
+  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const base = computeRec(r, sh);
+  const loan = r.price * (1 - (r.dp||20)/100);
+  // price cut
+  const pc = computeRecAt(r, sh, r.price - X);
+  // closing credit
+  const ccCash = Math.max(base.cash - X, 0);
+  // permanent buydown: 1 point (1% of loan) buys ~0.25% off the rate
+  const points = X / loan * 100;
+  const rateNew = Math.max((r.rate||6.75) - 0.25*points, (r.rate||6.75) - 1.75);
+  const bd = computeRec(Object.assign({}, r, {rate: rateNew}), sh);
+  const rows = [
+    ['Price cut', fmt.format(pc.allin)+'/mo', fmt.format(pc.cash)],
+    ['Closing credit', fmt.format(base.allin)+'/mo', fmt.format(ccCash)],
+    ['Rate buydown → '+rateNew.toFixed(2)+'%', fmt.format(bd.allin)+'/mo', fmt.format(bd.cash)],
+  ];
+  const monthlies = [pc.allin, base.allin, bd.allin];
+  const cashes = [pc.cash, ccCash, bd.cash];
+  const bestM = Math.min(...monthlies), bestC = Math.min(...cashes);
+  return `<table class="flex-tbl"><tr><th></th><th>Monthly</th><th>Cash to close</th></tr>
+    ${rows.map((row,i)=>`<tr><td>${row[0]}</td><td class="${monthlies[i]===bestM?'win':''}">${row[1]}</td><td class="${cashes[i]===bestC?'win':''}">${row[2]}</td></tr>`).join('')}
+  </table>
+  <div style="font-size:.62rem;color:var(--ink-soft);margin-top:.35rem">Same ${fmt.format(X)}, three shapes. Buydown uses the ~0.25%-per-point rule of thumb — get the lender's real quote before deciding. Ask the builder which shapes they allow.</div>`;
+}
+function setFlex(id, v){
+  const r = PROPS.find(x=>x.id===id); if(!r || !(v>0)) return;
+  r.flexAmt = v; persistProps();
+  const el = document.getElementById('flex_'+id);
+  if(el) el.innerHTML = flexTable(r, v);
+}
+
+// ===== Visit inspection checklist =====
+const INSPECT_ITEMS = ['Water pressure (run 2 taps + flush)','Electrical panel age & brand','HVAC age & condition','Roof condition / age','Windows & seals','Signs of water damage / smell','Noise level (street, neighbors, flight path)','Cell signal in every room','Yard drainage & fencing','Parking & street at rush hour'];
+function inspectBlock(r){
+  const st = r.inspect || {};
+  const done = Object.keys(st).length;
+  const flags = INSPECT_ITEMS.filter((_,i)=>st[i]==='warn'||st[i]==='bad');
+  return `<details class="lib-details"><summary>🔍 Visit inspection (${done}/${INSPECT_ITEMS.length}${flags.length?' · '+flags.length+'⚠':''})</summary>
+    ${INSPECT_ITEMS.map((t,i)=>{
+      const v = st[i]||'';
+      return `<button class="insp-row ${v}" onclick="cycleInspect('${r.id}',${i})"><span class="insp-mark">${v==='ok'?'✅':v==='warn'?'⚠️':v==='bad'?'❌':'○'}</span><span>${t}</span></button>`;
+    }).join('')}
+    ${flags.length?`<div style="font-size:.66rem;color:#92600a;font-weight:600;margin-top:.4rem">⚠ ${flags.length} flag${flags.length>1?'s':''} — these are your negotiation notes.</div>`:''}
+  </details>`;
+}
+function cycleInspect(id, i){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.inspect = r.inspect || {};
+  const order = ['', 'ok', 'warn', 'bad'];
+  const cur = order.indexOf(r.inspect[i]||'');
+  const next = order[(cur+1) % order.length];
+  if(next) r.inspect[i] = next; else delete r.inspect[i];
+  persistProps(); renderLib();
+}
+
+// ===== California closing-cost reality =====
+function caCostsBlock(r, m){
+  if(!(r.price>0)) return '';
+  const p = r.price;
+  const escrow = 250 + p*0.002, title = p*0.0035 + 500, transfer = p/1000*1.10, lender = 1800;
+  const prepTax = p*(r.taxr||1.15)/100/2, prepIns = (r.ins||150)*12;
+  const total = escrow+title+transfer+lender+prepTax+prepIns;
+  const row = (l,v)=>`<div class="mstat"><span>${l}</span><b>${fmt.format(v)}</b></div>`;
+  return `<details class="lib-details"><summary>🐻 CA closing costs (realistic)</summary>
+    ${row('Escrow fee', escrow)}${row('Title insurance', title)}${row('County transfer tax', transfer)}${row('Lender / underwriting', lender)}${row('Prepaid property tax (6 mo)', prepTax)}${row('Prepaid insurance (1 yr)', prepIns)}
+    <div class="mstat" style="font-weight:800"><span>Estimated total</span><b>${fmt.format(total)}</b></div>
+    <div style="font-size:.64rem;color:#92600a;font-weight:600;margin-top:.4rem;line-height:1.5">⚠ Supplemental tax: CA reassesses at YOUR price after closing — expect a one-time catch-up bill (often $2,000–$8,000) a few months in. Budget for it; it surprises almost every first-time buyer.</div>
+  </details>`;
+}
+
+// ===== Duplicate detection on save =====
+function findDuplicate(data){
+  const u = cleanUrl(data.url||'');
+  return PROPS.find(p => (u && cleanUrl(p.url) === u) || (data.name && p.name === data.name));
+}
+
+// ===== Voice notes =====
+let activeRec = null;
+function voiceNote(id){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = document.getElementById('mic_'+id);
+  if(!SR){ setPStatus('p1', 'Voice input isn\'t supported in this browser — type the note instead.'); return; }
+  if(activeRec){ activeRec.stop(); return; }
+  const rec = new SR();
+  rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = true;
+  activeRec = rec;
+  if(btn) btn.classList.add('rec');
+  rec.onresult = e => {
+    const txt = [...e.results].slice(e.resultIndex).map(x=>x[0].transcript).join(' ').trim();
+    if(!txt) return;
+    const r = PROPS.find(x=>x.id===id); if(!r) return;
+    r.notes = ((r.notes||'') + ' ' + txt).trim();
+    persistProps();
+    const ta = btn?.parentElement?.querySelector('textarea'); if(ta) ta.value = r.notes;
+  };
+  rec.onend = ()=>{ activeRec = null; if(btn) btn.classList.remove('rec'); };
+  rec.onerror = ()=>{ activeRec = null; if(btn) btn.classList.remove('rec'); };
+  rec.start();
+}
+
 // ---- Photos (downscaled thumbnails in local storage; capped to protect quota) ----
 let pvCtx = null;
 async function addPhoto(id, inp){
@@ -1712,6 +1890,8 @@ async function shareCard(id){
 
 // ---- Compare picker ----
 let CMP = new Set();
+let expandedId = null;
+function toggleExpand(id){ expandedId = (expandedId === id) ? null : id; renderLib(); }
 function toggleCmp(id, on){
   if(on){ if(CMP.size>=3){ alert('Compare up to 3 homes.'); renderLib(); return; } CMP.add(id); }
   else CMP.delete(id);
@@ -1824,29 +2004,6 @@ function aiAvailable(){
   const hosted = /github\.io|githubusercontent/.test(location.hostname) || location.protocol==='file:';
   return hasKey || !hosted;
 }
-function buildAIContext(){
-  const sh = {takehome:g('takehome'), maint:g('maint'), horizon:g('horizon')};
-  const reqs = {}; REQ_IDS.forEach(id=>{ const v=document.getElementById(id).value; if(v) reqs[id.replace('rq_','')] = v; });
-  const homes = PROPS.slice(0,12).map(r=>{
-    const m = computeRec(r, sh);
-    const checks = evalReqs(r, m);
-    return {name:r.name, price:r.price, allin:Math.round(m.allin), left:Math.round(m.left), cash:Math.round(m.cash),
-      shortlisted:!!r.shortlisted, visited:!!(r.visitAt && new Date(r.visitAt)<Date.now()),
-      visitPlanned:!!(r.visitAt && new Date(r.visitAt)>=Date.now()),
-      inEscrow:!!r.offerDate, failedCriteria:checks.filter(c=>!c.ok).map(c=>c.txt),
-      incentives:[r.cred>0?('$'+r.cred+' credit'):null, r.incnote||null].filter(Boolean).join('; ')||null,
-      notes:(r.notes||'').slice(0,200)||null, commuteMin:r.cmin||null, year:r.year||null};
-  });
-  const ckDone = CK_ITEMS.filter((_,i)=>CK[i]);
-  return {
-    monthly_takehome: sh.takehome||null,
-    structured_requirements: reqs,
-    detailed_requirements: document.getElementById('s_reqtext').value.trim()||null,
-    office_address: document.getElementById('s_workaddr').value.trim()||null,
-    saved_homes: homes,
-    checklist_done: ckDone, checklist_pending: CK_ITEMS.filter((_,i)=>!CK[i]),
-  };
-}
 
 // Extract JSON from a model reply, repairing truncation (cut-off arrays/objects)
 function parseAIJson(text){
@@ -1882,56 +2039,7 @@ function parseAIJson(text){
 }
 
 
-// ---- AI cost tracking (Sonnet: $3/M in, $15/M out; search: $0.01 each) ----
-const SPEND_KEY = 'homeSpend_v1';
-function recordCost(usage, model){
-  if(!usage) return null;
-  const haiku = !model || /haiku/.test(model);
-  const inR = haiku ? 1e-6 : 3e-6, outR = haiku ? 5e-6 : 15e-6;
-  const searches = usage.server_tool_use?.web_search_requests || 0;
-  const cost = (usage.input_tokens||0)*inR + (usage.output_tokens||0)*outR + searches*0.01;
-  let total = 0; try{ total = parseFloat(localStorage.getItem(SPEND_KEY))||0; }catch(e){}
-  total += cost;
-  try{ localStorage.setItem(SPEND_KEY, String(total)); }catch(e){}
-  return {cost, total, searches};
-}
-function costLine(c){
-  if(!c) return '';
-  return '<div style="font-size:.6rem;color:var(--ink-soft);margin-top:.45rem">This run: ~$' + c.cost.toFixed(2)
-    + (c.searches?' ('+c.searches+' searches)':'') + ' · session total: ~$' + c.total.toFixed(2) + '</div>';
-}
 
-async function callAI(messages, useSearch, model){
-  const body = {model: model || 'claude-haiku-4-5-20251001', max_tokens: useSearch ? 1500 : 1200, messages};
-  if(useSearch) body.tools = [{type:'web_search_20250305', name:'web_search', max_uses: 2}];
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:apiHeaders(), body:JSON.stringify(body)});
-  if(!resp.ok){ let d=''; try{const e=await resp.json(); d=e?.error?.message||'';}catch(_){}
-    throw new Error('API '+resp.status+(d?': '+d:'')); }
-  const data = await resp.json();
-  const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  const parsed = parseAIJson(text);
-  parsed.__cost = recordCost(data.usage, body.model);
-  return parsed;
-}
-async function runCoach(){
-  const el = document.getElementById('d_coach'), btn = document.getElementById('coachBtn');
-  if(!aiAvailable()){ el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Needs the AI: add your API key in ⚙ (Phone / standalone use).</div>'; return; }
-  btn.disabled = true; el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">Thinking through your search… ~15s</div>';
-  try{
-    const ctx = buildAIContext();
-    const d = await callAI([{role:'user', content:
-      'You are a pragmatic first-time-home-buyer coach. Here is the buyer\'s full situation as JSON:\n'+JSON.stringify(ctx)+
-      '\nRespond with ONLY JSON, no fences: {"next_steps":[string], "missing":[string], "warnings":[string]}\n'+
-      'next_steps: 3-5 specific, prioritized actions based on THEIR data (name specific homes where relevant). missing: information gaps in their saved data or requirements that would change decisions. warnings: honest risks they may not see (budget stretch, criteria conflicts, escrow deadlines). Be concrete, use their numbers, no generic advice.'}], false);
-    el.innerHTML =
-      (d.next_steps?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.2rem 0 .3rem">Do next</div><div class="ai-list">'+d.next_steps.map(x=>'<div>👉 <div>'+x+'</div></div>').join('')+'</div>':'')+
-      (d.missing?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">You\'re missing</div><div class="ai-list">'+d.missing.map(x=>'<div>🔍 <div>'+x+'</div></div>').join('')+'</div>':'')+
-      (d.warnings?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">Watch out</div><div class="ai-list">'+d.warnings.map(x=>'<div>⚠️ <div>'+x+'</div></div>').join('')+'</div>':'')
-      + costLine(d.__cost);
-  }catch(err){
-    el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Coach failed: '+(err.message||'error')+'</div>';
-  }finally{ btn.disabled = false; }
-}
 
 function openPortal(site){
   const area = (document.getElementById('d_area').value || '').trim() || 'Costa Mesa CA';
@@ -1956,48 +2064,6 @@ function openPortal(site){
   window.open(url, '_blank');
 }
 
-async function runFinder(){
-  const el = document.getElementById('d_find'), btn = document.getElementById('findBtn');
-  if(!aiAvailable()){ el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Needs the AI: add your API key in ⚙ (Phone / standalone use).</div>'; return; }
-  btn.disabled = true; el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">Searching current listings for you… 20–40s</div>';
-  try{
-    const ctx = buildAIContext();
-    const d = await callAI([{role:'user', content:
-      'Search the web for CURRENT for-sale home listings matching this buyer. Buyer profile JSON:\n'+JSON.stringify({
-        budget_max: ctx.structured_requirements.price || null,
-        monthly_takehome: ctx.monthly_takehome,
-        requirements: ctx.structured_requirements,
-        detailed_requirements: ctx.detailed_requirements,
-        near: ctx.office_address || 'Orange County, CA',
-        already_saved: ctx.saved_homes.map(h=>h.name)
-      })+
-      '\nFind 3-5 real, currently listed homes that fit (exclude ones already_saved). Respond with ONLY JSON, no fences: {"listings":[{"name": string (street address), "area": string, "price": number, "url": string|null, "why": string (1-2 sentences tied to THEIR requirements)}]}\nOnly include listings you actually found in search results with real prices. Never invent listings or URLs.'}], true, 'claude-haiku-4-5-20251001');
-    if(!d.listings?.length){ el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">No solid matches found this pass — try broadening requirements or run it again (listings change daily).</div>'; }
-    else{
-      window._found = d.listings;
-      el.innerHTML = d.listings.map((L,i)=>
-        `<div class="find-card"><b>${L.name}</b> <span style="font-size:.68rem;color:var(--ink-soft)">· ${L.area||''}</span>
-         <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;margin:.15rem 0">${L.price?fmt.format(L.price):''}</div>
-         <div class="fc-why">${L.why||''}</div>
-         <div class="fc-row">
-           <button onclick="saveFound(${i})">💾 Save to my homes</button>
-           ${L.url?`<a href="${L.url}" target="_blank">Listing ↗</a>`:''}
-         </div></div>`).join('')
-        + '<div style="font-size:.62rem;color:var(--ink-soft);margin-top:.4rem">Web results — verify price and availability on the listing before planning a visit.</div>'
-        + costLine(d.__cost);
-    }
-  }catch(err){
-    el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Search failed: '+(err.message||'error')+'</div>';
-  }finally{ btn.disabled = false; }
-}
-function saveFound(i){
-  const L = (window._found||[])[i]; if(!L) return;
-  PROPS.unshift({id:'pr'+Date.now()+i, name:L.name, url:L.url||'', price:L.price||0,
-    dp:20, rate:6.75, term:30, taxr:1.15, ccpct:2.5, pmir:0.5,
-    shortlisted:false, visitAt:'', notes:'Found by AI market search: '+(L.why||''), createdAt:Date.now()});
-  persistProps(); renderDash();
-  setPStatus('p1', '✓ Saved "'+L.name+'" — open it in Homes, then Scan or import to fill the rest.');
-}
 
 // ================= Requirements & Dashboard =================
 const REQ_KEY = 'homeReqs_v1';
@@ -2058,7 +2124,7 @@ function showPane(which){
   document.getElementById('libOverlay').classList.toggle('open', which==='lib');
   document.getElementById('journeyOverlay').style.display = which==='journey' ? 'block' : 'none';
 
-  if(which==='journey') renderCK();
+  if(which==='journey'){ renderCK(); renderPreapp(); }
   calc();
   if(which==='dash') renderDash();
   if(which==='lib') renderLib();
@@ -2106,6 +2172,19 @@ let CK = {};
 function loadCK(){ try{ CK = JSON.parse(localStorage.getItem(CK_KEY))||{}; }catch(e){ CK={}; } }
 function toggleCK(i, v){ CK[i]=v; try{ localStorage.setItem(CK_KEY, JSON.stringify(CK)); }catch(e){} renderCK(); }
 
+
+
+function renderPreapp(){
+  const el = document.getElementById('j_preapp_out'); if(!el) return;
+  const d = document.getElementById('j_preapp')?.value;
+  if(!d){ el.innerHTML = '<span style="color:var(--ink-soft)">Most pre-approval letters expire in 60–90 days. Track yours here.</span>'; return; }
+  const days = 90 - Math.floor((Date.now() - new Date(d+'T12:00:00')) / 86400000);
+  el.innerHTML = days > 14
+    ? '✓ Valid ~<b>' + days + ' more days</b> (assuming 90-day letter).'
+    : days > 0
+      ? '<span style="color:#92600a;font-weight:700">⚠ ~' + days + ' days left — ask your lender for a refresh before making offers.</span>'
+      : '<span style="color:var(--warn-ink);font-weight:700">Expired — get an updated letter (usually a quick re-pull).</span>';
+}
 
 function renderCK(){
   const done = CK_ITEMS.filter((_,i)=>CK[i]).length;
@@ -2254,7 +2333,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v24 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v28 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2300,6 +2379,7 @@ function upsertProp(p){
   if(!data.price) return null;
   let rec = PROPS.find(x=>x.id===slotPropId[p]);
   if(!rec && data.url) rec = PROPS.find(x=>x.url && x.url===data.url);
+  if(!rec) rec = findDuplicate(data);
   if(rec){ if(data.price && data.price!==rec.price) trackPrice(rec, rec.price||data.price); Object.assign(rec, data); trackPrice(rec, rec.price); }
   else{
     rec = Object.assign({id:'pr'+Date.now()+Math.floor(Math.random()*999), shortlisted:false, visitAt:'', notes:'', createdAt:Date.now()}, data);
@@ -2382,14 +2462,21 @@ function renderLib(){
     const m = computeRec(r, sh);
     const v = fmtVisit(r.visitAt);
     const isMobile = isMobileDevice();
-    return `<div class="lib-card ${r.shortlisted?'shortlisted':''}">
-      <div class="lib-top">
-        <div><div class="lib-name">${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
-        <div class="lib-addr" title="${(r.url||'').replace(/"/g,'')}">${cleanUrl(r.url)}</div></div>
-        <div style="display:flex;align-items:center;gap:.15rem;flex-shrink:0">
-          <label style="display:flex;align-items:center;gap:.2rem;font-size:.58rem;font-weight:700;color:var(--ink-soft);cursor:pointer">⚖️<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:.95rem;height:.95rem;accent-color:var(--indigo);margin:0"></label>
-          <button class="lib-star ${r.shortlisted?'on':''}" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
-        </div>
+    const f = fitSummary(evalReqs(r, m));
+    const isOpen = expandedId === r.id;
+    const row = `<button class="lib-rowbtn" onclick="toggleExpand('${r.id}')">
+      <div class="lr-main">
+        <div class="lr-name">${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
+        <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${f?` · <span class="${f.cls==='fit-good'?'lr-fit-good':f.cls==='fit-bad'?'lr-fit-bad':'lr-fit-mid'}">${f.ok}/${f.total} fit</span>`:''}${r.offerDate?' · 🏁 escrow':(v?' · 📅 '+v:'')}</div>
+      </div>
+      <span class="lr-chev">${isOpen?'▾':'▸'}</span>
+    </button>`;
+    if(!isOpen) return `<div class="lib-card slim ${r.shortlisted?'shortlisted':''}">${row}</div>`;
+    return `<div class="lib-card ${r.shortlisted?'shortlisted':''}">${row}
+      <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
+        <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
+        <div class="lib-addr" style="flex:1;min-width:8rem;text-align:right" title="${(r.url||'').replace(/"/g,'')}">${cleanUrl(r.url)}</div>
       </div>
       ${(()=>{const f=fitSummary(evalReqs(r, m)); return f?`<span class="fitpill ${f.cls}">${f.ok}/${f.total} criteria met</span>`:''})()}
       ${(r.cred>0||r.incval>0||r.incnote)?`<div style="font-size:.68rem;background:linear-gradient(120deg,#fff7ed,#fef3e2);border:1px solid #fde3b8;color:#92600a;border-radius:8px;padding:.3rem .55rem;margin:.15rem 0 .35rem;font-weight:600">🎁 ${[r.cred>0?fmt.format(r.cred)+' credit at close':null, r.incval>0?fmt.format(r.incval)+' other incentives':null, r.incnote||null].filter(Boolean).join(' · ')}</div>`:''}
@@ -2400,8 +2487,12 @@ function renderLib(){
         <div class="lib-num ${m.left<0?'neg':''}"><b>${sh.takehome>0?fmt.format(m.left):'—'}</b><span>Left / mo</span></div>
         <div class="lib-num"><b>${fmt.format(m.cash)}</b><span>Cash to close</span></div>
       </div>
+      ${offerSliderBlock(r, m)}
+      ${incentiveCompareBlock(r)}
       ${photosBlock(r)}
       ${critBlock(r, m)}
+      ${inspectBlock(r)}
+      ${caCostsBlock(r, m)}
       ${priceHistList(r)}
       ${commsBlock(r)}
       ${renderStages(r)}
@@ -2421,7 +2512,7 @@ function renderLib(){
         <label>Offer</label>
         <input type="date" class="lib-dt" value="${r.offerDate||''}" onchange="setOffer('${r.id}', this.value)">
       </div>
-      <textarea class="lib-notes" placeholder="Notes — what you liked, concerns, agent name…" onchange="setNotes('${r.id}', this.value)">${r.notes||''}</textarea>
+      <div style="display:flex;gap:.4rem;align-items:stretch"><textarea class="lib-notes" placeholder="Notes — what you liked, concerns, agent name…" onchange="setNotes('${r.id}', this.value)">${r.notes||''}</textarea><button class="micbtn" id="mic_${r.id}" onclick="voiceNote('${r.id}')" title="Dictate a note">🎤</button></div>
       <div class="lib-actions">
         ${isMobile
           ? `<button onclick="loadPropInto('${r.id}','p1');closeLib();">Open in calculator</button>`
@@ -2705,7 +2796,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v24 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v28 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

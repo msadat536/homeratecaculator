@@ -177,7 +177,6 @@ body{padding-bottom:4.5rem}
 .step-hint:last-child{border-bottom:none}
 .step-hint i{font-style:normal;flex-shrink:0}
 .ck-row:last-child{border-bottom:none}
-.ck-row.done span{opacity:.5;text-decoration:line-through}
 .mstat{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px dashed var(--line);font-size:.76rem}
 .mstat:last-child{border-bottom:none}
 .mstat b{font-family:'IBM Plex Mono',monospace}
@@ -303,8 +302,6 @@ html.is-mobile .comm .c-meta{font-size:0.7188rem}
 html.is-mobile .comm-add textarea{font-size:0.9375rem;min-height:2.75rem}
 html.is-mobile .comm-add button{font-size:0.875rem;padding:0 1rem}
 html.is-mobile .na-chip{font-size:0.875rem;padding:0.5625rem 0.75rem}
-html.is-mobile .ck-row{font-size:1rem;padding:0.625rem 0}
-html.is-mobile .ck-row input{width:1.375rem;height:1.375rem}
 html.is-mobile .pbar{height:0.875rem}
 html.is-mobile .tabbar{padding:0.4375rem 0.25rem calc(0.4375rem + env(safe-area-inset-bottom))}
 html.is-mobile .tabbtn{font-size:0.6875rem;gap:0.1875rem;padding:0.375rem 2px}
@@ -363,7 +360,6 @@ html.is-mobile .qwrap::after{content:'';display:block;height:env(safe-area-inset
 html.is-mobile #settingsOverlay{padding:0;align-items:stretch;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 html.is-mobile #settingsOverlay .smodal{max-width:none;width:100%;max-height:none;height:auto;min-height:100vh;border-radius:0;overflow:visible;padding:0.875rem 0.875rem 8.75rem;box-shadow:none}
 html.is-mobile #schoolOverlay .schmodal{max-width:none;width:100%;max-height:100dvh;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0.875rem 0.875rem 7.5rem}
-html.is-mobile #analysisOverlay .amodal{max-width:none;width:100%;max-height:100dvh;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0.875rem 0.875rem 7.5rem}
 html.is-mobile .set-topbar{position:sticky;top:-0.875rem;margin:-0.875rem -0.875rem 0.75rem;background:var(--grad-hero);color:#fff;padding:0.875rem 1rem;display:flex;justify-content:space-between;align-items:center;z-index:3}
 html.is-mobile .set-topbar b{font-size:1.125rem}
 html.is-mobile .set-topbar button{font-family:inherit;font-size:0.9375rem;font-weight:800;border:none;background:rgba(255,255,255,.18);color:#fff;padding:0.5rem 1rem;border-radius:0.625rem}
@@ -384,9 +380,10 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .lr-sub .lr-fit-bad{color:var(--warn-ink);font-weight:700}
 .lr-sub .lr-fit-mid{color:#92600a;font-weight:700}
 .lr-chev{color:var(--ink-soft);font-size:1rem;flex-shrink:0}
-.ck-row{display:flex;align-items:flex-start;gap:.6rem;padding:.55rem 0;font-size:1rem;border-bottom:1px dashed var(--line);line-height:1.4}
-.ck-row input{width:1.3rem;height:1.3rem;accent-color:#4f46e5;flex-shrink:0;margin:.1rem 0 0}
+.ck-row{display:flex;align-items:flex-start;gap:.65em;padding:.55em 0;font-size:1rem;border-bottom:1px dashed var(--line);line-height:1.45;cursor:pointer}
+.ck-row input{width:1.15em;height:1.15em;accent-color:#4f46e5;flex-shrink:0;margin:.15em 0 0}
 .ck-row span{flex:1;min-width:0}
+.ck-row.done span{opacity:.45;text-decoration:line-through;text-decoration-thickness:1px}
 
 .offer-slider{width:100%;margin:.5rem 0 .3rem;accent-color:var(--indigo);height:1.6rem}
 .wi-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
@@ -399,7 +396,7 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .flex-tbl td{border-top:1px dashed var(--line);padding:.4rem .3rem;font-family:'IBM Plex Mono',monospace}
 .flex-tbl td:first-child{font-family:'Archivo',sans-serif;font-weight:600}
 .flex-tbl td.win{background:var(--win);color:var(--win-ink);font-weight:700;border-radius:6px}
-.insp-row{display:flex;width:100%;align-items:center;gap:.55rem;background:none;border:none;border-bottom:1px dashed var(--line);font-family:inherit;font-size:.82rem;text-align:left;padding:.5rem 0;cursor:pointer;color:var(--ink)}
+.insp-row{display:flex;width:100%;align-items:flex-start;gap:.6em;background:none;border:none;border-bottom:1px dashed var(--line);font-family:inherit;font-size:.82rem;text-align:left;padding:.5rem 0;cursor:pointer;color:var(--ink)}
 .insp-row:last-of-type{border-bottom:none}
 .insp-row .insp-mark{flex-shrink:0;width:1.4rem;text-align:center}
 .insp-row.warn span:last-child{color:#92600a;font-weight:600}
@@ -505,8 +502,6 @@ thead input.pname:focus{box-shadow:none}
 header .actions{display:flex;gap:.5rem}
 header .actions button.primary{background:var(--ink);color:var(--paper)}
 header .actions button.primary:hover{opacity:.85}
-#analysisOverlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:60;overflow-y:auto}
-#analysisOverlay.open{display:block}
 .amodal{background:var(--paper);width:100%;min-height:100vh;display:flex;flex-direction:column}
 .chart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-top:.7rem}
 @media (max-width:1100px){.chart-grid{grid-template-columns:1fr 1fr}}
@@ -875,24 +870,10 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 
 <!-- Bottom CTA -->
 <div style="margin-top:1.4rem;text-align:center">
-  <button id="runAnalysisBtn" onclick="openAnalysis()" style="font-family:inherit;font-weight:800;font-size:1rem;letter-spacing:.01em;border:none;background:var(--grad-cta);color:#fff;padding:.95rem 2.4rem;border-radius:12px;cursor:pointer;box-shadow:0 6px 20px rgba(79,70,229,.35);transition:transform .15s">Run analysis →</button>
   <div style="font-size:.72rem;color:var(--ink-soft);margin-top:.5rem">Fill in the details above first — the recommendation is only as good as the numbers.</div>
 </div>
 
 <!-- Analysis modal -->
-<div id="analysisOverlay">
-  <div class="amodal">
-    <div class="amodal-head">
-      <div>
-        <div class="amodal-eyebrow">Side-by-side analysis</div>
-        <div class="amodal-title" id="anTitle">Your comparison</div>
-      </div>
-      <button class="aclose" onclick="closeAnalysis()">&times;</button>
-    </div>
-    <div id="analysis" class="amodal-body"></div>
-    <div id="diagLine" style="font-size:.6rem;color:var(--ink-soft);margin-top:1rem;font-family:'IBM Plex Mono',monospace"></div>
-  </div>
-</div>
 
 <!-- School details modal -->
 <div id="schoolOverlay" onclick="if(event.target===this)this.classList.remove('open')">
@@ -1169,12 +1150,6 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <option value="3" selected>3 properties</option>
       </select></label>
     </div>
-    <h3>Analysis</h3>
-    <div class="sgrid">
-      <label class="field">Analysis horizon (yrs)<input type="number" id="horizon" value="30" min="1" oninput="calc()"><span class="fhint">Comparison window, not loan term</span></label>
-      <label class="field">Appreciation (%/yr)<input type="number" step="0.1" id="apprec" value="3.5" oninput="calc()"></label>
-      <label class="field">Maintenance (%/yr of price)<input type="number" step="0.1" id="maint" value="1.0" oninput="calc()"></label>
-    </div>
     <h3>Phone / standalone use</h3>
     <div class="sgrid">
       <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="saveApiKey()" autocomplete="off">
@@ -1205,7 +1180,8 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <script>
 const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
 const P = ['p1','p2','p3'];
-const g = id => parseFloat(document.getElementById(id).value) || 0;
+const g = id => { const el = document.getElementById(id); return el ? (parseFloat(el.value) || 0) : 0; };
+const gOr = (id, def) => { const el = document.getElementById(id); if(!el) return def; const v = parseFloat(el.value); return isNaN(v) ? def : v; };
 const set = (id,v) => document.getElementById(id).value = v;
 
 function pmt(r,n,pv){ return r===0 ? pv/n : pv*r/(1-Math.pow(1+r,-n)); }
@@ -1532,7 +1508,7 @@ function offerSliderBlock(r, m){
   </details>`;
 }
 function whatIfRow(r, offer){
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const w = computeRecAt(r, sh, offer);
   const base = computeRec(r, sh);
   const dAll = w.allin - base.allin, dCash = w.cash - base.cash;
@@ -1563,7 +1539,7 @@ function incentiveCompareBlock(r){
   </details>`;
 }
 function flexTable(r, X){
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const base = computeRec(r, sh);
   const loan = r.price * (1 - (r.dp||20)/100);
   // price cut
@@ -1845,7 +1821,7 @@ function photosBlock(r){
 
 async function shareCard(id){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const m = computeRec(r, sh);
   const f2 = fitSummary(evalReqs(r, m));
   const c = document.createElement('canvas'); c.width=1000; c.height=560;
@@ -1898,7 +1874,7 @@ function toggleCmp(id, on){
   renderLib();
 }
 function openCompare(){
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const rs = PROPS.filter(r=>CMP.has(r.id));
   if(rs.length<2) return;
   const ms = rs.map(r=>({r, m:computeRec(r, sh)}));
@@ -2261,7 +2237,7 @@ function renderDashExtras(sh){
 }
 
 function renderDash(){
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const now = Date.now();
   const visited = PROPS.filter(r=>r.visitAt && new Date(r.visitAt) < now);
   const upcoming = PROPS.filter(r=>r.visitAt && new Date(r.visitAt) >= now).sort((a,b)=>new Date(a.visitAt)-new Date(b.visitAt));
@@ -2333,7 +2309,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v28 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v29 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2430,7 +2406,7 @@ function fmtVisit(v){
   return {when, days, soon: days<=2 && days>=0, past: d < now};
 }
 function renderLib(){
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const list = document.getElementById('libList');
   if(!PROPS.length){
     list.innerHTML = '<div class="lib-empty">No saved properties yet.<br><br>Enter a home in the calculator and tap <b>💾 Save</b> — it stays here until you delete it.</div>';
@@ -2557,7 +2533,7 @@ function downloadICS(id){
   a.click(); URL.revokeObjectURL(a.href);
 }
 function exportPropsCSV(){
-  const sh = {takehome:g('takehome'), maint:g('maint')};
+  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const rows = [['Name','Link/Address','Price','All-in monthly','Left monthly','Cash to close','Incentives','Shortlisted','Visit','Notes']];
   PROPS.forEach(r=>{ const m=computeRec(r,sh);
     rows.push([r.name,r.url,r.price,Math.round(m.allin),Math.round(m.left),Math.round(m.cash),r.shortlisted?'yes':'',r.visitAt,(r.notes||'').replace(/\\n/g,' ')]);
@@ -2796,15 +2772,15 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v28 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v29 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
 let RESULTS = [];
 function calc(){
   const s = {
-    horizon:g('horizon'), takehome:g('takehome'),
-    apprec:g('apprec'), maint:g('maint'), cdays:g('s_cdays')
+    horizon:gOr('horizon', 30), takehome:g('takehome'),
+    apprec:gOr('apprec', 3.5), maint:gOr('maint', 1), cdays:gOr('s_cdays', 21)
   };
   const nm = document.getElementById('s_name').value.trim();
   document.getElementById('forWhom').textContent = nm ? ' — ' + nm : '';
@@ -2817,14 +2793,8 @@ function calc(){
   scheduleSave();
   updateQuick();
   highlightRows();
-  if(document.getElementById('analysisOverlay').classList.contains('open')) buildAnalysis();
 }
 
-function openAnalysis(){
-  buildAnalysis();
-  document.getElementById('analysisOverlay').classList.add('open');
-}
-function closeAnalysis(){ document.getElementById('analysisOverlay').classList.remove('open'); }
 
 function pname(p){ return document.getElementById('name_'+p).value || p; }
 
@@ -2886,174 +2856,6 @@ function scoreDonut(v){
   </svg>`;
 }
 
-function buildAnalysis(){
-  const ALL = RESULTS;
-  const ACT = ALL.active || ALL;
-  ACT.shared = ALL.shared;
-  return buildAnalysisFor(ACT);
-}
-function buildAnalysisFor(RESULTS){
-  const s = RESULTS.shared, H = Math.max(1,s.horizon);
-  const segs = [
-    ['pi','P&I','#1b2733'],['taxMo','Tax','#0e6ba8'],['mr','Mello-Roos','#6b8aa8'],
-    ['ins','Insurance','#2e7d4f'],['hoa','HOA','#8a4fbe'],['pmi','PMI','#b3261e'],
-    ['util','Utilities','#c98a2c'],['mnt','Maintenance','#7a7f6a']
-  ];
-
-  // Pros / cons per property (rule-based on live numbers)
-  const lowest = k => Math.min(...RESULTS.map(r=>r[k]));
-  const highest = k => Math.max(...RESULTS.map(r=>r[k]));
-  let cards = '<div class="an-grid">';
-  RESULTS.forEach(r=>{
-    const pros=[], cons=[];
-    const multi = RESULTS.length>1;
-    if(multi && r.allin===lowest('allin')) pros.push('Lowest all-in monthly cost');
-    if(multi && r.cash===lowest('cash')) pros.push('Least cash needed to close');
-    if(multi && r.netH===lowest('netH')) pros.push(`Best net cost over ${H} years`);
-    if(multi && r.eqH===highest('eqH')) pros.push(`Most equity after ${H} years`);
-    const ppsfs = RESULTS.filter(x=>x.sqft>0).map(x=>x.price/x.sqft);
-    if(multi && r.sqft>0 && ppsfs.length>1 && r.price/r.sqft===Math.min(...ppsfs)) pros.push('Best price per sq ft');
-    if(r.hoa===0) pros.push('No HOA'); else cons.push(`HOA adds ${fmt.format(r.hoa)}/mo (${fmt.format(r.hoa*12*H)} over ${H} yrs)`);
-    if(r.pmi>0) cons.push(`PMI required: ${fmt.format(r.pmi)}/mo until ~20% equity`); else if(r.dpPct>=20) pros.push('No PMI (20%+ down)');
-    if(r.mr>0) cons.push(`Mello-Roos ${fmt.format(r.mr)}/mo`);
-    const yb = g(r.p+'_year');
-    if(yb>1900 && yb<=1985) cons.push(`Built ${yb} — budget for aging systems (roof, plumbing, electrical)`);
-    else if(yb>=2010) pros.push(`Built ${yb} — newer systems, lower near-term maintenance risk`);
-    if(multi && r.allin===highest('allin')) cons.push('Most expensive all-in monthly');
-    if(multi && r.cash===highest('cash')) cons.push('Highest cash to close');
-    if(multi && r.intH===highest('intH')) cons.push(`Most interest paid over ${H} yrs`);
-    if(r.left>=0 && s.takehome>0 && r.left/s.takehome < 0.25) cons.push(`Only ${fmt.format(r.left)}/mo left after housing`);
-
-    let vClass='ok', vText='Fits budget';
-    if(r.left<0){ vClass='over'; vText='Over budget'; cons.unshift(`Costs ${fmt.format(-r.left)}/mo MORE than take-home`); }
-    else if(s.takehome>0 && r.left/s.takehome<0.35){ vClass='tight'; vText='Tight'; }
-    else pros.push(`Leaves ${fmt.format(r.left)}/mo for everything else`);
-
-    cards += `<div class="an-card ${r.p}"><h3>${pname(r.p)}</h3>
-      <span class="an-verdict ${vClass}">${vText}</span>
-      <ul>${pros.map(x=>`<li class="pro">${x}</li>`).join('')}${cons.map(x=>`<li class="con">${x}</li>`).join('')}</ul></div>`;
-  });
-  cards += '</div>';
-
-  // Monthly composition stacked bars
-  const maxAllin = Math.max(...RESULTS.map(r=>r.allin),1);
-  let stack = `<div class="an-sec"><h4>Where each month's money goes</h4>`;
-  RESULTS.forEach(r=>{
-    stack += `<div class="stack"><div>${pname(r.p)}<br><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">${fmt.format(r.allin)}</span></div><div class="stack-bar" style="width:${r.allin/maxAllin*100}%">`;
-    segs.forEach(([k,label,c])=>{
-      if(r[k]>0) stack += `<div class="stack-seg" style="width:${r[k]/r.allin*100}%;background:${c}" title="${label}: ${fmt.format(r[k])}"></div>`;
-    });
-    stack += '</div></div>';
-  });
-  stack += `<div class="legend">${segs.map(([k,l,c])=>`<span><i style="background:${c}"></i>${l}</span>`).join('')}</div></div>`;
-
-
-  // ---- Scoring & recommendation ----
-  const norm = (vals, lowerBetter) => {
-    const mn = Math.min(...vals), mx = Math.max(...vals);
-    return vals.map(v => mx===mn ? 100 : Math.round((lowerBetter ? (mx-v)/(mx-mn) : (v-mn)/(mx-mn))*100));
-  };
-  const affScore = RESULTS.map(r => {
-    if(s.takehome<=0) return 50;
-    const ratio = r.left/s.takehome;               // fraction of income left
-    return Math.max(0, Math.min(100, Math.round(ratio/0.5*100))); // 50%+ left = 100
-  });
-  const monScore = norm(RESULTS.map(r=>r.allin), true);
-  const upScore  = norm(RESULTS.map(r=>r.cash), true);
-  const ltScore  = norm(RESULTS.map(r=>r.netH), true);
-  const hasCommute = RESULTS.some(r=>r.chrs>0);
-  const cmScore  = hasCommute ? norm(RESULTS.map(r=>r.chrs), true) : RESULTS.map(()=>null);
-  const dims = [
-    ['Budget fit', affScore, .35],
-    ['Monthly cost', monScore, .20],
-    ['Long-term value', ltScore, .25],
-    ['Upfront burden', upScore, .12],
-  ];
-  if(hasCommute) dims.push(['Commute', cmScore, .08]);
-  const wsum = dims.reduce((a,d)=>a+d[2],0);
-  const totals = RESULTS.map((r,i)=> Math.round(dims.reduce((a,d)=>a+d[1][i]*d[2],0)/wsum));
-
-  const affordable = RESULTS.map(r=>r.left>=0);
-  let winIdx = -1;
-  const eligible = totals.map((t,i)=>affordable[i]?t:-1);
-  if(eligible.some(t=>t>=0)) winIdx = eligible.indexOf(Math.max(...eligible));
-
-  let reco;
-  if(winIdx>=0){
-    const w = RESULTS[winIdx];
-    const solo = RESULTS.length===1;
-    const runner = totals.map((t,i)=>i===winIdx?-1:t);
-    const secondIdx = solo ? winIdx : runner.indexOf(Math.max(...runner));
-    const margin = solo ? 0 : totals[winIdx]-totals[secondIdx];
-    const whyBits = [];
-    if(affScore[winIdx]===Math.max(...affScore)) whyBits.push(`leaves the most breathing room (${fmt.format(w.left)}/mo after all housing costs)`);
-    if(ltScore[winIdx]===Math.max(...ltScore)) whyBits.push(`the lowest net cost over ${H} years (${fmt.format(w.netH)})`);
-    if(monScore[winIdx]===Math.max(...monScore)) whyBits.push(`the cheapest all-in month (${fmt.format(w.allin)})`);
-    if(upScore[winIdx]===Math.max(...upScore)) whyBits.push(`the least cash to close (${fmt.format(w.cash)})`);
-    if(!whyBits.length) whyBits.push('the best overall balance across budget, monthly cost, and long-term value');
-    reco = `<div class="reco">
-      <div class="r-eyebrow">Recommended</div>
-      <div class="r-name">🏆 ${pname(w.p)}</div>
-      <div class="donut" style="margin:.3rem 0 .5rem">${scoreDonut(totals[winIdx])}<span class="dval">${totals[winIdx]}/100 overall</span></div>
-      <div class="r-why">${solo ? `This property fits your budget` : `Scores <b>${totals[winIdx]}/100</b>${margin>0?` — ${margin} points ahead of ${pname(RESULTS[secondIdx].p)}`:` — in a near tie with ${pname(RESULTS[secondIdx].p)}, so let the lifestyle rows (schools, yard, commute) break it`}`}. ${solo ? `It leaves ${fmt.format(w.left)}/mo after all housing costs.` : `It offers ${whyBits.slice(0,2).join(' and ')}.`}${affScore[winIdx]<70?' Budget fit is workable but not comfortable — see the action list below before committing.':''}</div>
-      <div class="r-stats">
-        <div class="r-stat"><b>${fmt.format(w.allin)}</b><span>All-in / month</span></div>
-        <div class="r-stat"><b>${fmt.format(w.left)}</b><span>Left each month</span></div>
-        <div class="r-stat"><b>${fmt.format(w.cash)}</b><span>Cash to close</span></div>
-        <div class="r-stat"><b>${fmt.format(w.eqH)}</b><span>Equity in ${H} yrs</span></div>
-      </div></div>`;
-  } else {
-    const closest = RESULTS[totals.indexOf(Math.max(...totals))];
-    const gap = -Math.min(...RESULTS.map(r=>r.left));
-    reco = `<div class="reco none">
-      <div class="r-eyebrow">Recommendation</div>
-      <div class="r-name">None of these — yet</div>
-      <div class="r-why">Every option costs more per month than your take-home (worst gap: <b>${fmt.format(gap)}/mo</b>). Buying any of them means going backwards every payroll. The closest fit is ${pname(closest.p)}; the action list below shows what would have to change to make it work.</div></div>`;
-  }
-
-  // Scorecard grid
-  let score = RESULTS.length===1 ? '' : `<div class="an-sec"><h4>Scorecard (weighted: budget fit 35%, long-term 25%, monthly 20%, upfront 12%${hasCommute?', commute 8%':''})</h4>
-    <div class="score-grid">
-    <div></div>${RESULTS.map(r=>`<div class="shead">${pname(r.p)}</div>`).join('')}`;
-  dims.forEach(([label,vals])=>{
-    score += `<div>${label}</div>` + vals.map((v,i)=>`<div class="sbar" title="${v}/100"><i class="bar-fill ${RESULTS[i].p}" style="width:${v}%"></i></div>`).join('');
-  });
-  score += `<div style="font-weight:700">Total</div>` + totals.map((t,i)=>`<div class="stotal" style="color:var(--${RESULTS[i].p})">${t}<span style="font-size:.7rem;color:var(--ink-soft)">/100</span></div>`).join('');
-  score += '</div></div>';
-
-  // ---- Action list (rule-based, real numbers) ----
-  const target = winIdx>=0 ? RESULTS[winIdx] : RESULTS[totals.indexOf(Math.max(...totals))];
-  const suggs = computeSuggestions(target, s, H);
-  const sugg = `<div class="an-sec"><h4>What you should do${winIdx>=0?` (for ${pname(target.p)})`:''}</h4><div class="sugg">${suggs.map(x=>`<div class="sg"><div>${x}</div></div>`).join('')}</div></div>`;
-
-  document.getElementById('anTitle').textContent = RESULTS.map(r=>pname(r.p)).join(' vs ') + ` — ${H}-year view`;
-
-  const el = document.getElementById('analysis');
-  el.innerHTML =
-      `<div class="verdict-grid">${reco}${score}</div>`
-    + sugg
-    + cards
-    + stack
-    + `<div class="chart-grid">`
-        + barChart('Cash left each month (higher is better)', 'left', v=>fmt.format(v), false)
-        + barChart('Cash needed to close', 'cash', v=>fmt.format(v), true)
-        + barChart(`Net cost over ${H} years (after equity & appreciation)`, 'netH', v=>fmt.format(v), true,
-            'Cash to close + all monthly costs − principal − appreciation (an assumption, not a promise).')
-        + barChart(`Equity after ${H} years`, 'eqH', v=>fmt.format(v), false)
-        + barChart(`Interest paid over ${H} years`, 'intH', v=>fmt.format(v), true)
-    + `</div>`;
-}
-
-
-
-
-// ---- Schools ----
-const SCHOOLS = {p1:null, p2:null, p3:null};
-function schoolColor(r){ return r>=8 ? '#158a4a' : r>=6 ? '#f59e0b' : r!=null ? '#c62f27' : '#9ca3af'; }
-function gsLink(p){
-  const addr = document.getElementById(p+'_url').value.trim();
-  return 'https://www.greatschools.org/search/search.page?q=' + encodeURIComponent(addr || '');
-}
 function renderSchools(p){
   const cell = document.getElementById(p+'_school_cell');
   const list = SCHOOLS[p];
@@ -3345,7 +3147,6 @@ async function importFor(p, input){
 // Enter behaves like Tab everywhere: commit the value, recalculate, move to the next field
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){
-    document.getElementById('analysisOverlay').classList.remove('open');
     document.getElementById('settingsOverlay').classList.remove('open');
     document.getElementById('schoolOverlay').classList.remove('open');
 
@@ -3423,7 +3224,7 @@ function applyDeviceLayout(){
 }
 
 function detachShell(){
-  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','analysisOverlay','importBar'].forEach(id=>{
+  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar'].forEach(id=>{
     const el = document.getElementById(id);
     if(el && el.parentElement !== document.body) document.body.appendChild(el);
   });

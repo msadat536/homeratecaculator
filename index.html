@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="is-mobile">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
@@ -334,6 +334,14 @@ html.is-mobile .field{font-size:13px}
 html.is-mobile .smodal h3{font-size:15px}
 html.is-mobile .req-grid{gap:10px}
 html.is-mobile .databtn{font-size:14.5px;padding:11px 14px}
+
+/* Portrait guarantees */
+html,body{width:100%;max-width:100vw;overflow-x:hidden}
+html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
+html.is-mobile .qrow2{grid-template-columns:1fr 1fr;gap:10px}
+html.is-mobile .lib-nums{grid-template-columns:repeat(2,1fr)}
+html.is-mobile .dstats{grid-template-columns:repeat(2,1fr)}
+html.is-mobile .req-grid{grid-template-columns:1fr 1fr}
 /* Property library */
 .lib-sortbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
 .lib-sortbar label{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);flex-shrink:0}
@@ -810,6 +818,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <button class="aclose" onclick="closeAnalysis()">&times;</button>
     </div>
     <div id="analysis" class="amodal-body"></div>
+    <div id="diagLine" style="font-size:.6rem;color:var(--ink-soft);margin-top:1rem;font-family:'IBM Plex Mono',monospace"></div>
   </div>
 </div>
 
@@ -1080,7 +1089,9 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     </div>
     <h3>Phone / standalone use</h3>
     <div class="sgrid">
-      <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="saveApiKey()" autocomplete="off"><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only on this device, masked, and excluded from all exports and backups — other visitors to this site can never see it. Don't enter it on shared devices. Without a key, paste listing text instead: it parses instantly on-device.</span></label>
+      <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="saveApiKey()" autocomplete="off">
+<div id="keyStatus" style="font-size:.68rem;margin-top:.3rem"></div>
+<button type="button" class="databtn" style="margin-top:.35rem" onclick="removeApiKey()">Remove key from this device</button><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only on this device, masked, and excluded from all exports and backups — other visitors to this site can never see it. Don't enter it on shared devices. Without a key, paste listing text instead: it parses instantly on-device.</span></label>
     </div>
     <h3>Data</h3>
     <div style="display:flex;flex-wrap:wrap;gap:.5rem">
@@ -1199,7 +1210,7 @@ function highlightRows(){
 const Q_MAP = {price:'p1_price', dp:'p1_dp', rate:'p1_rate', term:'p1_term', taxr:'p1_taxr', ins:'p1_ins', hoa:'p1_hoa', mr:'p1_mr', util:'p1_util', pmir:'p1_pmir', ccpct:'p1_ccpct', year:'p1_year', cred:'p1_cred', incval:'p1_incval', incnote:'p1_incnote', url:'p1_url'};
 let pcountBeforeQuick = null;
 function openQuick(){ showPane('check'); }
-function closeQuick(){ showPane('work'); }
+function closeQuick(){ showPane('dash'); }
 
 
 
@@ -1910,15 +1921,14 @@ function showPane(which){
   document.getElementById('dashOverlay').classList.toggle('open', which==='dash');
   document.getElementById('libOverlay').classList.toggle('open', which==='lib');
   document.getElementById('journeyOverlay').style.display = which==='journey' ? 'block' : 'none';
-  const wb = document.getElementById('workbookWrap');
-  if(wb) wb.style.display = (!isMobileDevice() && which==='work') ? 'block' : 'none';
+
   if(which==='journey') renderCK();
   calc();
   if(which==='dash') renderDash();
   if(which==='lib') renderLib();
 }
 function openDash(){ showPane('dash'); }
-function closeDash(){ showPane('work'); }
+function closeDash(){ showPane('dash'); }
 
 
 // ---- Backup health ----
@@ -2371,10 +2381,26 @@ function collectState(){
   return state;
 }
 function saveApiKey(){
-  try{ localStorage.setItem(KEY_STORE, document.getElementById('s_apikey').value); }catch(e){}
+  const v = document.getElementById('s_apikey').value.trim();
+  if(!v){ keyStatus(); return; }   // an empty field NEVER erases the stored key
+  try{ localStorage.setItem(KEY_STORE, v); }catch(e){}
+  keyStatus();
+}
+function removeApiKey(){
+  try{ localStorage.removeItem(KEY_STORE); }catch(e){}
+  document.getElementById('s_apikey').value = '';
+  keyStatus();
 }
 function loadApiKey(){
   try{ const k = localStorage.getItem(KEY_STORE); if(k) document.getElementById('s_apikey').value = k; }catch(e){}
+  keyStatus();
+}
+function keyStatus(){
+  const el = document.getElementById('keyStatus'); if(!el) return;
+  let k = ''; try{ k = localStorage.getItem(KEY_STORE) || ''; }catch(e){}
+  el.innerHTML = k
+    ? '<span style="color:var(--win-ink);font-weight:700">✓ Key saved on this device</span> (ends ···' + k.slice(-4) + ')'
+    : '<span style="color:var(--warn-ink);font-weight:700">No key saved.</span> AI features are off outside Claude.';
 }
 function restoreState(state){
   if(!state) return;
@@ -2404,7 +2430,7 @@ function loadState(){
   }catch(e){ /* storage unavailable — start fresh */ }
 }
 function clearSaved(){
-  try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(KEY_STORE); document.getElementById('s_apikey').value=''; document.getElementById('storageNote').textContent = 'Saved data cleared (including API key).'; }catch(e){}
+  try{ localStorage.removeItem(STORE_KEY); document.getElementById('storageNote').textContent = 'Saved data cleared. (API key kept — remove it separately above if you want.)'; }catch(e){}
 }
 function exportState(){
   const blob = new Blob([JSON.stringify(collectState(), null, 2)], {type:'application/json'});
@@ -2427,7 +2453,11 @@ function importState(inp){
 }
 
 // ---- Settings ----
-function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
+function renderDiag(){
+  const el = document.getElementById('diagLine'); if(!el) return;
+  el.textContent = 'v10-phone · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+}
+function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
 let RESULTS = [];
 function calc(){
@@ -2975,7 +3005,7 @@ document.addEventListener('keydown', function(e){
     document.getElementById('analysisOverlay').classList.remove('open');
     document.getElementById('settingsOverlay').classList.remove('open');
     document.getElementById('schoolOverlay').classList.remove('open');
-    if(window.innerWidth >= 700 && currentPane!=='work') showPane('work');
+
     return;
   }
   if(e.key !== 'Enter') return;
@@ -3027,14 +3057,11 @@ if('serviceWorker' in navigator && location.protocol==='https:'){
 
 // Physical screen width — cannot be distorted by layout-viewport zoom (the trap
 // that made CSS media queries unreliable here).
-function isMobileDevice(){ return Math.min(window.screen.width, window.screen.height) < 700; }
+function isMobileDevice(){ return true; }  // phone-only app by design
 function applyDeviceLayout(){
-  const mobile = isMobileDevice();
-  const wb = document.getElementById('workbookWrap');
-  if(wb) wb.style.display = mobile ? 'none' : (currentPane==='work' ? 'block' : 'none');
-  const tw = document.getElementById('tab_work');
-  if(tw) tw.style.display = mobile ? 'none' : '';
-  document.documentElement.classList.toggle('is-mobile', mobile);
+  const wb = document.getElementById('workbookWrap'); if(wb) wb.style.display = 'none';
+  const tw = document.getElementById('tab_work'); if(tw) tw.style.display = 'none';
+  document.documentElement.classList.add('is-mobile');
 }
 
 function detachShell(){

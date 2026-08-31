@@ -264,36 +264,76 @@ html.is-mobile .qwrap{max-width:none;padding:.7rem .7rem 5.5rem}
 html.is-mobile .qhead{margin:-.7rem -.7rem .7rem}
 html.is-mobile .tabbar-inner{max-width:none}
 
-/* ---- Mobile typography: standard app sizing ---- */
-html.is-mobile{font-size:19.5px}   /* rem root ~22% up: 0.8rem body -> 15.6px */
-html.is-mobile .qcard{padding:.85rem .8rem;border-radius:14px}
-html.is-mobile .qgroup{font-size:.72rem;letter-spacing:.05em}
-html.is-mobile .qhead b{font-size:1rem}
-html.is-mobile label{font-size:.68rem}
-html.is-mobile .qin input, html.is-mobile .qin select{font-size:.88rem;padding:.55rem .5rem}
-html.is-mobile .dstat b{font-size:1.35rem}
-html.is-mobile .dstat span{font-size:.56rem}
-html.is-mobile .mstat{font-size:.8rem;padding:.42rem 0}
-html.is-mobile .step-hint{font-size:.8rem;padding:.45rem 0}
-html.is-mobile .ai-list div{font-size:.8rem}
-html.is-mobile .aibtn{font-size:.88rem;padding:.7rem}
-html.is-mobile .drank{font-size:.8rem}
-html.is-mobile .fhint{font-size:.62rem}
-html.is-mobile .lib-name{font-size:.95rem}
-html.is-mobile .lib-num b{font-size:.9rem}
-html.is-mobile .lib-num span{font-size:.54rem}
-html.is-mobile .comm{font-size:.8rem}
-html.is-mobile .ck-row{font-size:.84rem;padding:.42rem 0}
-html.is-mobile .crit-row{font-size:.78rem}
-html.is-mobile .tabbtn{font-size:.6rem}
-html.is-mobile .tabbtn i{font-size:1.15rem}
-html.is-mobile .qhero .qbig{font-size:2rem}
-html.is-mobile .find-card b{font-size:.9rem}
-html.is-mobile .find-card .fc-why{font-size:.78rem}
-html.is-mobile .na-chip{font-size:.78rem}
-html.is-mobile .lib-sortbar select{font-size:.85rem}
-html.is-mobile .stat-tiles .stat b{font-size:1rem}
-html.is-mobile .qbreak{font-size:.8rem}
+
+/* ==== Mobile type scale: explicit px, Material-standard ==== */
+html.is-mobile{font-size:16px}
+html.is-mobile body{font-size:16px;line-height:1.5}
+html.is-mobile .qwrap{padding:12px 12px 96px}
+html.is-mobile .qcard{padding:16px 14px;border-radius:16px;margin-bottom:14px}
+html.is-mobile .qhead{margin:-12px -12px 12px;padding:14px 16px}
+html.is-mobile .qhead b{font-size:20px}
+html.is-mobile .qhead button{font-size:14px;padding:8px 12px}
+html.is-mobile .qgroup{font-size:13px;letter-spacing:.06em;margin:18px 0 10px}
+html.is-mobile .qcard .qgroup:first-child{margin-top:0}
+html.is-mobile label{font-size:13px}
+html.is-mobile .qin input,html.is-mobile .qin select,html.is-mobile select,html.is-mobile textarea{font-size:16px !important;padding:12px 10px}
+html.is-mobile .qin span{font-size:14px}
+html.is-mobile .mstat{font-size:15px;padding:9px 0}
+html.is-mobile .mstat b{font-size:16px}
+html.is-mobile .step-hint{font-size:15px;padding:9px 0;line-height:1.5}
+html.is-mobile .ai-list div{font-size:15px;padding:8px 0}
+html.is-mobile .aibtn{font-size:17px;padding:15px;border-radius:13px}
+html.is-mobile .drank{font-size:15px}
+html.is-mobile .fhint{font-size:12.5px;line-height:1.45}
+html.is-mobile .dstats{gap:10px}
+html.is-mobile .dstat{padding:14px 4px;border-radius:14px}
+html.is-mobile .dstat b{font-size:28px}
+html.is-mobile .dstat span{font-size:10.5px;letter-spacing:.05em}
+html.is-mobile .lib-name{font-size:18px}
+html.is-mobile .lib-addr{font-size:12.5px}
+html.is-mobile .lib-num b{font-size:16px}
+html.is-mobile .lib-num span{font-size:10px}
+html.is-mobile .lib-num{padding:8px 8px}
+html.is-mobile .lib-ctl label{font-size:12.5px}
+html.is-mobile .lib-dt{font-size:15px !important;padding:10px 8px}
+html.is-mobile .lib-actions button{font-size:14px;padding:10px 14px}
+html.is-mobile .fitpill{font-size:12.5px;padding:5px 10px}
+html.is-mobile .lib-details summary{font-size:14px;padding:9px 0}
+html.is-mobile .crit-row{font-size:14.5px;padding:5px 0}
+html.is-mobile .comm{font-size:14.5px;padding:8px 0}
+html.is-mobile .comm .c-meta{font-size:11.5px}
+html.is-mobile .comm-add textarea{font-size:15px;min-height:44px}
+html.is-mobile .comm-add button{font-size:14px;padding:0 16px}
+html.is-mobile .na-chip{font-size:14px;padding:9px 12px}
+html.is-mobile .ck-row{font-size:16px;padding:10px 0}
+html.is-mobile .ck-row input{width:22px;height:22px}
+html.is-mobile .pbar{height:14px}
+html.is-mobile .tabbar{padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+html.is-mobile .tabbtn{font-size:11px;gap:3px;padding:6px 2px}
+html.is-mobile .tabbtn i{font-size:22px}
+html.is-mobile .qhero{padding:16px 14px}
+html.is-mobile .qhero .qbig{font-size:34px}
+html.is-mobile .qhero .qsub{font-size:13px}
+html.is-mobile .verdict{font-size:14px;padding:7px 14px}
+html.is-mobile .stat-tiles .stat b{font-size:17px}
+html.is-mobile .stat-tiles .stat span{font-size:10.5px}
+html.is-mobile .qbreak{font-size:15px}
+html.is-mobile .qbreak td{padding:8px 0}
+html.is-mobile .find-card b{font-size:16px}
+html.is-mobile .find-card .fc-why{font-size:14px}
+html.is-mobile .find-card .fc-row button,html.is-mobile .find-card .fc-row a{font-size:13.5px;padding:8px 12px}
+html.is-mobile .lib-sortbar label{font-size:12px}
+html.is-mobile .lib-sortbar select{font-size:15px;padding:11px 10px}
+html.is-mobile .cmp-table{font-size:14px}
+html.is-mobile .cmp-bar{font-size:15px;padding:10px 14px}
+html.is-mobile .price-delta{font-size:12px}
+html.is-mobile #workbookWrap{display:none !important}
+html.is-mobile #tab_work{display:none !important}
+html.is-mobile .field input,html.is-mobile .field select{font-size:16px;padding:11px 10px}
+html.is-mobile .field{font-size:13px}
+html.is-mobile .smodal h3{font-size:15px}
+html.is-mobile .req-grid{gap:10px}
+html.is-mobile .databtn{font-size:14.5px;padding:11px 14px}
 /* Property library */
 .lib-sortbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
 .lib-sortbar label{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);flex-shrink:0}

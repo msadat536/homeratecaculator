@@ -1126,7 +1126,8 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="sgrid">
       <label class="field full">Anthropic API key (optional)<input type="password" class="free" id="s_apikey" oninput="saveApiKey()" autocomplete="off">
 <div id="keyStatus" style="font-size:.68rem;margin-top:.3rem"></div>
-<input type="text" class="free" id="s_wsid" placeholder="Workspace ID (only if your key requires it)" oninput="scheduleSave()" autocomplete="off" style="margin-top:.45rem">
+<div style="font-size:.68rem;font-weight:700;color:var(--ink-soft);margin-top:.6rem">Workspace ID — advanced, usually NOT needed. Your API key goes in the field above, not here.</div>
+<input type="text" class="free" id="s_wsid" placeholder="wrkspc_… (leave blank unless the test says it's required)" oninput="routeKeyField(this)" autocomplete="off" style="margin-top:.25rem">
 <span class="fhint">If AI calls fail with "workspace-id is required": console.anthropic.com → Settings → Workspaces → copy the ID (starts with wrkspc_). Keys created inside a specific workspace usually don't need this.</span>
 <button type="button" class="databtn" style="margin-top:.45rem" onclick="testApiKey()">🔌 Test my key now</button>
 <div id="keyTestOut" style="font-size:.72rem;margin-top:.35rem;line-height:1.5;word-break:break-word"></div>
@@ -2420,7 +2421,12 @@ function collectState(){
   return state;
 }
 function saveApiKey(){
-  const v = document.getElementById('s_apikey').value.trim();
+  let v = document.getElementById('s_apikey').value.trim();
+  if(/^wrkspc_/i.test(v)){
+    const ws = document.getElementById('s_wsid'); if(ws){ ws.value = v; scheduleSave(); }
+    document.getElementById('s_apikey').value = '';
+    v = '';
+  }
   if(!v){ keyStatus(); return; }   // an empty field NEVER erases the stored key
   try{ localStorage.setItem(KEY_STORE, v); }catch(e){}
   keyStatus();
@@ -2433,6 +2439,21 @@ function removeApiKey(){
 function loadApiKey(){
   try{ const k = localStorage.getItem(KEY_STORE); if(k) document.getElementById('s_apikey').value = k; }catch(e){}
   keyStatus();
+}
+
+
+// If an API key lands in the workspace field (easy mistake), move it where it belongs
+function routeKeyField(inp){
+  const v = inp.value.trim();
+  if(/^sk-ant/i.test(v)){
+    document.getElementById('s_apikey').value = v;
+    inp.value = '';
+    saveApiKey();
+    const out = document.getElementById('keyTestOut');
+    if(out) out.innerHTML = '<span style="color:var(--win-ink);font-weight:700">That was your API key — moved it to the key field and saved it.</span> Tap Test to confirm.';
+    return;
+  }
+  scheduleSave();
 }
 
 async function testApiKey(){
@@ -2527,7 +2548,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v14 · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v15 · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

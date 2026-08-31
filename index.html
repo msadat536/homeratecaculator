@@ -373,6 +373,9 @@ html.is-mobile .set-topbar button{font-family:inherit;font-size:0.9375rem;font-w
 html.is-mobile #settingsOverlay{background:var(--paper) !important}
 html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .smodal{background:#fff}
+
+.portalbtn{font-family:inherit;font-size:.82rem;font-weight:800;border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:.65rem .3rem;border-radius:11px;cursor:pointer}
+.portalbtn:active{background:var(--calc)}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1021,9 +1024,19 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <button class="aibtn" id="coachBtn" onclick="runCoach()">Ask the AI coach</button>
     </div>
     <div class="qcard">
-      <div class="qgroup" style="margin-top:0">🔍 Find homes for me</div>
-      <div id="d_find"><div style="font-size:.74rem;color:var(--ink-soft)">Searches current listings that match your requirements and budget, ready to save and visit.</div></div>
-      <button class="aibtn" id="findBtn" onclick="runFinder()">Search the market</button>
+      <div class="qgroup" style="margin-top:0">🔍 Find homes</div>
+      <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+        <label style="font-size:.68rem;font-weight:700;color:var(--ink-soft);flex-shrink:0">Area</label>
+        <div class="qin" style="flex:1"><input type="text" id="d_area" placeholder="e.g. Costa Mesa CA or 92626" oninput="scheduleSave()"></div>
+      </div>
+      <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.4rem">Opens the portal already filtered to your max price and beds — free. Save any listing back here with 📷 Scan or paste.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem">
+        <button class="portalbtn" onclick="openPortal('zillow')">Zillow</button>
+        <button class="portalbtn" onclick="openPortal('realtor')">Realtor</button>
+        <button class="portalbtn" onclick="openPortal('homes')">Homes</button>
+      </div>
+      <div id="d_find"></div>
+      <button class="aibtn" id="findBtn" onclick="runFinder()" style="background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none;margin-top:.55rem">🤖 AI search instead (~5¢)</button>
     </div>
     <div class="qcard">
       <div class="qgroup" style="margin-top:0">🏆 Best fits</div>
@@ -1366,7 +1379,7 @@ async function scanListing(inp){
       const schema = '{"address": string|null, "price": number|null, "sqft": number|null, "beds_layout": string|null, "year_built": number|null, "hoa_monthly": number|null, "mello_roos_monthly": number|null, "annual_tax_amount": number|null, "schools": [{"name": string, "type": string, "rating": number|null}]|null, "yard_lot": string|null, "incentives": string|null, "seller_credit": number|null}';
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', headers: apiHeaders(),
-        body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:700,
+        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:700,
           messages:[{role:'user', content:[
             {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
             {type:'text', text:'This is a photo or screenshot of a real-estate listing. Extract the details visible in the image. Respond with ONLY a JSON object, no markdown fences, exactly this schema: '+schema+'\nNumbers only for numeric fields (no $ or commas). price = the asking/list price shown, NEVER an estimate/Zestimate. Use null for anything not clearly visible — never guess.'}
@@ -1608,7 +1621,7 @@ async function commScan(id, inp){
       const b64 = await fileToScaledB64(file);
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST', headers:apiHeaders(),
-        body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:700,
+        body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:700,
           messages:[{role:'user', content:[
             {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
             {type:'text', text:'This is a screenshot of a conversation (text messages or email) related to a home purchase. Respond with ONLY JSON, no fences: {"summary": string, "detail": string}\nsummary = one line: who said what that matters (offers, prices, credits, dates, commitments). detail = condensed transcription of the relevant messages with speakers. If nothing home-related is visible, summary explains that and detail is empty.'}]}]})
@@ -1868,15 +1881,37 @@ function parseAIJson(text){
   throw new Error('reply was cut off and could not be repaired — try again');
 }
 
-async function callAI(messages, useSearch){
-  const body = {model:'claude-sonnet-4-6', max_tokens: useSearch ? 4000 : 2500, messages};
-  if(useSearch) body.tools = [{type:'web_search_20250305', name:'web_search'}];
+
+// ---- AI cost tracking (Sonnet: $3/M in, $15/M out; search: $0.01 each) ----
+const SPEND_KEY = 'homeSpend_v1';
+function recordCost(usage, model){
+  if(!usage) return null;
+  const haiku = !model || /haiku/.test(model);
+  const inR = haiku ? 1e-6 : 3e-6, outR = haiku ? 5e-6 : 15e-6;
+  const searches = usage.server_tool_use?.web_search_requests || 0;
+  const cost = (usage.input_tokens||0)*inR + (usage.output_tokens||0)*outR + searches*0.01;
+  let total = 0; try{ total = parseFloat(localStorage.getItem(SPEND_KEY))||0; }catch(e){}
+  total += cost;
+  try{ localStorage.setItem(SPEND_KEY, String(total)); }catch(e){}
+  return {cost, total, searches};
+}
+function costLine(c){
+  if(!c) return '';
+  return '<div style="font-size:.6rem;color:var(--ink-soft);margin-top:.45rem">This run: ~$' + c.cost.toFixed(2)
+    + (c.searches?' ('+c.searches+' searches)':'') + ' · session total: ~$' + c.total.toFixed(2) + '</div>';
+}
+
+async function callAI(messages, useSearch, model){
+  const body = {model: model || 'claude-haiku-4-5-20251001', max_tokens: useSearch ? 1500 : 1200, messages};
+  if(useSearch) body.tools = [{type:'web_search_20250305', name:'web_search', max_uses: 2}];
   const resp = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:apiHeaders(), body:JSON.stringify(body)});
   if(!resp.ok){ let d=''; try{const e=await resp.json(); d=e?.error?.message||'';}catch(_){}
     throw new Error('API '+resp.status+(d?': '+d:'')); }
   const data = await resp.json();
   const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  return parseAIJson(text);
+  const parsed = parseAIJson(text);
+  parsed.__cost = recordCost(data.usage, body.model);
+  return parsed;
 }
 async function runCoach(){
   const el = document.getElementById('d_coach'), btn = document.getElementById('coachBtn');
@@ -1891,11 +1926,36 @@ async function runCoach(){
     el.innerHTML =
       (d.next_steps?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.2rem 0 .3rem">Do next</div><div class="ai-list">'+d.next_steps.map(x=>'<div>👉 <div>'+x+'</div></div>').join('')+'</div>':'')+
       (d.missing?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">You\'re missing</div><div class="ai-list">'+d.missing.map(x=>'<div>🔍 <div>'+x+'</div></div>').join('')+'</div>':'')+
-      (d.warnings?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">Watch out</div><div class="ai-list">'+d.warnings.map(x=>'<div>⚠️ <div>'+x+'</div></div>').join('')+'</div>':'');
+      (d.warnings?.length?'<div style="font-weight:800;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:.6rem 0 .3rem">Watch out</div><div class="ai-list">'+d.warnings.map(x=>'<div>⚠️ <div>'+x+'</div></div>').join('')+'</div>':'')
+      + costLine(d.__cost);
   }catch(err){
     el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Coach failed: '+(err.message||'error')+'</div>';
   }finally{ btn.disabled = false; }
 }
+
+function openPortal(site){
+  const area = (document.getElementById('d_area').value || '').trim() || 'Costa Mesa CA';
+  const maxP = g('rq_price') || 0;
+  const beds = g('rq_beds') || 0;
+  const slug = area.replace(/,/g,'').trim().replace(/\s+/g,'-');
+  let url;
+  if(site === 'zillow'){
+    url = 'https://www.zillow.com/homes/for_sale/' + encodeURIComponent(slug) + '_rb/';
+    const parts = [];
+    if(maxP) parts.push('0-' + maxP + '_price');
+    if(beds) parts.push(beds + '-_beds');
+    url += parts.length ? parts.join('/') + '/' : '';
+  } else if(site === 'realtor'){
+    url = 'https://www.realtor.com/realestateandhomes-search/' + encodeURIComponent(slug.replace(/-([A-Za-z]{2})$/, '_$1'));
+    if(maxP) url += '/price-na-' + maxP;
+    if(beds) url += '/beds-' + beds;
+  } else {
+    url = 'https://www.homes.com/' + encodeURIComponent(slug.toLowerCase()) + '/' + (maxP ? 'homes-under-' + Math.round(maxP/1000) + 'k/' : '');
+    if(beds) url += '?bd=' + beds;
+  }
+  window.open(url, '_blank');
+}
+
 async function runFinder(){
   const el = document.getElementById('d_find'), btn = document.getElementById('findBtn');
   if(!aiAvailable()){ el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Needs the AI: add your API key in ⚙ (Phone / standalone use).</div>'; return; }
@@ -1911,7 +1971,7 @@ async function runFinder(){
         near: ctx.office_address || 'Orange County, CA',
         already_saved: ctx.saved_homes.map(h=>h.name)
       })+
-      '\nFind 3-5 real, currently listed homes that fit (exclude ones already_saved). Respond with ONLY JSON, no fences: {"listings":[{"name": string (street address), "area": string, "price": number, "url": string|null, "why": string (1-2 sentences tied to THEIR requirements)}]}\nOnly include listings you actually found in search results with real prices. Never invent listings or URLs.'}], true);
+      '\nFind 3-5 real, currently listed homes that fit (exclude ones already_saved). Respond with ONLY JSON, no fences: {"listings":[{"name": string (street address), "area": string, "price": number, "url": string|null, "why": string (1-2 sentences tied to THEIR requirements)}]}\nOnly include listings you actually found in search results with real prices. Never invent listings or URLs.'}], true, 'claude-haiku-4-5-20251001');
     if(!d.listings?.length){ el.innerHTML = '<div style="font-size:.74rem;color:var(--ink-soft)">No solid matches found this pass — try broadening requirements or run it again (listings change daily).</div>'; }
     else{
       window._found = d.listings;
@@ -1923,7 +1983,8 @@ async function runFinder(){
            <button onclick="saveFound(${i})">💾 Save to my homes</button>
            ${L.url?`<a href="${L.url}" target="_blank">Listing ↗</a>`:''}
          </div></div>`).join('')
-        + '<div style="font-size:.62rem;color:var(--ink-soft);margin-top:.4rem">Web results — verify price and availability on the listing before planning a visit.</div>';
+        + '<div style="font-size:.62rem;color:var(--ink-soft);margin-top:.4rem">Web results — verify price and availability on the listing before planning a visit.</div>'
+        + costLine(d.__cost);
     }
   }catch(err){
     el.innerHTML = '<div style="font-size:.74rem;color:var(--warn-ink)">Search failed: '+(err.message||'error')+'</div>';
@@ -2193,7 +2254,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v20 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v24 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2551,7 +2612,7 @@ async function testApiKey(retried){
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST', headers: apiHeaders(),
-      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:12, messages:[{role:'user', content:'Reply with the word: works'}]})
+      body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:12, messages:[{role:'user', content:'Reply with the word: works'}]})
     });
     const body = await resp.json().catch(()=>({}));
     if(resp.ok){
@@ -2644,7 +2705,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v20 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v24 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -2943,7 +3004,7 @@ async function fetchSchools(p, address){
       method:'POST',
       headers: apiHeaders(),
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
         messages: [{ role:'user', content:
           `Search for the GreatSchools ratings of the public schools serving this address: ${address}\n` +
@@ -3139,7 +3200,7 @@ async function importFor(p, input){
     : `Extract real estate listing details from this pasted listing text.\nRespond with ONLY a JSON object, no markdown fences, no commentary, exactly this schema: ${schema}\n${rulesFinal}\n\nLISTING TEXT:\n${input.slice(0,8000)}`;
 
   const body = {
-    model: 'claude-sonnet-4-6',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 700,
     messages: [{ role: 'user', content: prompt }]
   };

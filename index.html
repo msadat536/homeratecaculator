@@ -248,6 +248,14 @@ html,body{min-height:100%}
   #tab_work{display:none !important}
   .tabbar-inner{max-width:none}
 }
+
+/* The workbook table is 900px wide and would force the whole document wide on a
+   phone (browser zooms out, media queries mis-fire). Remove it from layout there. */
+@media (max-width:700px){
+  body > .wrap{display:none !important}
+  body{padding:0;overflow-x:hidden}
+  table{min-width:0 !important}
+}
 /* Property library */
 .lib-sortbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
 .lib-sortbar label{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);flex-shrink:0}
@@ -425,7 +433,7 @@ header .actions button.primary:hover{opacity:.85}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0;box-shadow:0 1px 2px rgba(27,39,51,.06)}
 @media (max-width:960px){.card{overflow-x:auto}}
 table{width:100%;border-collapse:collapse;font-size:.85rem}
-@media (max-width:960px){table{min-width:900px}}
+@media (min-width:701px) and (max-width:960px){table{min-width:900px}}
 th,td{border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 td:first-child,th:first-child{position:sticky;left:0;background:var(--card);width:26%;min-width:230px;z-index:1;border-right:1px solid var(--line)}
 thead th{font-weight:700;background:var(--card);position:sticky;top:0;z-index:3;box-shadow:0 1px 0 var(--line)}
@@ -482,7 +490,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="workbookWrap">
 
 <header>
   <div>
@@ -1823,6 +1831,8 @@ function showPane(which){
   document.getElementById('dashOverlay').classList.toggle('open', which==='dash');
   document.getElementById('libOverlay').classList.toggle('open', which==='lib');
   document.getElementById('journeyOverlay').style.display = which==='journey' ? 'block' : 'none';
+  const wb = document.getElementById('workbookWrap');
+  if(wb && window.innerWidth >= 700) wb.style.display = (which==='work') ? 'block' : 'none';
   if(which==='journey') renderCK();
   calc();
   if(which==='dash') renderDash();

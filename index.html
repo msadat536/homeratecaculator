@@ -252,8 +252,9 @@ html,body{min-height:100%}
 /* The workbook table is 900px wide and would force the whole document wide on a
    phone (browser zooms out, media queries mis-fire). Remove it from layout there. */
 @media (max-width:700px){
-  body > .wrap{display:none !important}
-  body{padding:0;overflow-x:hidden}
+  /* hide only the wide workbook content, never the app shell */
+  #workbookWrap > header, #workbookWrap > .card, #workbookWrap > div[style*="text-align:center"]{display:none !important}
+  body{padding:0 0 4.5rem;overflow-x:hidden}
   table{min-width:0 !important}
 }
 /* Property library */
@@ -1017,6 +1018,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   </div>
 </div>
 </div>
+
 
 <script>
 const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
@@ -2942,7 +2944,20 @@ if('serviceWorker' in navigator && location.protocol==='https:'){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
 }
 
+
+// The overlays and tab bar must be direct children of <body>: on phones the workbook
+// container is hidden, and anything nested inside it would be hidden too.
+function detachShell(){
+  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','analysisOverlay','importBar'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && el.parentElement !== document.body) document.body.appendChild(el);
+  });
+  const tb = document.querySelector('.tabbar');
+  if(tb && tb.parentElement !== document.body) document.body.appendChild(tb);
+}
+
 window.onload = function(){
+  detachShell();
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };

@@ -896,6 +896,10 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <div class="qgroup" style="margin-top:0">🏆 Best fits</div>
       <div id="d_rank"></div>
     </div>
+    <div class="qcard" id="d_backup_card" style="display:none">
+      <div class="qgroup" style="margin-top:0">💾 Backup</div>
+      <div id="d_backup"></div>
+    </div>
     <div class="qcard">
       <div class="qgroup" style="margin-top:0">📈 Your search in numbers</div>
       <div id="d_market"></div>
@@ -996,7 +1000,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div style="display:flex;flex-wrap:wrap;gap:.5rem">
       <button type="button" onclick="saveState(true)" class="databtn">Save now</button>
       <button type="button" onclick="clearSaved()" class="databtn">Clear saved</button>
-      <button type="button" onclick="exportState()" class="databtn">Export file</button>
+      <button type="button" onclick="exportState();markBackedUp()" class="databtn">Export file</button>
       <label class="databtn" style="cursor:pointer">Import file<input type="file" accept=".json" style="display:none" onchange="importState(this)"></label>
     </div>
     <div class="fhint" id="storageNote" style="margin-top:.4rem">Auto-saves to this browser as you type.</div>
@@ -1827,6 +1831,26 @@ function showPane(which){
 function openDash(){ showPane('dash'); }
 function closeDash(){ showPane('work'); }
 
+
+// ---- Backup health ----
+const BACKUP_KEY = 'homeBackup_v1';
+function markBackedUp(){ try{ localStorage.setItem(BACKUP_KEY, String(Date.now())); }catch(e){} renderBackupNote(); }
+function renderBackupNote(){
+  const el = document.getElementById('d_backup'); if(!el) return;
+  let last = 0; try{ last = parseInt(localStorage.getItem(BACKUP_KEY))||0; }catch(e){}
+  const days = last ? Math.floor((Date.now()-last)/86400000) : null;
+  const worth = PROPS.length;
+  if(!worth){ el.parentElement.style.display='none'; return; }
+  el.parentElement.style.display='block';
+  const stale = days===null || days>14;
+  el.innerHTML = `<div style="font-size:.75rem;line-height:1.45;${stale?'color:var(--warn-ink);font-weight:600':'color:var(--ink-soft)'}">
+    ${days===null
+      ? `You have ${worth} saved home${worth>1?'s':''} and no backup yet. Your data lives only in this browser — clearing site data or uninstalling would erase it.`
+      : `Last backup: ${days===0?'today':days+' day'+(days>1?'s':'')+' ago'}.${stale?' Worth exporting again.':''}`}
+  </div>
+  <button class="aibtn" style="margin-top:.5rem;background:${stale?'var(--grad-cta)':'#fff'};color:${stale?'#fff':'var(--indigo)'};border:1.5px solid var(--indigo);box-shadow:none" onclick="exportState();markBackedUp()">⬇ Export backup file</button>`;
+}
+
 // ---- First-time buyer checklist ----
 const CK_KEY = 'homeChecklist_v1';
 const CK_ITEMS = [
@@ -1993,6 +2017,7 @@ function renderDash(){
     </div>`;
   }).join('') : '<div style="font-size:.76rem;color:var(--ink-soft)">Save properties first — they get ranked against your requirements here.</div>';
   renderDashExtras(sh);
+  renderBackupNote();
 }
 
 // ================= Property library =================

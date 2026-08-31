@@ -353,6 +353,22 @@ html.is-mobile .tabbar{box-shadow:0 -1px 0 rgba(28,37,64,.08)}
 html.is-mobile .tabbtn{font-size:10.5px}
 html.is-mobile .tabbtn i{font-size:20px}
 html.is-mobile .qcard{margin-bottom:12px}
+
+/* Reliable native scrolling */
+html.is-mobile #quickOverlay,html.is-mobile #dashOverlay,html.is-mobile #libOverlay,
+html.is-mobile #journeyOverlay,html.is-mobile #cmpOverlay{
+  overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+html.is-mobile .qwrap{padding-bottom:110px}
+html.is-mobile .qwrap::after{content:'';display:block;height:env(safe-area-inset-bottom)}
+
+/* Modals become full-screen pages on the phone */
+html.is-mobile #settingsOverlay{padding:0;align-items:stretch}
+html.is-mobile #settingsOverlay .smodal{max-width:none;width:100%;max-height:none;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 14px 140px}
+html.is-mobile #schoolOverlay .schmodal{max-width:none;width:100%;max-height:100dvh;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 120px}
+html.is-mobile #analysisOverlay .amodal{max-width:none;width:100%;max-height:100dvh;height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 120px}
+html.is-mobile .set-topbar{position:sticky;top:-14px;margin:-14px -14px 12px;background:var(--grad-hero);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:3}
+html.is-mobile .set-topbar b{font-size:18px}
+html.is-mobile .set-topbar button{font-family:inherit;font-size:15px;font-weight:800;border:none;background:rgba(255,255,255,.18);color:#fff;padding:8px 16px;border-radius:10px}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1061,7 +1077,8 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <!-- Settings modal -->
 <div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="smodal">
-    <h2>Settings</h2>
+    <div class="set-topbar"><b>⚙ Settings</b><button onclick="closeSettings()">Done</button></div>
+<h2>Settings</h2>
     <h3>Profile</h3>
     <div class="sgrid">
       <label class="field full">Your name<input type="text" class="free" id="s_name" oninput="calc()"></label>
@@ -1111,6 +1128,8 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <div id="keyStatus" style="font-size:.68rem;margin-top:.3rem"></div>
 <input type="text" class="free" id="s_wsid" placeholder="Workspace ID (only if your key requires it)" oninput="scheduleSave()" autocomplete="off" style="margin-top:.45rem">
 <span class="fhint">If AI calls fail with "workspace-id is required": console.anthropic.com → Settings → Workspaces → copy the ID (starts with wrkspc_). Keys created inside a specific workspace usually don't need this.</span>
+<button type="button" class="databtn" style="margin-top:.45rem" onclick="testApiKey()">🔌 Test my key now</button>
+<div id="keyTestOut" style="font-size:.72rem;margin-top:.35rem;line-height:1.5;word-break:break-word"></div>
 <button type="button" class="databtn" style="margin-top:.35rem" onclick="removeApiKey()">Remove key from this device</button><span class="fhint">Enables AI link lookups outside Claude (from console.anthropic.com, usage billed to you). Stored only on this device, masked, and excluded from all exports and backups — other visitors to this site can never see it. Don't enter it on shared devices. Without a key, paste listing text instead: it parses instantly on-device.</span></label>
     </div>
     <h3>Data</h3>
@@ -2415,6 +2434,39 @@ function loadApiKey(){
   try{ const k = localStorage.getItem(KEY_STORE); if(k) document.getElementById('s_apikey').value = k; }catch(e){}
   keyStatus();
 }
+
+async function testApiKey(){
+  const out = document.getElementById('keyTestOut');
+  const k = document.getElementById('s_apikey').value.trim();
+  if(!k){ out.innerHTML = '<span style="color:var(--warn-ink)">Enter a key first.</span>'; return; }
+  out.textContent = 'Testing…';
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers: apiHeaders(),
+      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:12, messages:[{role:'user', content:'Reply with the word: works'}]})
+    });
+    const body = await resp.json().catch(()=>({}));
+    if(resp.ok){
+      out.innerHTML = '<span style="color:var(--win-ink);font-weight:700">✓ Key works.</span> AI features are live on this device.';
+    } else {
+      const msg = body?.error?.message || JSON.stringify(body).slice(0,300);
+      out.innerHTML = '<span style="color:var(--warn-ink);font-weight:700">✗ ' + resp.status + '</span> — ' + msg
+        + '<br><span style="color:var(--ink-soft)">' + hintFor(resp.status, msg) + '</span>';
+    }
+  }catch(err){
+    out.innerHTML = '<span style="color:var(--warn-ink);font-weight:700">✗ Request blocked before reaching Anthropic</span> — ' + (err.message||'network error')
+      + '<br><span style="color:var(--ink-soft)">Usually a connection issue, or the key field contains spaces/line breaks from copy-paste.</span>';
+  }
+}
+function hintFor(status, msg){
+  if(/workspace/i.test(msg)) return 'Fix: fill the Workspace ID field above (console.anthropic.com → Settings → Workspaces, starts with wrkspc_), or create the key inside a workspace instead.';
+  if(status===401) return 'Fix: the key itself is wrong/revoked. Copy a fresh one from console.anthropic.com → API keys, paste with no spaces.';
+  if(status===400 && /credit|billing/i.test(msg)) return 'Fix: add billing/credits at console.anthropic.com → Billing.';
+  if(status===429) return 'Rate limited — wait a minute and retry.';
+  if(status===400) return 'The exact message above is from Anthropic — it names the missing piece.';
+  return '';
+}
+
 function keyStatus(){
   const el = document.getElementById('keyStatus'); if(!el) return;
   let k = ''; try{ k = localStorage.getItem(KEY_STORE) || ''; }catch(e){}
@@ -2475,7 +2527,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v12 · zoom ' + (document.documentElement.style.zoom||'1') + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v14 · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -3058,7 +3110,7 @@ function initSections(){
 }
 
 let lastMobile = window.innerWidth < 700;
-window.addEventListener('resize', ()=>{ applyDeviceLayout(); fitPortrait();
+window.addEventListener('resize', ()=>{ applyDeviceLayout();
   const m = window.innerWidth < 700;
   if(m !== lastMobile){
     lastMobile = m;
@@ -3081,16 +3133,6 @@ if('serviceWorker' in navigator && location.protocol==='https:'){
 // that made CSS media queries unreliable here).
 function isMobileDevice(){ return true; }  // phone-only app by design
 
-// ---- Portrait render lock ----
-// The app is designed for a ~412px-wide phone canvas. If the browser hands us a
-// wider layout viewport (e.g. Chrome's "Desktop site" toggle, which ignores the
-// viewport meta), zoom the whole UI up so physical sizes stay phone-correct.
-function fitPortrait(){
-  const target = 412;
-  const w = window.innerWidth;
-  const z = w > 470 ? (w / target) : 1;
-  document.documentElement.style.zoom = z;
-}
 
 function applyDeviceLayout(){
   const wb = document.getElementById('workbookWrap'); if(wb) wb.style.display = 'none';
@@ -3110,7 +3152,6 @@ function detachShell(){
 window.onload = function(){
   detachShell();
   applyDeviceLayout();
-  fitPortrait();
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };

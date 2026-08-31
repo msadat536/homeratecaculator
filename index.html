@@ -1025,6 +1025,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <div class="qgroup" style="margin-top:0">🏆 Best fits</div>
       <div id="d_rank"></div>
     </div>
+    <div id="dashDiag" style="font-size:.55rem;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;text-align:center;margin:.2rem 0 .4rem"></div>
     <div class="qcard" id="d_backup_card" style="display:none">
       <div class="qgroup" style="margin-top:0">💾 Backup</div>
       <div id="d_backup"></div>
@@ -2158,6 +2159,8 @@ function renderDash(){
   }).join('') : '<div style="font-size:.76rem;color:var(--ink-soft)">Save properties first — they get ranked against your requirements here.</div>';
   renderDashExtras(sh);
   renderBackupNote();
+  const dd = document.getElementById('dashDiag');
+  if(dd) dd.textContent = 'v18 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2495,9 +2498,9 @@ async function findWorkspace(){
   }
 }
 
-async function testApiKey(){
+async function testApiKey(retried){
   const out = document.getElementById('keyTestOut');
-  const k = document.getElementById('s_apikey').value.trim();
+  const k = cleanKey(document.getElementById('s_apikey').value);
   if(!k){ out.innerHTML = '<span style="color:var(--warn-ink)">Enter a key first.</span>'; return; }
   out.textContent = 'Testing…';
   try{
@@ -2510,6 +2513,12 @@ async function testApiKey(){
       out.innerHTML = '<span style="color:var(--win-ink);font-weight:700">✓ Key works.</span> AI features are live on this device.';
     } else {
       const msg = body?.error?.message || JSON.stringify(body).slice(0,300);
+      const wsEmpty = !cleanKey(document.getElementById('s_wsid')?.value || '');
+      if(/workspace/i.test(msg) && wsEmpty && !retried){
+        out.textContent = 'Key needs a workspace ID — finding it automatically…';
+        await findWorkspace();
+        if(cleanKey(document.getElementById('s_wsid').value)){ return testApiKey(true); }
+      }
       out.innerHTML = '<span style="color:var(--warn-ink);font-weight:700">✗ ' + resp.status + '</span> — ' + msg
         + '<br><span style="color:var(--ink-soft)">' + hintFor(resp.status, msg) + '</span>';
     }
@@ -2590,7 +2599,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v17 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v18 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -3202,10 +3211,13 @@ function isMobileDevice(){ return true; }  // phone-only app by design
 // If the layout viewport is wider than a real phone (desktop-site mode etc.),
 // scale the root font so text/controls render at true phone size.
 function fitScale(){
-  const w = window.innerWidth;
-  const f = w > 470 ? Math.min(16 * w / 412, 42) : 16;
+  // Scale by the SHORT side of the viewport so portrait and landscape render
+  // identically (width-based scaling broke on rotation).
+  const short = Math.min(window.innerWidth, window.innerHeight);
+  const f = short > 470 ? Math.min(16 * short / 412, 52) : 16;
   document.documentElement.style.fontSize = f + 'px';
 }
+window.addEventListener('orientationchange', ()=>setTimeout(fitScale, 120));
 
 function applyDeviceLayout(){
   const wb = document.getElementById('workbookWrap'); if(wb) wb.style.display = 'none';

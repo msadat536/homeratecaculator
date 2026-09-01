@@ -919,7 +919,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
           <button onclick="qUrlGo()" style="font-family:inherit;font-size:.75rem;font-weight:800;border:none;background:var(--indigo);color:#fff;border-radius:10px;padding:0 .9rem;cursor:pointer;flex-shrink:0">Go</button>
           <label style="display:flex;align-items:center;font-size:.75rem;font-weight:700;border:1.5px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:10px;padding:0 .7rem;cursor:pointer;flex-shrink:0">📷<input type="file" accept="image/*" style="display:none" onchange="scanListing(this)"></label>
         </div>
-        <div id="q_url_hint" style="font-size:.6rem;color:var(--ink-soft);margin-top:.15rem">Saved with the property</div>
+        <div id="q_url_hint" style="font-size:.6rem;color:var(--ink-soft);margin-top:.15rem">Saved with the property. Go = AI lookup (~2–5¢) · 📷 scan and paste are free</div>
       </div>
       <div class="qrow2">
         <div><label>Price</label><div class="qin"><span>$</span><input type="number" inputmode="numeric" id="q_price" oninput="qSync('price')"></div></div>
@@ -2313,7 +2313,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v30 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v31 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2776,7 +2776,7 @@ function importState(inp){
 // ---- Settings ----
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v30 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v31 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -3020,6 +3020,7 @@ function applyImport(p){
   PENDING[p] = null;
   calc();
   upsertProp(p);  // an imported listing is a property worth keeping
+  if(typeof updateQuick === 'function') updateQuick();
 }
 function undoImport(p){
   const u = UNDO[p]; if(!u) return;
@@ -3102,7 +3103,7 @@ async function importFor(p, input){
     max_tokens: 700,
     messages: [{ role: 'user', content: prompt }]
   };
-  if(isUrl) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  if(isUrl) body.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }];
 
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -3137,6 +3138,8 @@ async function importFor(p, input){
       return;
     }
     applyImport(p);
+    if(typeof updateQuick === 'function') updateQuick();
+    calc();
     setPStatusHTML(p, `✓ <b>${p.replace('p','Property ')} filled:</b> ${preview.join(' · ')}
       <button onclick="undoImport('${p}')" style="font-family:inherit;font-weight:600;font-size:.72rem;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;padding:.25rem .6rem;border-radius:6px;cursor:pointer;margin-left:.4rem">Undo</button>`);
   }catch(err){

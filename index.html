@@ -2296,12 +2296,12 @@ async function researchHome(id){
 1) Asian student percentage at ${schoolNames || 'the zoned public schools'} (GreatSchools/NCES demographics)
 2) Nearest masjid/mosque to ${r.addr || r.name} and its driving distance in miles
 3) Does the ${r.name} floor plan have a loft? A private backyard?
-Respond ONLY JSON: {"asian_pct": number|null, "asian_school": string|null, "masjid_name": string|null, "masjid_miles": number|null, "has_loft": boolean|null, "has_backyard": boolean|null}
+${(r.schools||[]).length ? '' : '4) The zoned public schools for this address with their GreatSchools 1-10 ratings\n'}Respond ONLY JSON: {"asian_pct": number|null, "asian_school": string|null, "masjid_name": string|null, "masjid_miles": number|null, "has_loft": boolean|null, "has_backyard": boolean|null, "schools": [{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null}]|null}
 null for anything you cannot verify. Numbers only, no % signs.`;
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST', headers: apiHeaders(),
       body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:500,
-        tools:[{type:'web_search_20250305', name:'web_search', max_uses:3}],
+        tools:[{type:'web_search_20250305', name:'web_search', max_uses:4}],
         messages:[{role:'user', content:q}]})
     });
     if(!resp.ok){ let dd=''; try{const e=await resp.json(); dd=e?.error?.message||'';}catch(_){}
@@ -2315,6 +2315,7 @@ null for anything you cannot verify. Numbers only, no % signs.`;
     if(d.masjid_miles != null){ r.masjidMi = d.masjid_miles; r.masjidUser = true; if(d.masjid_name) r.masjidTxt = d.masjid_name + ' — ~' + d.masjid_miles + ' miles'; got.push('masjid ~' + d.masjid_miles + ' miles'); }
     if(d.has_loft != null && r.loft == null){ r.loft = !!d.has_loft; got.push('loft: ' + (d.has_loft?'yes':'no')); }
     if(d.has_backyard != null && r.hasYard == null){ r.hasYard = !!d.has_backyard; got.push('backyard: ' + (d.has_backyard?'yes':'no')); }
+    if(d.schools && d.schools.length && !(r.schools||[]).length){ r.schools = d.schools; got.push(d.schools.length + ' schools + ratings'); }
     persistProps(); refreshHomeViews();
     setPStatus(btnMsg, got.length ? ('✓ Found: ' + got.join(' · ') + ' — verify anything critical.') : '✓ Search ran but nothing verifiable — fill manually.');
   }catch(err){
@@ -3556,7 +3557,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v57 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v58 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4067,7 +4068,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v57 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v58 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -4197,7 +4198,8 @@ async function fetchSchools(p, address){
   if(schoolBusy[p] || !address) return;
   schoolBusy[p] = true;
   const cell = document.getElementById(p+'_school_cell');
-  cell.innerHTML = '<span style="font-size:.72rem;color:var(--ink-soft)">Looking up schools…</span>';
+  if(cell) cell.innerHTML = '<span style="font-size:.72rem;color:var(--ink-soft)">Looking up schools…</span>';
+  if(p==='p1') qStatus('⏳ Looking up the zoned schools & ratings (~2¢)…', 'busy');
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
@@ -4209,7 +4211,7 @@ async function fetchSchools(p, address){
           `Search for the GreatSchools ratings of the public schools serving this address: ${address}\n` +
           `Respond with ONLY a JSON object, no markdown fences, exactly: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null}]}\n` +
           `rating = the GreatSchools 1-10 score. Use null if a school's score is not clearly found. Include only schools you can verify serve or are near this address. Be fast: 1-2 searches.`}],
-        tools: [{ type:'web_search_20250305', name:'web_search' }]
+        tools: [{ type:'web_search_20250305', name:'web_search', max_uses: 2 }]
       })
     });
     if(!resp.ok) throw new Error('API ' + resp.status);
@@ -4218,15 +4220,23 @@ async function fetchSchools(p, address){
     const m = text.replace(/```json|```/g,'').match(/\{[\s\S]*\}/);
     if(!m) throw new Error('no JSON');
     const d = JSON.parse(m[0]);
+    recordCost(data.usage, 'claude-haiku-4-5-20251001');
     if(d.schools && d.schools.length){
       SCHOOLS[p] = d.schools;
       scheduleSave();
-  updateQuick();
+      updateQuick();
+      // attach to the auto-saved record and refresh everything that shows schools
+      const rec = PROPS.find(x=>x.id===slotPropId[p]);
+      if(rec){ rec.schools = d.schools; enrichOne(rec); persistProps(); refreshHomeViews(); renderDash(); }
+      const names = d.schools.map(x=>((x.type||'')[0]||'S').toUpperCase() + (x.rating!=null?x.rating:'?')).join('/');
+      if(p==='p1') qStatus('✓ Schools found: ' + d.schools.map(x=>x.name).join(', ') + ' (' + names + ') — saved to the home.', 'ok');
     } else {
       SCHOOLS[p] = null;
+      if(p==='p1') qStatus('✗ Could not verify the zoned schools for that address — add them from GreatSchools manually.', 'err');
     }
   }catch(err){
     SCHOOLS[p] = null;
+    if(p==='p1') qStatus('✗ School lookup failed: ' + (err.message||'') , 'err');
   }finally{
     schoolBusy[p] = false;
     renderSchools(p);

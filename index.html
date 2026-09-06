@@ -501,6 +501,41 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .dm-rank.top{color:#b8860b;font-size:1.15rem}
 .dm-bar{height:6px;background:var(--calc);border-radius:99px;margin:.3rem 0 .2rem;overflow:hidden}
 .dm-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--indigo),#7c6cf0);border-radius:99px}
+
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin:.3rem 0}
+.feat{font-family:inherit;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:.55rem;text-align:left;cursor:pointer}
+.feat b{display:block;font-size:.74rem}
+.feat i{font-style:normal;font-size:.8rem;font-weight:700;color:var(--ink-soft)}
+.feat i.y{color:var(--win-ink)}
+.feat i.n{color:var(--warn-ink)}
+.clim-bars{display:flex;gap:3px;align-items:flex-end;margin:.4rem 0 .2rem}
+.clim-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.clim-v{font-size:.5rem;color:var(--ink-soft)}
+.clim-bar{width:100%;background:#a5b4fc;border-radius:3px 3px 0 0}
+.clim-bar.warm{background:#f2a71b}
+.clim-bar.hot{background:#e2574c}
+.clim-m{font-size:.52rem;color:var(--ink-soft)}
+
+.schl-row{display:flex;gap:.6rem;align-items:center;border-bottom:1px dashed var(--line);padding:.55rem 0}
+.schl-row:last-of-type{border-bottom:none}
+.schl-ic{font-size:1.2rem;flex-shrink:0}
+.schl-main{flex:1;min-width:0}
+.schl-main b{display:block;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schl-main i{font-style:normal;font-size:.68rem;color:var(--ink-soft)}
+.schl-r{font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:.9rem;padding:.25rem .5rem;border-radius:8px;flex-shrink:0}
+.schl-r.good{background:var(--win);color:var(--win-ink)}
+.schl-r.mid{background:#fef3e2;color:#92600a}
+.schl-r.low{background:var(--warn);color:var(--warn-ink)}
+
+.sfg{display:inline-block;font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:.8rem;border-radius:8px;padding:.1rem .45rem;margin-left:.3rem}
+.sfg-A{background:var(--win);color:var(--win-ink)}
+.sfg-B{background:#e8f3d9;color:#4c6b1f}
+.sfg-C{background:#fef3e2;color:#92600a}
+.sfg-D{background:var(--warn);color:var(--warn-ink)}
+.sf-row{display:flex;gap:.6rem;align-items:baseline;font-size:.84rem;padding:.4rem 0;border-bottom:1px dashed var(--line)}
+.sf-row span{flex:0 0 8.5em;color:var(--ink-soft);font-size:.76rem}
+.sf-row b{font-family:'IBM Plex Mono',monospace}
+.sf-row i{font-style:normal;font-size:.7rem;color:var(--ink-soft)}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1273,8 +1308,13 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
       <label class="field">Min sq ft<input type="number" inputmode="numeric" id="rq_sqft" oninput="saveReqs()"></label>
       <label class="field">Max HOA ($/mo)<input type="number" inputmode="numeric" id="rq_hoa" oninput="saveReqs()"></label>
       <label class="field">Min school avg (/10)<input type="number" step="0.5" inputmode="decimal" id="rq_school" oninput="saveReqs()"></label>
-      <label class="field">Max commute (min)<input type="number" inputmode="numeric" id="rq_cmin" oninput="saveReqs()"></label>
+      <label class="field">Max commute (min) <span style="font-weight:400;font-size:.58rem;color:var(--ink-soft)">to 3191 Redhill Ave, Costa Mesa - auto-estimated from distance</span><input type="number" inputmode="numeric" id="rq_cmin" oninput="saveReqs()"></label>
       <label class="field">Built after (year)<input type="number" inputmode="numeric" id="rq_year" oninput="saveReqs()"></label>
+      <label class="field">Max masjid distance (mi)<input type="number" step="0.5" inputmode="decimal" id="rq_masjid" oninput="saveReqs()"></label>
+      <label class="field">Min Asian % in schools<input type="number" inputmode="numeric" id="rq_asian" oninput="saveReqs()"></label>
+      <label class="field">Max summer high (°C)<input type="number" inputmode="numeric" id="rq_temp" oninput="saveReqs()"></label>
+      <label class="field" style="display:flex;gap:.4rem;align-items:center;font-weight:700">Backyard required <input type="checkbox" id="rq_yard" onchange="saveReqs()" style="width:1.15em;height:1.15em;accent-color:var(--indigo)"></label>
+      <label class="field" style="display:flex;gap:.4rem;align-items:center;font-weight:700">Loft required <input type="checkbox" id="rq_loft" onchange="saveReqs()" style="width:1.15em;height:1.15em;accent-color:var(--indigo)"></label>
     </div>
     <div class="fhint" style="margin-top:.35rem">Blank = skip that criterion. Saved homes are graded against these on the Dashboard and Homes tabs.</div>
     <label class="field full" style="margin-top:.6rem">Describe what you're looking for (free text)
@@ -1802,6 +1842,9 @@ function seedHomes(){
     if(!p.addr && sd.addr){ p.addr = sd.addr; changed = true; }
     if(!p.miles && sd.miles){ p.miles = sd.miles; changed = true; }
   });
+  PROPS.forEach(p=>{
+    if(p.id && String(p.id).startsWith('ie26-') && p.loft===undefined && /loft/i.test(p.name + ' ' + (p.notes||''))){ p.loft = true; changed = true; }
+  });
   if(changed) try{ persistProps(); }catch(e){}
   let done = false; try{ done = !!localStorage.getItem('seeded_ie_homes_v1'); }catch(e){}
   if(done) return;
@@ -1811,8 +1854,8 @@ function seedHomes(){
     PROPS.push(Object.assign({}, h));
     added++;
   });
-  try{ persistProps(); localStorage.setItem('seeded_ie_homes_v1','1'); }catch(e){}
-  if(added) setTimeout(()=>setPStatus('p1', '✓ Loaded ' + added + ' Inland Empire new builds into Homes (11 board fits are ⭐ shortlisted).'), 400);
+  try{ persistProps(); }catch(e){}
+  try{ localStorage.setItem('seeded_ie_homes_v1','1'); }catch(e){}
 }
 
 // ---- Photos (downscaled thumbnails in local storage; capped to protect quota) ----
@@ -2097,6 +2140,129 @@ function mapsUrl(r){
 
 // ---- Schedule: everything time-bound, chronologically ----
 
+
+
+const f2c = f => Math.round((f - 32) * 5 / 9);
+// Typical temperatures by city (approx. 30-yr normals; monthly typical highs + record)
+const CLIMATE = {
+ 'Winchester':   {rec:113, hi:[68,70,74,79,86,94,99,99,95,85,75,67]},
+ 'Menifee':      {rec:113, hi:[67,69,73,78,85,93,99,99,95,84,74,66]},
+ 'Lake Elsinore':{rec:115, hi:[67,69,73,78,85,94,100,100,96,85,75,66]},
+ 'Wildomar':     {rec:112, hi:[67,69,73,78,85,93,99,99,95,84,74,66]},
+ 'Murrieta':     {rec:111, hi:[66,68,72,76,83,91,97,97,93,83,73,65]},
+ 'Temecula':     {rec:112, hi:[66,68,72,76,83,91,96,97,93,83,73,65]},
+ 'Perris':       {rec:114, hi:[67,69,73,78,86,95,101,101,96,85,74,66]},
+ 'Moreno Valley':{rec:115, hi:[67,69,73,78,86,95,101,101,96,85,74,66]},
+ 'Riverside':    {rec:118, hi:[68,70,74,79,85,93,98,99,94,85,75,67]},
+ 'Jurupa Valley':{rec:117, hi:[68,70,74,79,85,93,98,98,94,85,75,67]},
+ 'Corona':       {rec:114, hi:[68,70,73,77,82,89,95,96,92,84,75,68]},
+ 'Ontario':      {rec:114, hi:[67,69,72,76,82,90,97,97,93,84,74,66]},
+ 'Rialto':       {rec:115, hi:[66,68,72,77,84,93,100,100,95,84,73,65]},
+ 'Costa Mesa':   {rec:104, hi:[66,66,67,69,70,73,77,79,78,74,70,66]}
+};
+function cityOf(r){
+  const m1 = (r.name||'').match(/^([^:]+):/);
+  if(m1 && CLIMATE[m1[1].trim()]) return m1[1].trim();
+  for(const c of Object.keys(CLIMATE)) if((r.addr||'').includes(c) || (r.name||'').includes(c)) return c;
+  return null;
+}
+function summerPeak(r){
+  const c = cityOf(r);
+  return c ? f2c(Math.max(...CLIMATE[c].hi.slice(5,9))) : null;
+}
+function climateBlock(r){
+  const c = cityOf(r);
+  if(!c) return '';
+  const d = CLIMATE[c];
+  const hiC = d.hi.map(f2c);
+  const cap = parseFloat(document.getElementById('rq_temp')?.value) || null;
+  const mo = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const mx = Math.max(...hiC), mn = Math.min(...hiC);
+  return `<details class="lib-details"><summary>🌡 Climate — ${c} (full year)</summary>
+    <div style="font-size:.78rem;margin:.3rem 0">Typical summer peak <b>${f2c(Math.max(...d.hi.slice(5,9)))}°C</b> · record ${f2c(d.rec)}°C${cap?` · your cap ${cap}°C`:''}</div>
+    <div class="clim-bars">${hiC.map((h,i)=>`<div class="clim-col"><span class="clim-v">${h}°</span><span class="clim-bar ${h>=38?'hot':h>=32?'warm':''}" style="height:${Math.round((h-mn+3)/(mx-mn+3)*54+6)}px"></span><span class="clim-m">${mo[i]}</span></div>`).join('')}</div>
+    <div style="font-size:.6rem;color:var(--ink-soft)">Typical daily highs by month (°C), not forecasts. Coastal contrast: Costa Mesa peaks ~${f2c(Math.max(...CLIMATE['Costa Mesa'].hi.slice(5,9)))}°C.</div>
+  </details>`;
+}
+function setFeature(id, key){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  if(key==='yard' || key==='loft'){
+    r[key] = r[key]===true ? false : r[key]===false ? null : true;
+  } else if(key==='masjidMi'){
+    const v = prompt('Distance to nearest masjid (miles):', r.masjidMi ?? '');
+    if(v===null) return;
+    r.masjidMi = v.trim()==='' ? null : parseFloat(v);
+  } else if(key==='asianPct'){
+    const v = prompt('Asian % at the zoned school (GreatSchools → Students tab):', r.asianPct ?? '');
+    if(v===null) return;
+    r.asianPct = v.trim()==='' ? null : parseFloat(v);
+  }
+  persistProps(); refreshHomeViews();
+}
+function triTxt(v){ return v===true?'✓ yes':v===false?'✗ no':'? tap'; }
+
+function schoolsBlock(r){
+  const list = r.schools || [];
+  if(!list.length) return '';
+  const icon = t => ({e:'🧒', m:'🎒', h:'🎓'})[(t||'')[0]?.toLowerCase()] || '🏫';
+  const lvl = t => ({e:'Elementary', m:'Middle', h:'High'})[(t||'')[0]?.toLowerCase()] || (t||'School');
+  return `<details class="lib-details" open><summary>🏫 Schools (avg ${schoolAvg(r)!=null?(+schoolAvg(r)).toFixed(1):'?'})</summary>
+    ${list.map(x=>`<div class="schl-row">
+      <span class="schl-ic">${icon(x.type)}</span>
+      <span class="schl-main"><b>${esc(x.name||'School')}</b><i>${lvl(x.type)}</i></span>
+      <span class="schl-r ${x.rating>=8?'good':x.rating>=6?'mid':'low'}">${x.rating!=null?x.rating:'?'}${x.rating!=null?'/10':''}</span>
+    </div>`).join('')}
+    <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.3rem">Ratings from the board data (GreatSchools scale). Tap Features to log Asian % for the zoned school.</div>
+  </details>`;
+}
+
+
+// City-level crime rates per 1,000 residents (approx., public FBI UCR / CA DOJ era data; CA avg ~4.5 violent / ~23 property)
+const SAFETY = {
+ 'Winchester':   {v:2.5, p:12},
+ 'Menifee':      {v:1.6, p:14},
+ 'Lake Elsinore':{v:2.3, p:18},
+ 'Wildomar':     {v:1.9, p:15},
+ 'Murrieta':     {v:1.0, p:11},
+ 'Temecula':     {v:1.2, p:14},
+ 'Perris':       {v:4.4, p:22},
+ 'Moreno Valley':{v:4.3, p:24},
+ 'Riverside':    {v:5.4, p:28},
+ 'Jurupa Valley':{v:3.6, p:22},
+ 'Corona':       {v:2.2, p:18},
+ 'Ontario':      {v:3.6, p:25},
+ 'Rialto':       {v:4.6, p:24},
+ 'Costa Mesa':   {v:2.7, p:25}
+};
+function safetyGrade(c){
+  const d = SAFETY[c]; if(!d) return null;
+  const score = d.v*3 + d.p*0.5;      // violent weighted 6x property per-incident
+  return score<=9 ? 'A' : score<=16 ? 'B' : score<=24 ? 'C' : 'D';
+}
+function safetyBlock(r){
+  const c = cityOf(r);
+  const d = c && SAFETY[c]; if(!d) return '';
+  const g = safetyGrade(c);
+  const vsV = Math.round((d.v/4.5-1)*100), vsP = Math.round((d.p/23-1)*100);
+  const cmp = n => n<=-15?`<b style="color:var(--win-ink)">${Math.abs(n)}% below</b> CA avg`:n>=15?`<b style="color:var(--warn-ink)">${n}% above</b> CA avg`:'about CA average';
+  return `<details class="lib-details"><summary>🛡 Safety — ${c} <span class="sfg sfg-${g}">${g}</span></summary>
+    <div class="sf-row"><span>Violent crime</span><b>${d.v}/1k</b><i>${cmp(vsV)}</i></div>
+    <div class="sf-row"><span>Property crime</span><b>${d.p}/1k</b><i>${cmp(vsP)}</i></div>
+    <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.3rem">Approximate city-level rates from public FBI UCR / CA DOJ data. New-build tracts often differ from city averages — drive the specific neighborhood at night before deciding.</div>
+  </details>`;
+}
+
+function featureBlock(r){
+  return `<details class="lib-details" open><summary>🏡 Features & community</summary>
+    <div class="feat-grid">
+      <button class="feat" onclick="setFeature('${r.id}','yard')"><b>Backyard</b><i class="${r.yard===true?'y':r.yard===false?'n':''}">${triTxt(r.yard)}</i></button>
+      <button class="feat" onclick="setFeature('${r.id}','loft')"><b>Loft</b><i class="${r.loft===true?'y':r.loft===false?'n':''}">${triTxt(r.loft)}</i></button>
+      <button class="feat" onclick="setFeature('${r.id}','masjidMi')"><b>Masjid</b><i>${r.masjidMi!=null?('~'+r.masjidMi+' mi'):'? tap'}</i></button>
+      <button class="feat" onclick="setFeature('${r.id}','asianPct')"><b>Asian % school</b><i>${r.asianPct!=null?(r.asianPct+'%'):'? tap'}</i></button>
+    </div>
+  </details>`;
+}
+
 // ---- Decision matrix ----
 function openMatrix(){
   const pool = PROPS.filter(r=>r.shortlisted && !isRuled(r) && r.price>0);
@@ -2298,7 +2464,7 @@ function renderDetail(){
     return;
   }
   const vmBtn = `<button class="vm-btn vm-cam" onclick="toggleVisitMode()" style="margin:.1rem 0 .6rem">🎒 Start Visit Mode</button>`;
-  document.getElementById('detBody').innerHTML = fitHero + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt?vmBtn:'') + `
+  document.getElementById('detBody').innerHTML = fitHero + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
@@ -2364,6 +2530,8 @@ function metaStr(r){
   if(a != null) bits.push('🎓 ' + (+a).toFixed(1));
   if(r.miles) bits.push('📍 ~' + r.miles + ' mi');
   else if(r.cmin) bits.push('🚗 ' + r.cmin + ' min');
+  const g = typeof safetyGrade==='function' && cityOf(r) ? safetyGrade(cityOf(r)) : null;
+  if(g) bits.push('🛡 ' + g);
   return bits.join(' · ');
 }
 
@@ -2589,15 +2757,20 @@ function openPortal(site){
 
 // ================= Requirements & Dashboard =================
 const REQ_KEY = 'homeReqs_v1';
-const REQ_IDS = ['rq_price','rq_allin','rq_beds','rq_sqft','rq_hoa','rq_school','rq_cmin','rq_year'];
+const REQ_IDS = ['rq_price','rq_allin','rq_beds','rq_sqft','rq_hoa','rq_school','rq_cmin','rq_year','rq_masjid','rq_asian','rq_temp'];
 function saveReqs(){
   const o = {}; REQ_IDS.forEach(id=>o[id]=document.getElementById(id).value);
+  o.rq_yard = document.getElementById('rq_yard')?.checked || false;
+  o.rq_loft = document.getElementById('rq_loft')?.checked || false;
   try{ localStorage.setItem(REQ_KEY, JSON.stringify(o)); }catch(e){}
   renderDash(); if(document.getElementById('libOverlay').classList.contains('open')) renderLib();
 }
 function loadReqs(){
   try{ const o = JSON.parse(localStorage.getItem(REQ_KEY))||{};
+    if(o.rq_temp && parseFloat(o.rq_temp) > 60){ o.rq_temp = String(Math.round((parseFloat(o.rq_temp)-32)*5/9)); try{ localStorage.setItem(REQ_KEY, JSON.stringify(o)); }catch(e){} }
     REQ_IDS.forEach(id=>{ if(o[id]!=null) document.getElementById(id).value = o[id]; });
+    if(document.getElementById('rq_yard')) document.getElementById('rq_yard').checked = !!o.rq_yard;
+    if(document.getElementById('rq_loft')) document.getElementById('rq_loft').checked = !!o.rq_loft;
   }catch(e){}
 }
 function rqv(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; }
@@ -2615,8 +2788,14 @@ function evalReqs(rec, m){
   const ms = rqv('rq_sqft');    add(ms===null?null:(rec.sqft||0)>=ms, 'sqft', 'Sq ft ✓', 'Sq ft '+(rec.sqft||'?')+' < '+ms);
   const mh = rqv('rq_hoa');     add(mh===null?null:(rec.hoa||0)<=mh, 'HOA', 'HOA ✓', 'HOA '+fmt.format(rec.hoa||0)+' > '+fmt.format(mh));
   const sc = rqv('rq_school');  const av = schoolAvg(rec); add(sc===null?null:(av!=null?av>=sc:false), 'schools', 'Schools ✓', av!=null?('Schools '+av.toFixed(1)+' < '+sc):'Schools unknown');
-  const mc = rqv('rq_cmin');    add(mc===null?null:(rec.cmin>0 && rec.cmin<=mc), 'commute', 'Commute ✓', rec.cmin?('Commute '+rec.cmin+'m > '+mc+'m'):'Commute unknown');
+  const mc = rqv('rq_cmin');    const dmn = driveMins(rec); add(mc===null?null:(dmn!=null && dmn<=mc), 'commute', dmn!=null?('Commute ~'+dmn+'m ✓'):'Commute ✓', dmn!=null?('Commute ~'+dmn+'m > '+mc+'m'):'Commute unknown — set miles or minutes on this home');
   const my = rqv('rq_year');    add(my===null?null:(rec.year||0)>=my, 'year', 'Year ✓', rec.year?('Built '+rec.year+' < '+my):'Year unknown');
+  const reqs = (()=>{ try{ return JSON.parse(localStorage.getItem(REQ_KEY))||{}; }catch(e){ return {}; } })();
+  if(reqs.rq_yard) add(rec.yard===true, 'backyard', 'Backyard ✓', rec.yard===false?'No backyard':'Backyard unknown — tap Features');
+  if(reqs.rq_loft) add(rec.loft===true, 'loft', 'Loft ✓', rec.loft===false?'No loft':'Loft unknown — tap Features');
+  const mm = rqv('rq_masjid');  add(mm===null?null:(rec.masjidMi!=null && rec.masjidMi<=mm), 'masjid', 'Masjid ✓', rec.masjidMi!=null?('Masjid ~'+rec.masjidMi+'mi > '+mm+'mi'):'Masjid distance unknown — tap Features');
+  const ma2 = rqv('rq_asian');  add(ma2===null?null:(rec.asianPct!=null && rec.asianPct>=ma2), 'asian%', 'Asian % ✓', rec.asianPct!=null?('Asian '+rec.asianPct+'% < '+ma2+'%'):'School Asian % unknown — tap Features');
+  const mt = rqv('rq_temp');    const pk = summerPeak(rec); add(mt===null?null:(pk!=null && pk<=mt), 'heat', pk!=null?('Summer '+pk+'°C ✓'):'Heat ✓', pk!=null?('Summer peak '+pk+'°C > '+mt+'°C'):'City unknown for climate');
   return checks;
 }
 function fitSummary(checks){
@@ -3069,7 +3248,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v40 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v44 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3278,23 +3457,7 @@ function exportPropsCSV(){
   a.click(); URL.revokeObjectURL(a.href);
 }
 // visit reminder on open (best-effort, fires when app is opened)
-function checkVisitReminders(){
-  // escrow deadlines within 3 days get surfaced on open
-  const dueSoon = [];
-  PROPS.filter(r=>r.offerDate).forEach(r=>{
-    STAGE_DEFS.forEach(d=>{ const st=r.stages?.[d.key];
-      if(st && !st.done){ const due=stageDue(r,d.key); if(due.days<=3) dueSoon.push(d.label+' ('+(r.name||'property')+') '+(due.late?(-due.days)+'d LATE':'in '+due.days+'d')); }
-    });
-  });
-  if(dueSoon.length) setPStatus('p2', '🏁 Escrow: ' + dueSoon.slice(0,3).join('; '));
-  const lateActs = PROPS.filter(r=>r.nextAction && !r.nextAction.done && r.nextAction.due && new Date(r.nextAction.due+'T23:59:00') < Date.now());
-  if(lateActs.length) setPStatus('p3', '☑️ Overdue: ' + lateActs.slice(0,2).map(r=>r.nextAction.txt+' ('+(r.name||'home')+')').join('; '));
-  const soon = PROPS.filter(r=>{ if(!r.visitAt) return false; const d=new Date(r.visitAt)-Date.now(); return d>0 && d<86400000; });
-  if(!soon.length) return;
-  const msg = soon.map(r=>(r.name||'a property')+' — '+new Date(r.visitAt).toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})).join('; ');
-  if('Notification' in window && Notification.permission==='granted'){ try{ new Notification('🏠 House visit coming up', {body: msg}); }catch(e){} }
-  setPStatus('p1', '📅 Upcoming visit: ' + msg);
-}
+function checkVisitReminders(){ /* retired: dashboard Coming up owns reminders now */ }
 
 // ---- Property count ----
 function pCount(){ return parseInt(document.getElementById('s_pcount').value) || 3; }
@@ -3564,7 +3727,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v40 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v44 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -3765,8 +3928,11 @@ let lastTarget = 'p1';
 const busyP = {p1:false, p2:false, p3:false};
 const statusTimers = {};
 const PENDING = {p1:null, p2:null, p3:null};
+let ibTimer = null;
 function setPStatusHTML(p, html){
   document.getElementById('importBar').style.display = 'block';
+  clearTimeout(ibTimer);
+  if(!/⏳/.test(html)) ibTimer = setTimeout(()=>{ document.getElementById('importBar').style.display='none'; }, 7000);
   const el = document.getElementById('imp_'+p);
   clearInterval(statusTimers[p]);
   el.innerHTML = html;
@@ -3831,6 +3997,8 @@ function setPStatus(p, msg, ticking){
   const el = document.getElementById('imp_'+p);
   el.textContent = msg;
   clearInterval(statusTimers[p]);
+  clearTimeout(ibTimer);
+  if(!ticking) ibTimer = setTimeout(()=>{ document.getElementById('importBar').style.display='none'; }, 8000);
   if(ticking){
     const t0 = Date.now();
     statusTimers[p] = setInterval(()=>{

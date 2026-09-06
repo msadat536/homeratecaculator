@@ -572,6 +572,10 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 #q_status.ok{background:var(--win);color:var(--win-ink)}
 #q_status.err{background:var(--warn);color:var(--warn-ink)}
 #importBar{z-index:120}
+
+#importFallback{position:static;background:var(--calc);border:1.5px solid var(--line);border-radius:12px;padding:.7rem;margin-top:.4rem}
+#importFallback textarea{width:100%;min-height:5.5rem;font-family:inherit;font-size:.85rem;border:1.5px solid var(--line);border-radius:8px;padding:.5rem;box-sizing:border-box}
+#importFallback button{background:var(--indigo) !important;color:#fff !important}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1571,6 +1575,9 @@ function describeParsed(d){
   if(d.beds_layout) bits.push(d.beds_layout);
   if(d.year_built) bits.push('built ' + d.year_built);
   if(d.hoa_monthly!=null) bits.push('HOA ' + fmt.format(d.hoa_monthly));
+  if(d.has_backyard!=null) bits.push('backyard: ' + (d.has_backyard?'yes':'no'));
+  if(d.has_loft!=null) bits.push('loft: ' + (d.has_loft?'yes':'no'));
+  if(d.schools && d.schools.length) bits.push(d.schools.length + ' schools');
   return bits.length ? bits.join(' · ') : 'no details recognized';
 }
 
@@ -2949,6 +2956,18 @@ function aiAvailable(){
 }
 
 // Extract JSON from a model reply, repairing truncation (cut-off arrays/objects)
+
+// ---- API cost tracking (Haiku: ~$1/M in, ~$5/M out) ----
+function recordCost(usage, model){
+  try{
+    const inT = (usage && usage.input_tokens) || 0, outT = (usage && usage.output_tokens) || 0;
+    const cents = (inT * 1e-6 * 1 + outT * 5e-6 * 1) * 100;
+    const total = (parseFloat(localStorage.getItem('homeSpend_v1')) || 0) + cents;
+    localStorage.setItem('homeSpend_v1', String(total));
+    return cents;
+  }catch(e){ return 0; }
+}
+
 function parseAIJson(text){
   let t = (text||'').replace(/```json|```/g,'');
   const start = t.indexOf('{');
@@ -3501,7 +3520,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v54 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v56 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3548,8 +3567,9 @@ function upsertProp(p){
   let rec = PROPS.find(x=>x.id===slotPropId[p]);
   if(!rec && data.url) rec = PROPS.find(x=>x.url && x.url===data.url);
   if(!rec) rec = findDuplicate(data);
-  const fl = PENDING[p] && PENDING[p]._flags;
-  const paddr = PENDING[p] && PENDING[p].address;
+  const src = PENDING[p] || LAST_IMPORT[p] || {};
+  const fl = src._flags;
+  const paddr = src.address;
   if(rec){ if(data.price && data.price!==rec.price) trackPrice(rec, rec.price||data.price); Object.assign(rec, data); trackPrice(rec, rec.price); }
   else{
     rec = Object.assign({id:'pr'+Date.now()+Math.floor(Math.random()*999), shortlisted:false, visitAt:'', notes:'', createdAt:Date.now()}, data);
@@ -4011,7 +4031,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v54 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v56 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -4096,6 +4116,16 @@ function scoreDonut(v){
 }
 
 let SCHOOLS = {p1:null, p2:null, p3:null};
+
+function schoolColor(r){
+  if(r == null) return 'var(--calc)';
+  return r >= 8 ? 'var(--win)' : r >= 6 ? '#fef3e2' : 'var(--warn)';
+}
+function gsLink(p){
+  const addr = (PENDING[p] && PENDING[p].address) || (LAST_IMPORT[p] && LAST_IMPORT[p].address) || document.getElementById('name_'+p)?.value || '';
+  return 'https://www.greatschools.org/search/search.page?q=' + encodeURIComponent(addr);
+}
+
 function renderSchools(p){
   const cell = document.getElementById(p+'_school_cell');
   const list = SCHOOLS[p];
@@ -4215,7 +4245,7 @@ const PENDING = {p1:null, p2:null, p3:null};
 let ibTimer = null;
 function setPStatusHTML(p, html){
   if(p === 'p1') qStatus(html, kindOf(html.replace(/<[^>]*>/g,'')), true);
-  document.getElementById('importBar').style.display = 'block';
+  if(!(p === 'p1' && currentPane === 'check')) document.getElementById('importBar').style.display = 'block';
   clearTimeout(ibTimer);
   if(!/⏳/.test(html)) ibTimer = setTimeout(()=>{ document.getElementById('importBar').style.display='none'; }, 7000);
   const el = document.getElementById('imp_'+p);
@@ -4223,6 +4253,7 @@ function setPStatusHTML(p, html){
   el.innerHTML = html;
 }
 const UNDO = {p1:null, p2:null, p3:null};
+const LAST_IMPORT = {p1:null, p2:null, p3:null};
 function snapshot(p){
   const ids = ['_price','_sqft','_hoa','_mr','_taxr','_ins','_cmin','_year'].map(x=>p+x);
   const texts = ['name_'+p, p+'_url', p+'_beds', p+'_yard'];
@@ -4234,6 +4265,7 @@ function snapshot(p){
 }
 function applyImport(p){
   const d = PENDING[p]; if(!d) return;
+  d._flags = {yard: d.has_backyard!=null ? !!d.has_backyard : (d.yard_lot ? /yard/i.test(d.yard_lot) : null), loft: d.has_loft!=null ? !!d.has_loft : null};
   UNDO[p] = snapshot(p);
   const filled = [];
   if(d.address){
@@ -4256,6 +4288,7 @@ function applyImport(p){
   if(d.commute_minutes_oneway){ set(p+'_cmin', d.commute_minutes_oneway); filled.push('commute est.'); }
   if(d.seller_credit){ set(p+'_cred', d.seller_credit); filled.push('seller credit'); }
   if(d.incentives){ document.getElementById(p+'_incnote').value = d.incentives; filled.push('incentives'); }
+  LAST_IMPORT[p] = {_flags: PENDING[p] && PENDING[p]._flags, address: PENDING[p] && PENDING[p].address};
   PENDING[p] = null;
   calc();
   upsertProp(p);  // an imported listing is a property worth keeping
@@ -4286,7 +4319,8 @@ function qStatus(msg, kind, html){
 }
 function kindOf(msg){ return /^⏳/.test(msg) ? 'busy' : /^✓/.test(msg) ? 'ok' : /^✗/.test(msg) ? 'err' : 'busy'; }
 function setPStatus(p, msg, ticking){
-  document.getElementById('importBar').style.display = 'block';
+  const inlineOnly = (p === 'p1' && currentPane === 'check');
+  if(!inlineOnly) document.getElementById('importBar').style.display = 'block';
   const el = document.getElementById('imp_'+p);
   el.textContent = msg;
   if(p === 'p1') qStatus(msg, kindOf(msg));
@@ -4419,7 +4453,7 @@ async function importFor(p, input){
     let fitNote = '';
     try{
       const rec1 = {price:g(p+'_price'), sqft:g(p+'_sqft'), beds:document.getElementById(p+'_beds').value, hoa:g(p+'_hoa'), year:g(p+'_year'), cmin:g(p+'_cmin'), schools:SCHOOLS[p],
-        hasYard: PENDING[p]._flags?.yard===true?true:undefined, loft: PENDING[p]._flags?.loft===true?true:undefined,
+        hasYard: LAST_IMPORT[p]?._flags?.yard===true?true:undefined, loft: LAST_IMPORT[p]?._flags?.loft===true?true:undefined,
         name:document.getElementById('name_'+p).value, addr:d.address||''};
       const f1 = fitSummary(evalReqs(rec1, computeRec(rec1, {takehome:g('takehome'), maint:gOr('maint',1)})));
       if(f1) fitNote = ' → meets ' + f1.ok + '/' + f1.total + ' of your criteria so far.';
@@ -4427,7 +4461,10 @@ async function importFor(p, input){
     setPStatus(p, '✓ Filled: ' + describeParsed(d) + fitNote + ' Verify the price, then 💾 Save.');
   }catch(err){
     setPStatusHTML(p, '✗ ' + (err.message||'import failed') + '. Free fallbacks: 📷 scan a screenshot, or paste the listing text below:');
-    document.getElementById('importFallback').style.display = 'block';
+    const fb = document.getElementById('importFallback');
+    const qs = document.getElementById('q_status');
+    if(qs && fb && fb.parentElement !== qs.parentElement) qs.after(fb);
+    fb.style.display = 'block';
   }finally{ importBusy = false; }
 }
 

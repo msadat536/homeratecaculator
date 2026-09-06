@@ -830,6 +830,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 
 <!-- Shared assumptions -->
 <!-- Listing import status + fallback (hidden until a URL is pasted) -->
+<div id="backHint" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:5.5rem;background:rgba(20,26,38,.92);color:#fff;font-size:.8rem;font-weight:700;padding:.55rem .9rem;border-radius:99px;z-index:130">Press back again to exit</div>
 <div id="importBar" style="display:none;position:fixed;bottom:1.2rem;right:1.2rem;z-index:80;max-width:420px;width:calc(100vw - 2.4rem);background:var(--ink);color:#fff;border-radius:12px;padding:.9rem 1.1rem;box-shadow:0 10px 30px rgba(0,0,0,.35)">
   <div style="display:flex;justify-content:space-between;gap:.8rem;align-items:flex-start">
     <div id="importStatus" style="font-size:.8rem;line-height:1.5">
@@ -2602,6 +2603,41 @@ function schedGo(id){
   openDetail(id);
 }
 
+
+// ---- Android back button: overlays close, then Dashboard, then double-back to exit ----
+let _backArmed = 0;
+function topOverlayClose(){
+  const pv = document.getElementById('photoView');
+  if(pv && pv.classList.contains('open')){ pv.classList.remove('open'); return true; }
+  const dv = document.getElementById('docView');
+  if(dv && dv.style.display === 'flex'){ closeDoc(); return true; }
+  const det = document.getElementById('detailOverlay');
+  if(det && det.style.display === 'block'){ closeDetail(); return true; }
+  const dm = document.getElementById('dmOverlay');
+  if(dm && dm.style.display === 'block'){ dm.style.display = 'none'; return true; }
+  const sc = document.getElementById('schedOverlay');
+  if(sc && sc.style.display === 'block'){ sc.style.display = 'none'; return true; }
+  const st = document.getElementById('settingsOverlay');
+  if(st && st.classList.contains('open')){ st.classList.remove('open'); calc(); return true; }
+  const cmp = document.getElementById('cmpOverlay');
+  if(cmp && cmp.classList.contains('open')){ cmp.classList.remove('open'); return true; }
+  return false;
+}
+function backGuard(){ try{ history.pushState({hc:1}, ''); }catch(e){} }
+window.addEventListener('popstate', ()=>{
+  if(topOverlayClose()){ backGuard(); return; }
+  if(currentPane !== 'dashboard'){ showPane('dashboard'); backGuard(); return; }
+  const now = Date.now();
+  if(now - _backArmed < 2200){
+    try{ history.back(); }catch(e){}   // second back within window: let the app close
+    return;
+  }
+  _backArmed = now;
+  backGuard();
+  const h = document.getElementById('backHint');
+  if(h){ h.style.display = 'block'; setTimeout(()=>{ h.style.display = 'none'; }, 2100); }
+});
+
 // ---- Tile navigation ----
 let LIB_VIEW = 'all';   // all | star | visited
 function goHomes(view){
@@ -3520,7 +3556,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v56 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v57 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4031,7 +4067,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v56 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v57 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -4561,6 +4597,7 @@ window.onload = function(){
   detachShell();
   applyDeviceLayout();
   fitScale();
+  backGuard();
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); seedHomes(); migratePhotos(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };

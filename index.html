@@ -477,6 +477,30 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .det-meta{font-size:.84rem;color:#4a5361;font-weight:600;margin:-.2rem 0 .7rem;line-height:1.6}
 
 .det-stats{display:flex;gap:1rem;flex-wrap:wrap;font-size:.86rem;font-weight:700;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:.6rem .8rem;margin-bottom:.7rem}
+
+.gut{display:flex;align-items:center;gap:.15rem}
+.gut-s{font-size:1.5rem;color:#d5d9e2;cursor:pointer;line-height:1}
+.gut-s.on{color:#f2a71b}
+.gut i{font-style:normal;font-size:.72rem;font-weight:700;color:var(--ink-soft);margin-left:.4rem}
+.ask-row{display:flex;width:100%;gap:.6rem;align-items:flex-start;background:none;border:none;border-bottom:1px dashed var(--line);font-family:inherit;text-align:left;padding:.6rem 0;cursor:pointer}
+.ask-row span:first-child{font-size:1.05rem;flex-shrink:0}
+.ask-q{min-width:0}
+.ask-q b{display:block;font-size:.86rem;color:var(--ink)}
+.ask-q i{font-style:normal;font-size:.78rem;color:var(--win-ink);white-space:pre-wrap}
+.ask-row.done .ask-q b{color:var(--ink-soft)}
+.ph-cap{font-size:.6rem;color:var(--ink-soft);max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.vm-btn{width:100%;font-family:inherit;font-weight:800;font-size:1rem;border:none;border-radius:14px;padding:1rem;cursor:pointer;margin-bottom:.6rem}
+.vm-cam{background:var(--indigo);color:#fff}
+.vm-voice{background:#fff;border:1.5px solid var(--indigo);color:var(--indigo)}
+.vm-voice.rec{background:var(--warn);color:var(--warn-ink);border-color:transparent}
+.vm-banner{display:flex;justify-content:space-between;align-items:center;background:#10b981;color:#fff;border-radius:12px;padding:.6rem .8rem;font-weight:800;font-size:.9rem;margin-bottom:.6rem}
+.vm-banner button{background:rgba(255,255,255,.25);border:none;color:#fff;font-family:inherit;font-weight:700;border-radius:8px;padding:.35rem .7rem;cursor:pointer}
+.ph-cell{display:inline-flex;flex-direction:column;gap:.15rem;align-items:center}
+
+.dm-rank{font-weight:800;font-size:1rem;color:var(--ink-soft);flex-shrink:0;width:2.2rem;text-align:center}
+.dm-rank.top{color:#b8860b;font-size:1.15rem}
+.dm-bar{height:6px;background:var(--calc);border-radius:99px;margin:.3rem 0 .2rem;overflow:hidden}
+.dm-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--indigo),#7c6cf0);border-radius:99px}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1081,7 +1105,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <option value="cash">Lowest cash to close</option>
         <option value="ppsf">Best $ / sq ft</option>
         <option value="school">School rating</option>
-        <option value="commute">Shortest commute</option>
+        <option value="commute">📍 Closest to work</option>
         <option value="rate">Lowest rate (APR)</option>
         <option value="visit">Visit date</option>
         <option value="newest">Recently added</option>
@@ -1126,10 +1150,11 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <button class="portalbtn" onclick="openPortal('homes')">Homes</button>
       </div>
       <div id="d_find"></div></div></details>
-    <details class="dgroup"><summary>🏆 Best fits</summary><div class="dg-body">
+    <details class="dgroup"><summary>🏆 Best fits</summary><div class="dg-body"><button class="aibtn" style="margin-bottom:.5rem" onclick="openMatrix()">🏆 Decision matrix — rank my shortlist</button>
       <div id="d_rank"></div></div></details>
     </div>
     <div id="dashDiag" style="font-size:.55rem;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;text-align:center;margin:.2rem 0 .4rem"></div>
+    <details class="dgroup" ontoggle="if(this.open)renderChanged()"><summary>📣 What changed</summary><div class="dg-body"><div id="d_changed"></div></div></details>
     <details class="dgroup"><summary>💾 Backup</summary><div class="dg-body">
       <div id="d_backup"></div></div></details>
     <details class="dgroup"><summary>📈 Numbers</summary><div class="dg-body">
@@ -1209,6 +1234,15 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   <div class="qwrap">
     <div class="qhead"><b id="detTitle">Home</b><div style="display:flex;gap:.4rem"><button id="detMap">📍 Map</button><button onclick="closeDetail()">← Back</button></div></div>
     <div class="qcard" id="detBody"></div>
+  </div>
+</div>
+
+<!-- Decision matrix -->
+<div id="dmOverlay" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:74;overflow-y:auto;-webkit-overflow-scrolling:touch">
+  <div class="qwrap">
+    <div class="qhead"><b>🏆 Decision matrix</b><div><button onclick="document.getElementById('dmOverlay').style.display='none'">← Back</button></div></div>
+    <div style="font-size:.72rem;color:var(--ink-soft);margin-bottom:.6rem">Your ⭐ shortlist, ranked. Score = criteria fit (40%) + monthly cost headroom (20%) + distance (15%) + schools (15%) + your gut (10%).</div>
+    <div id="dmBody"></div>
   </div>
 </div>
 
@@ -1689,11 +1723,11 @@ function setFlex(id, v){
 
 // ===== Visit inspection checklist =====
 const INSPECT_ITEMS = ['Water pressure (run 2 taps + flush)','Electrical panel age & brand','HVAC age & condition','Roof condition / age','Windows & seals','Signs of water damage / smell','Noise level (street, neighbors, flight path)','Cell signal in every room','Yard drainage & fencing','Parking & street at rush hour'];
-function inspectBlock(r){
+function inspectBlock(r, open){
   const st = r.inspect || {};
   const done = Object.keys(st).length;
   const flags = INSPECT_ITEMS.filter((_,i)=>st[i]==='warn'||st[i]==='bad');
-  return `<details class="lib-details"><summary>🔍 Visit inspection (${done}/${INSPECT_ITEMS.length}${flags.length?' · '+flags.length+'⚠':''})</summary>
+  return `<details class="lib-details" ${open?"open":""}><summary>🔍 Visit inspection (${done}/${INSPECT_ITEMS.length}${flags.length?' · '+flags.length+'⚠':''})</summary>
     ${INSPECT_ITEMS.map((t,i)=>{
       const v = st[i]||'';
       return `<button class="insp-row ${v}" onclick="cycleInspect('${r.id}',${i})"><span class="insp-mark">${v==='ok'?'✅':v==='warn'?'⚠️':v==='bad'?'❌':'○'}</span><span>${t}</span></button>`;
@@ -1887,7 +1921,8 @@ function delComm(id, i){
 }
 function commsBlock(r){
   const cs = r.comms||[];
-  return `<details class="lib-details"><summary>💬 Conversations (${cs.length})</summary>
+  return `${asksBlock(r, false)}
+      <details class="lib-details"><summary>💬 Conversations (${cs.length})</summary>
     ${cs.slice().reverse().map((c)=>{ const idx = cs.indexOf(c);
       return `<div class="comm"><div class="c-meta"><span>${new Date(c.t).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}${c.src==='scan'?' · 📷 from screenshot':''}</span><button onclick="delComm('${r.id}',${idx})">delete</button></div>${esc(c.txt).replace(/\n/g,'<br>')}${c.img?`<img src="${c.img}" style="max-width:110px;border-radius:8px;border:1px solid var(--line);margin-top:.3rem;cursor:pointer" onclick="viewCommImg('${r.id}',${idx})">`:''}</div>`;}).join('')}
     <div class="comm-add"><textarea id="comm_in_${r.id}" placeholder="Paste a text/email from your agent, or note a call…"></textarea>
@@ -1967,9 +2002,10 @@ function photosBlock(r){
   const ph = r.photos||[];
   setTimeout(()=>hydratePhotos(r.id), 30);
   return `<div class="ph-strip" data-home="${r.id}">${ph.map((p,i)=>
-    typeof p === 'string' && p.startsWith('data:')
+    `<span class="ph-cell">` + (typeof p === 'string' && p.startsWith('data:')
       ? `<img class="ph-thumb" src="${p}" onclick="viewPhoto('${r.id}',${i})">`
-      : `<img class="ph-thumb" data-pid="${p}" alt="" onclick="viewPhoto('${r.id}',${i})">`
+      : `<img class="ph-thumb" data-pid="${p}" alt="" onclick="viewPhoto('${r.id}',${i})">`)
+      + `<span class="ph-cap" role="button" onclick="setCaption('${r.id}','${p}')">${(r.photoCaps&&r.photoCaps[p])?esc(r.photoCaps[p]):'＋ caption'}</span></span>`
   ).join('')}
     <label class="ph-add" title="Add photo">＋<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${r.id}', this)"></label></div>`;
 }
@@ -2060,6 +2096,50 @@ function mapsUrl(r){
 }
 
 // ---- Schedule: everything time-bound, chronologically ----
+
+// ---- Decision matrix ----
+function openMatrix(){
+  const pool = PROPS.filter(r=>r.shortlisted && !isRuled(r) && r.price>0);
+  const el = document.getElementById('dmBody');
+  if(pool.length < 2){
+    el.innerHTML = '<div class="qcard" style="font-size:.88rem;color:var(--ink-soft)">Shortlist at least two homes (⭐) and they get ranked here.</div>';
+  } else {
+    const budget = parseFloat(document.getElementById('rq_allin')?.value) || 3500;
+    const rows = pool.map(r=>{
+      const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
+      const m = computeRec(r, sh);
+      const f = fitSummary(evalReqs(r, m));
+      const fitS = f ? f.ok/f.total : 0.5;
+      const headroom = Math.max(0, Math.min(1, (budget - m.allin)/budget + 0.5));
+      const dm = driveMins(r);
+      const distS = dm==null ? 0.5 : Math.max(0, Math.min(1, 1 - (dm-30)/90));
+      const sa = schoolAvg(r);
+      const schS = sa==null ? 0.5 : Math.max(0, Math.min(1, sa/10));
+      const gutS = r.gut ? r.gut/5 : 0.5;
+      const score = fitS*40 + headroom*20 + distS*15 + schS*15 + gutS*10;
+      return {r, m, f, score, parts:{fit:fitS*40, cost:headroom*20, dist:distS*15, sch:schS*15, gut:gutS*10}};
+    }).sort((a,b)=>b.score-a.score);
+    const max = rows[0].score;
+    el.innerHTML = rows.map((x,i)=>{
+      const why = Object.entries(x.parts).sort((a,b)=>b[1]-a[1]).slice(0,2)
+        .map(([k])=>({fit:'criteria fit', cost:'monthly cost', dist:'distance', sch:'schools', gut:'your gut'}[k])).join(' + ');
+      return `<button class="qcard dm-row" style="width:100%;text-align:left;font-family:inherit;cursor:pointer;border:none" onclick="openDetail('${x.r.id}')">
+        <div style="display:flex;gap:.7rem;align-items:center">
+          <span class="dm-rank ${i===0?'top':''}">#${i+1}</span>
+          <div style="flex:1;min-width:0">
+            <b style="font-size:.95rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.r.name)}</b>
+            <i style="font-style:normal;font-size:.74rem;color:var(--ink-soft)">${x.f?x.f.ok+'/'+x.f.total+' fit':''} · ${fmt.format(x.m.allin)}/mo${metaStr(x.r)?' · '+metaStr(x.r):''}${x.r.gut?' · '+'★'.repeat(x.r.gut):''}</i>
+            <div class="dm-bar"><span style="width:${Math.round(x.score/max*100)}%"></span></div>
+            <i style="font-style:normal;font-size:.68rem;color:var(--indigo);font-weight:700">${i===0?'Leads on ':'Strong on '}${why}</i>
+          </div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.05rem">${Math.round(x.score)}</span>
+        </div>
+      </button>`;
+    }).join('');
+  }
+  document.getElementById('dmOverlay').style.display = 'block';
+}
+
 function openSchedule(){
   const items = collectScheduleItems();
   const el = document.getElementById('schedBody');
@@ -2075,7 +2155,11 @@ function openSchedule(){
         : d.toDateString()===tomorrow.toDateString() ? 'Tomorrow'
         : d.toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'});
       const overdue = x.t < Date.now();
-      if(dayLabel !== lastDay){ html += `<div class="sch-day">${dayLabel}</div>`; lastDay = dayLabel; }
+      if(dayLabel !== lastDay){
+        const routeU = dayRouteUrl(d.toDateString());
+        html += `<div class="sch-day" style="display:flex;justify-content:space-between;align-items:center">${dayLabel}${routeU?`<a href="${routeU}" target="_blank" rel="noopener" style="font-size:.72rem;text-decoration:none;font-weight:800;color:var(--indigo)">🗺 Route the day</a>`:''}</div>`;
+        lastDay = dayLabel;
+      }
       const rr = PROPS.find(p=>p.id===x.id);
       html += `<div class="up-row ${overdue?'late':''}"><button class="up-main" onclick="schedGo('${x.id}')">
         <span class="sch-ic">${x.ic}</span>
@@ -2101,6 +2185,75 @@ function goHomes(view){
   showPane('lib');
 }
 
+
+
+// ---- Visit Mode + field tools ----
+let VISIT_MODE = false;
+const DEFAULT_ASKS = ['Lot premium on this homesite?','Confirm total tax rate incl. Mello-Roos','Incentive — exact terms & expiration?','What does HOA cover?','Build/close timeline?','Which upgrades are included vs extra?'];
+function ensureAsks(r){
+  if(!r.asks){ r.asks = DEFAULT_ASKS.map(q=>({q, a:'', done:false})); }
+  return r.asks;
+}
+function setGut(id, n){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.gut = (r.gut === n) ? null : n;
+  persistProps(); refreshHomeViews();
+}
+function gutStars(r, interactive){
+  const g = r.gut || 0;
+  return `<div class="gut">${[1,2,3,4,5].map(n=>
+    `<span class="gut-s ${n<=g?'on':''}" ${interactive?`role="button" onclick="setGut('${r.id}',${n})"`:''}>★</span>`).join('')}${g?`<i>${['','pass','meh','maybe','strong','love it'][g]}</i>`:''}</div>`;
+}
+function askRow(id, i){
+  const r = PROPS.find(x=>x.id===id); const a = r.asks[i];
+  const ans = prompt(a.q, a.a || '');
+  if(ans === null) return;
+  a.a = ans.trim(); a.done = !!a.a;
+  persistProps(); refreshHomeViews();
+}
+function addAsk(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const q = prompt('Question to ask:'); if(!q || !q.trim()) return;
+  ensureAsks(r).push({q:q.trim(), a:'', done:false});
+  persistProps(); refreshHomeViews();
+}
+function asksBlock(r, open){
+  const asks = ensureAsks(r);
+  const done = asks.filter(a=>a.done).length;
+  return `<details class="lib-details" ${open?'open':''}><summary>❓ Ask the sales office (${done}/${asks.length})</summary>
+    ${asks.map((a,i)=>`<button class="ask-row ${a.done?'done':''}" onclick="askRow('${r.id}',${i})">
+      <span>${a.done?'✅':'⬜'}</span><span class="ask-q"><b>${esc(a.q)}</b>${a.a?`<i>${esc(a.a)}</i>`:''}</span></button>`).join('')}
+    <button class="aibtn" style="margin-top:.4rem;background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" onclick="addAsk('${r.id}')">＋ Add question</button>
+  </details>`;
+}
+function setCaption(id, pid){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.photoCaps = r.photoCaps || {};
+  const c = prompt('Caption for this photo:', r.photoCaps[pid] || '');
+  if(c === null) return;
+  if(c.trim()) r.photoCaps[pid] = c.trim(); else delete r.photoCaps[pid];
+  persistProps(); refreshHomeViews();
+}
+let recog = null;
+function voiceNote(id){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert('Voice input needs Chrome.'); return; }
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  if(recog){ recog.stop(); recog = null; return; }
+  recog = new SR();
+  recog.lang = 'en-US'; recog.continuous = true; recog.interimResults = false;
+  const btn = document.getElementById('vmVoice'); if(btn){ btn.textContent = '⏹ Stop'; btn.classList.add('rec'); }
+  recog.onresult = e=>{
+    const t = [...e.results].slice(e.resultIndex).map(x=>x[0].transcript).join(' ').trim();
+    if(t){ r.notes = ((r.notes||'') + '\n🎤 ' + t).trim(); persistProps(); }
+  };
+  recog.onend = ()=>{ recog = null; const b = document.getElementById('vmVoice'); if(b){ b.textContent = '🎤 Voice note'; b.classList.remove('rec'); } refreshHomeViews(); };
+  recog.start();
+}
+function toggleVisitMode(){
+  VISIT_MODE = !VISIT_MODE;
+  renderDetail();
+}
 
 function refreshHomeViews(){
   if(document.getElementById('detailOverlay').style.display === 'block') renderDetail();
@@ -2131,14 +2284,29 @@ function renderDetail(){
     ? `<div class="fit-hero">${fitBadge(f,'big')}<div class="fh-txt"><b>${f.ok===f.total?'Meets every one of your criteria':'Meets '+f.ok+' of your '+f.total+' criteria'}</b><i>${f.ok===f.total?'This one checks out — see the list below.':'Misses: '+evalReqs(r, m).filter(c=>!c.ok).map(c=>c.txt).slice(0,3).join(' · ')}</i></div></div>`
     : `<div class="fit-hero">${fitBadge(null,'big')}<div class="fh-txt"><b>No criteria set yet</b><i>Define your requirements in ⚙ and every home gets scored against them.</i></div></div>`;
   const detMeta = [r.beds?('🛏 '+r.beds):null, r.sqft?('📐 '+r.sqft.toLocaleString()+' sf'):null, metaStr(r)||null, r.hoa?('HOA $'+r.hoa):null].filter(Boolean).join(' · ');
-  document.getElementById('detBody').innerHTML = fitHero + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + `
+  if(VISIT_MODE){
+    document.getElementById('detBody').innerHTML = `
+      <div class="vm-banner"><span>🎒 Visit Mode</span><button onclick="toggleVisitMode()">Done visiting</button></div>
+      ${detMeta?`<div class="det-meta">${detMeta}</div>`:''}
+      <div style="margin:.4rem 0 .7rem"><b style="font-size:.85rem">Gut feel:</b> ${gutStars(r, true)}</div>
+      <label class="vm-btn vm-cam" style="display:block;text-align:center">📷 Take photos<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto('${r.id}', this)"></label>
+      <button class="vm-btn vm-voice" id="vmVoice" onclick="voiceNote('${r.id}')">🎤 Voice note</button>
+      ${photosBlock(r)}
+      ${inspectBlock(r, true)}
+      ${asksBlock(r, true)}
+      <details class="lib-details"><summary>📝 Notes</summary><textarea class="lib-notes" onchange="setNotes('${r.id}', this.value)">${esc(r.notes||'')}</textarea></details>`;
+    return;
+  }
+  const vmBtn = `<button class="vm-btn vm-cam" onclick="toggleVisitMode()" style="margin:.1rem 0 .6rem">🎒 Start Visit Mode</button>`;
+  document.getElementById('detBody').innerHTML = fitHero + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt?vmBtn:'') + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
         <div class="lib-addr" style="flex:1;min-width:8rem;text-align:right" title="${(r.url||'').replace(/"/g,'')}">${cleanUrl(r.url)}</div>
       </div>
-      ${(()=>{const f=fitSummary(evalReqs(r, m)); return f?`<span class="fitpill ${f.cls}">${f.ok}/${f.total} criteria met</span>`:''})()}
-      ${(r.cred>0||r.incval>0||r.incnote)?`<div style="font-size:.68rem;background:linear-gradient(120deg,#fff7ed,#fef3e2);border:1px solid #fde3b8;color:#92600a;border-radius:8px;padding:.3rem .55rem;margin:.15rem 0 .35rem;font-weight:600">🎁 ${[r.cred>0?fmt.format(r.cred)+' credit at close':null, r.incval>0?fmt.format(r.incval)+' other incentives':null, r.incnote||null].filter(Boolean).join(' · ')}</div>`:''}
+      ${r.ruledOut?`<div style="background:var(--warn);color:var(--warn-ink);border-radius:10px;padding:.5rem .7rem;font-size:.8rem;font-weight:700;margin:.3rem 0">❌ Ruled out — ${esc(r.ruledOut.why)}</div>`:''}
+      <div style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0 .5rem"><b style="font-size:.82rem">Gut:</b>${gutStars(r, true)}</div>
+      ${(r.cred>0||r.incval>0||r.incnote)?`<div role="button" onclick="setIncExp('${r.id}')" style="font-size:.68rem;background:linear-gradient(120deg,#fff7ed,#fef3e2);border:1px solid #fde3b8;color:#92600a;border-radius:8px;padding:.3rem .55rem;margin:.15rem 0 .35rem;font-weight:600;cursor:pointer">🎁 ${[r.cred>0?fmt.format(r.cred)+' credit at close':null, r.incval>0?fmt.format(r.incval)+' other incentives':null, r.incnote||null].filter(Boolean).join(' · ')}${r.incExp?` · <b>expires ${new Date(r.incExp+'T12:00').toLocaleDateString([],{month:'short',day:'numeric'})}</b>`:' · tap to add expiry'}</div>`:''}
       ${v ? `<div class="lib-visit ${v.soon?'soon':''}">📅 ${v.past?'Visited':'Visiting'} ${v.when}${(!v.past && v.days>=0)?` · in ${v.days}d`:''}</div>` : ''}
       <div class="lib-nums">
         <div class="lib-num"><b>${fmt.format(r.price||0)}</b><span>Price</span></div>
@@ -2180,6 +2348,9 @@ function renderDetail(){
              <button onclick="loadPropInto('${r.id}','p3');closeLib();">→ Slot 3</button>`}
         ${r.url && /^https?:/.test(r.url) ? `<button onclick="window.open('${r.url}','_blank')">Listing ↗</button>` : ''}
         <button onclick="shareCard('${r.id}')">📤 Share</button>
+        ${r.ruledOut
+          ? `<button class="del" style="background:#fff;color:var(--win-ink);border:1.5px solid var(--win-ink)" onclick="unRule('${r.id}')">↩ Un-rule</button>`
+          : `<button class="del" style="background:#fff;color:#92600a;border:1.5px solid #e5b96b" onclick="ruleOut('${r.id}')">❌ Rule out</button>`}
         <button class="del" onclick="delProp(this,'${r.id}')">Delete</button>
       </div>
     </div>`;
@@ -2206,6 +2377,21 @@ function schTxt(r){
   const a = schoolAvg(r);
   return a != null ? '🏫 ' + (+a).toFixed(1) : '';
 }
+
+
+function ruleOut(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const why = prompt('Why are you ruling this one out?', '');
+  if(why === null) return;
+  r.ruledOut = {t: Date.now(), why: why.trim() || 'ruled out'};
+  persistProps(); closeDetail(); renderLib(); renderDash();
+}
+function unRule(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  delete r.ruledOut;
+  persistProps(); refreshHomeViews(); renderDash();
+}
+function isRuled(r){ return !!r.ruledOut || /❌ Board: RULED OUT/.test(r.notes||''); }
 
 // ---- The crux: criteria fit, visible everywhere ----
 function fitOf(r){
@@ -2679,11 +2865,34 @@ function renderDashExtras(sh){
 }
 
 
+
+// ---- Drive-time: leave-by + day routing ----
+function driveMins(r){
+  if(r.cmin) return r.cmin;
+  if(r.miles != null) return Math.round(r.miles / 55 * 60 + 10);
+  return null;
+}
+function leaveBy(r){
+  if(!r.visitAt) return null;
+  const dm = driveMins(r);
+  if(dm == null) return null;
+  const t = new Date(+new Date(r.visitAt) - dm*60000);
+  return '🚗 leave by ' + t.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+}
+function dayRouteUrl(dateStr){
+  const day = PROPS.filter(r=>r.visitAt && new Date(r.visitAt).toDateString()===dateStr && (r.addr || r.name))
+    .sort((a,b)=>+new Date(a.visitAt)-+new Date(b.visitAt));
+  if(day.length < 2) return null;
+  const pts = day.map(r=>encodeURIComponent(r.addr || (r.name.replace(/^[^:]+:\s*/,'') + ' CA')));
+  return 'https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=' + pts[pts.length-1] +
+    (pts.length>2 ? '&waypoints=' + pts.slice(0,-1).join('%7C') : '&waypoints=' + pts[0]);
+}
+
 function collectScheduleItems(){
   const items = [];
   PROPS.forEach(r=>{
     if(r.visitAt && new Date(r.visitAt) >= Date.now() - 86400000)
-      items.push({t:+new Date(r.visitAt), ic:'🏠', what:'Visit: ' + (r.name||'home'), sub:new Date(r.visitAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}) + (fitOf(r)?' · '+fitOf(r).ok+'/'+fitOf(r).total+' fit':'') + (metaStr(r)?' · '+metaStr(r):''), id:r.id, map:true});
+      items.push({t:+new Date(r.visitAt), ic:'🏠', what:'Visit: ' + (r.name||'home'), sub:[new Date(r.visitAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}), leaveBy(r), fitOf(r)?fitOf(r).ok+'/'+fitOf(r).total+' fit':null, metaStr(r)||null].filter(Boolean).join(' · '), id:r.id, map:true});
     if(r.nextAction && !r.nextAction.done && r.nextAction.due)
       items.push({t:+new Date(r.nextAction.due+'T17:00:00'), ic:'☑️', what:r.nextAction.txt, sub:(r.name||''), id:r.id});
     if(r.offerDate)
@@ -2700,7 +2909,7 @@ function goFit(){
 function renderFitStrip(){
   const el = document.getElementById('d_fitstrip'); if(!el) return;
   const reqSet = REQ_IDS.some(id=>document.getElementById(id)?.value);
-  const live = PROPS.filter(r=>r.price>0 && !/❌ Board: RULED OUT/.test(r.notes||''));
+  const live = PROPS.filter(r=>r.price>0 && !isRuled(r));
   if(!reqSet){
     el.style.display = 'flex';
     el.innerHTML = '<span style="font-size:1.3rem">🎯</span><span><b>Set your criteria</b><i>Then every home everywhere gets a fit score — the whole point.</i></span>';
@@ -2717,9 +2926,50 @@ function renderFitStrip(){
   el.innerHTML = '<span style="font-size:1.3rem">🎯</span><span style="flex:1"><b>' + all + ' home' + (all===1?'':'s') + ' meet all ' + total + ' criteria</b><i>' + most + ' at ' + (total-1) + '+ · tap to rank every home by fit</i></span><span class="fitb ' + (all?'all':'most') + '">' + all + '</span>';
 }
 
+
+function needsImpressions(r){
+  if(!r.visitAt) return false;
+  const vt = +new Date(r.visitAt);
+  if(vt > Date.now() || vt < Date.now() - 14*86400000) return false;
+  if(r.gut) return false;
+  if((r.comms||[]).some(c=>c.t > vt)) return false;
+  return true;
+}
+
+
+function setIncExp(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const d = prompt('Incentive expiration (YYYY-MM-DD), blank to clear:', r.incExp || '');
+  if(d === null) return;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d.trim())) r.incExp = d.trim();
+  else if(!d.trim()) delete r.incExp;
+  else { alert('Use YYYY-MM-DD.'); return; }
+  persistProps(); refreshHomeViews(); renderDash();
+}
+function priceDrops(){
+  return PROPS.filter(r=>!isRuled(r) && (r.priceHist||[]).length>=2 && r.priceHist[r.priceHist.length-1].p < Math.max(...r.priceHist.map(h=>h.p)))
+    .map(r=>({r, drop: Math.max(...r.priceHist.map(h=>h.p)) - r.priceHist[r.priceHist.length-1].p}));
+}
+function expiringIncs(){
+  const soon = Date.now() + 14*86400000;
+  return PROPS.filter(r=>!isRuled(r) && r.incExp && +new Date(r.incExp+'T23:59') > Date.now()-86400000 && +new Date(r.incExp+'T00:00') < soon);
+}
+function renderChanged(){
+  const el = document.getElementById('d_changed'); if(!el) return;
+  const drops = priceDrops(), incs = expiringIncs();
+  if(!drops.length && !incs.length){ el.innerHTML = '<div style="font-size:.8rem;color:var(--ink-soft)">No price drops or expiring incentives among your saved homes right now. Re-import a listing (Go on its link) to refresh its price.</div>'; return; }
+  el.innerHTML =
+    drops.map(x=>`<button class="up-main" onclick="openDetail('${x.r.id}')"><span class="sch-ic">▼</span><span class="sch-main"><b>${esc(x.r.name)}</b><i>price down ${fmt.format(x.drop)} · now ${fmt.format(x.r.price)}</i></span></button>`).join('') +
+    incs.map(r=>`<button class="up-main" onclick="openDetail('${r.id}')"><span class="sch-ic">🎁</span><span class="sch-main"><b>${esc(r.name)}</b><i>incentive expires ${new Date(r.incExp+'T12:00').toLocaleDateString([],{month:'short',day:'numeric'})}</i></span></button>`).join('');
+}
+
 function renderComingUp(){
   const el = document.getElementById('d_up'); if(!el) return;
   const items = collectScheduleItems();
+  PROPS.filter(needsImpressions).slice(0,2).forEach(r=>{
+    items.push({t:+new Date(r.visitAt), ic:'📝', what:'Log impressions: ' + (r.name||'visited home'), sub:'visited ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short'}) + ' — gut score & notes', id:r.id, vm:true});
+  });
+  items.sort((a,b)=>a.t-b.t);
   const overdue = items.filter(x=>x.t < Date.now());
   const ahead = items.filter(x=>x.t >= Date.now()).slice(0, 6 - Math.min(overdue.length, 3));
   const show = overdue.slice(-3).concat(ahead);
@@ -2734,7 +2984,7 @@ function renderComingUp(){
     const day = d.toDateString()===today.toDateString() ? 'Today' : d.toDateString()===tom.toDateString() ? 'Tomorrow' : d.toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'});
     const late = x.t < Date.now();
     return `<div class="up-row ${late?'late':''}">
-      <button class="up-main" onclick="schedGo('${x.id}')">
+      <button class="up-main" onclick="${x.vm?`VISIT_MODE=true;`:''}schedGo('${x.id}')">
         <span class="sch-ic">${x.ic}</span>
         <span class="sch-main"><b>${esc(x.what)}</b><i>${late?'⚠ past due · ':''}${day}${x.sub?' · '+esc(x.sub):''}</i></span>
       </button>
@@ -2819,7 +3069,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v39 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v40 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -2938,7 +3188,7 @@ function renderLib(){
     cash:    (a,b)=> metric(a).cash-metric(b).cash,
     ppsf:    (a,b)=> ((a.sqft>0?a.price/a.sqft:1e9))-((b.sqft>0?b.price/b.sqft:1e9)),
     school:  (a,b)=> (schoolAvg(b)??-1)-(schoolAvg(a)??-1),
-    commute: (a,b)=> (a.cmin||1e9)-(b.cmin||1e9),
+    commute: (a,b)=> (driveMins(a)??1e9)-(driveMins(b)??1e9),
     rate:    (a,b)=> (a.rate||1e9)-(b.rate||1e9),
     visit:   (a,b)=> (a.visitAt?new Date(a.visitAt):8.64e15)-(b.visitAt?new Date(b.visitAt):8.64e15),
     newest:  (a,b)=> (b.createdAt||0)-(a.createdAt||0),
@@ -2950,7 +3200,7 @@ function renderLib(){
   const bedsOfR = r => { const m2=(r.beds||'').match(/(\d+)\s*bed/i); return m2?parseInt(m2[1]):null; };
   const filteredP = PROPS.filter(r=>{
     const m = metric(r);
-    if(!showRuled && /❌ Board: RULED OUT/.test(r.notes||'')) return false;
+    if(!showRuled && isRuled(r)) return false;
     if(starOnly && !r.shortlisted) return false;
     if(LIB_VIEW==='visited' && !(r.visitAt && new Date(r.visitAt) < Date.now())) return false;
     if(lf('price') && r.price > lf('price')) return false;
@@ -2976,7 +3226,7 @@ function renderLib(){
     const isOpen = expandedId === r.id;
     const row = `<button class="lib-rowbtn" onclick="openDetail('${r.id}')">
       <div class="lr-main">
-        <div class="lr-name">${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
+        <div class="lr-name">${isRuled(r)?'❌ ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
         <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${metaStr(r)?' · '+metaStr(r):''}${r.offerDate?' · 🏁 escrow':(v?' · 📅 '+v:'')}</div>
       </div>
       ${fitBadge(f)}
@@ -3314,7 +3564,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v39 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v40 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -3752,7 +4002,7 @@ function applyDeviceLayout(){
 }
 
 function detachShell(){
-  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar','docView','schedOverlay','detailOverlay'].forEach(id=>{
+  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar','docView','schedOverlay','detailOverlay','dmOverlay'].forEach(id=>{
     const el = document.getElementById(id);
     if(el && el.parentElement !== document.body) document.body.appendChild(el);
   });

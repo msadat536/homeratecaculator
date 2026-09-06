@@ -558,6 +558,14 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .cf-tight{color:var(--warn-ink);font-weight:800}
 .cf-sug{margin-top:.55rem;background:#fff;border:1.5px dashed var(--indigo);border-radius:10px;padding:.55rem .65rem;font-size:.76rem}
 .cf-sug button{display:block;margin-top:.4rem;font-family:inherit;font-weight:800;font-size:.74rem;border:none;background:var(--indigo);color:#fff;border-radius:8px;padding:.45rem .8rem;cursor:pointer}
+
+.cf-stay{display:inline-block;font-size:.72rem;font-weight:800;border-radius:8px;padding:.2rem .5rem;margin-top:.25rem}
+.cf-stay.ok{background:var(--win);color:var(--win-ink)}
+.cf-stay.mid{background:#fef3e2;color:#92600a}
+.cf-stay.bad{background:var(--warn);color:var(--warn-ink)}
+.cf-alt{border:1.5px dashed var(--indigo);background:#fbfbff}
+.cf-apply{display:block;width:100%;margin-top:.6rem;font-family:inherit;font-weight:800;font-size:.8rem;border:none;background:var(--indigo);color:#fff;border-radius:10px;padding:.6rem;cursor:pointer}
+.cf-stop i em{font-style:normal}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -2464,38 +2472,72 @@ function applyVisitOrder(dateStr, ids){
   ids.forEach((id,i)=>{ const r = PROPS.find(x=>x.id===id); if(r && slots[i]) r.visitAt = slots[i]; });
   persistProps(); openSchedule(); renderDash();
 }
+function simulateDay(day, lls){
+  // forward simulation: arrivals, real time-at-property, cascading lateness
+  const n = day.length;
+  const slots = day.map(r=>+new Date(r.visitAt));
+  const legs = [legMins(ORIGIN.ll, lls[0]) || 20];
+  for(let k=1;k<n;k++) legs.push(legMins(lls[k-1], lls[k]) || 20);
+  const stops = [];
+  let arrive = slots[0];   // leave origin on time
+  let totalDrive = legs[0];
+  for(let k=0;k<n;k++){
+    const late = Math.max(0, Math.round((arrive - slots[k])/60000));
+    let depart, stay;
+    if(k < n-1){
+      totalDrive += legs[k+1];
+      const mustLeave = slots[k+1] - legs[k+1]*60000;
+      depart = Math.max(arrive, mustLeave);
+      stay = Math.round((depart - arrive)/60000);
+    } else {
+      stay = 45; depart = arrive + 45*60000;
+    }
+    stops.push({r:day[k], slot:slots[k], arrive, late, stay, leg:legs[k], depart, legNext:legs[k+1]||null});
+    if(k < n-1) arrive = depart + legs[k+1]*60000;
+  }
+  return {stops, totalDrive, problems: stops.filter(x=>x.late>5 || (x.stay < 30 && x !== stops[n-1])).length};
+}
+function planHTML(day, lls, tag){
+  const sim = simulateDay(day, lls);
+  const tf = t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  let html = `<div class="cf-stop cf-origin"><span>🏁</span><div><b>Leave Costa Mesa ${tf(sim.stops[0].slot - sim.stops[0].leg*60000)}</b><i>to make the first appointment</i></div></div>`;
+  sim.stops.forEach((x,k)=>{
+    html += `<div class="cf-leg">🚗 ${k===0?'':tf(x.arrive - x.leg*60000)+' → '}drive ~${x.leg} mins</div>`;
+    const stayCls = x.stay>=35?'ok':x.stay>=20?'mid':'bad';
+    const isLast = k===sim.stops.length-1;
+    html += `<div class="cf-stop"><span>${k+1}</span><div>
+      <b>${esc((x.r.name||'home').slice(0,44))}</b>
+      <i>appt ${tf(x.slot)}${x.late>5?` · <em class="cf-tight">you'd arrive ${tf(x.arrive)} — ${x.late} mins late</em>`:' · on time'}</i>
+      <div class="cf-stay ${stayCls}">⏱ ${isLast?'~45 mins here (open-ended — last stop)':x.stay<=0?'no time here — must leave immediately':'~'+x.stay+' mins to view & discuss'+(x.stay<20?' — not enough':'')}</div>
+    </div></div>`;
+  });
+  return {html, sim};
+}
 function commuteFlow(dateStr){
   const day = PROPS.filter(r=>r.visitAt && new Date(r.visitAt).toDateString()===dateStr)
     .sort((a,b)=>+new Date(a.visitAt)-+new Date(b.visitAt));
   if(day.length < 2) return '';
   const lls = day.map(geoOf);
-  const tFmt = t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-  let rows = `<div class="cf-stop cf-origin"><span>🏁</span><b>${ORIGIN.name}</b></div>`;
-  let total = 0, cur = ORIGIN.ll, tight = 0;
-  day.forEach((r,i)=>{
-    const lm = legMins(cur, lls[i]);
-    total += lm || 0; cur = lls[i] || cur;
-    let gapWarn = '';
-    if(i > 0){
-      const gap = Math.round((+new Date(r.visitAt) - +new Date(day[i-1].visitAt))/60000) - 45;  // 45-min tour assumed
-      if(lm != null && gap < lm){ gapWarn = `<i class="cf-tight">tight — need ~${lm} mins, gap leaves ${Math.max(gap,0)}</i>`; tight++; }
-    }
-    rows += `<div class="cf-leg">🚗 ~${lm!=null?lm+' mins':'?'}</div>
-      <div class="cf-stop"><span>${i+1}</span><div><b>${esc((r.name||'home').slice(0,42))}</b><i>${tFmt(r.visitAt)}${gapWarn?' · ':''}${gapWarn}</i></div></div>`;
-  });
-  // optimizer
-  const bo = bestOrder(day.length, lls);
-  const curCost = seqCost([...Array(day.length).keys()], lls);
-  let sug = '';
-  if(bo.cost + 11 < curCost){
-    const names = bo.order.map(i=>(day[i].name||'').split('·').pop().trim().slice(0,18)).join(' → ');
-    sug = `<div class="cf-sug">💡 Save ~${curCost - bo.cost} mins of driving: <b>${esc(names)}</b>
-      <button onclick='applyVisitOrder(${JSON.stringify(dateStr)}, ${JSON.stringify(bo.order.map(i=>day[i].id))})'>Apply this order</button></div>`;
-  }
-  return `<div class="cf-wrap">
-    <div class="cf-head">🚗 Drive plan · ~${total} mins driving total${tight?` · <span class="cf-tight">${tight} tight gap${tight>1?'s':''}</span>`:''} <span class="cf-note">estimates, no live traffic</span></div>
-    ${rows}${sug}
+  const cur = planHTML(day, lls, 'planned');
+  let out = `<div class="cf-wrap">
+    <div class="cf-head">🚗 Your day as planned · ~${cur.sim.totalDrive} mins driving${cur.sim.problems?` · <span class="cf-tight">${cur.sim.problems} problem stop${cur.sim.problems>1?'s':''}</span>`:' · workable'} <span class="cf-note">estimates, no live traffic · aiming ~45 mins per home</span></div>
+    ${cur.html}
   </div>`;
+  // suggestion: same visual, reordered homes in the same slots
+  const bo = bestOrder(day.length, lls);
+  const isSame = bo.order.every((v,idx)=>v===idx);
+  if(!isSame && bo.cost + 11 < seqCost([...Array(day.length).keys()], lls)){
+    const slots = day.map(r=>r.visitAt);
+    const day2 = bo.order.map((oi,k)=>Object.assign({}, day[oi], {visitAt: slots[k]}));
+    const lls2 = day2.map(geoOf);
+    const sug = planHTML(day2, lls2, 'suggested');
+    out += `<div class="cf-wrap cf-alt">
+      <div class="cf-head">💡 Better order — saves ~${cur.sim.totalDrive - sug.sim.totalDrive} mins of driving${sug.sim.problems<cur.sim.problems?` and fixes ${cur.sim.problems - sug.sim.problems} problem stop${(cur.sim.problems-sug.sim.problems)>1?'s':''}`:''}</div>
+      ${sug.html}
+      <button class="cf-apply" onclick='applyVisitOrder(${JSON.stringify(dateStr)}, ${JSON.stringify(bo.order.map(i=>day[i].id))})'>Apply this order (keeps the same times)</button>
+    </div>`;
+  }
+  return out;
 }
 
 function openSchedule(){
@@ -3442,7 +3484,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v50 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v51 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3927,7 +3969,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v50 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v51 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

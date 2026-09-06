@@ -1,4 +1,4 @@
-const CACHE = 'homecheck-v50';
+const CACHE = 'homecheck-v51';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

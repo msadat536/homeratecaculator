@@ -539,6 +539,12 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 
 .clim-stack{position:relative;width:100%;display:flex;flex-direction:column;justify-content:flex-end}
 .clim-ref{position:absolute;left:-2px;right:-2px;height:2px;background:#0284c7;border-radius:2px}
+
+.lr-chip{display:inline-block;font-size:.68rem;font-weight:800;border-radius:8px;padding:.2rem .5rem;margin-top:.3rem}
+.lr-chip.appt{background:#e8e9fd;color:#3730a3}
+.lr-chip.appt.soon{background:var(--indigo);color:#fff}
+.lr-chip.seen{background:var(--calc);color:var(--ink-soft)}
+.lr-chip.escrow{background:#fef3e2;color:#92600a}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -3341,7 +3347,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v48 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v49 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3504,7 +3510,8 @@ function renderLib(){
     const row = `<button class="lib-rowbtn" onclick="openDetail('${r.id}')">
       <div class="lr-main">
         <div class="lr-name">${isRuled(r)?'❌ ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
-        <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${metaStr(r)?' · '+metaStr(r):''}${r.offerDate?' · 🏁 escrow':(v?' · 📅 '+v:'')}</div>
+        <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${metaStr(r)?' · '+metaStr(r):''}</div>
+        ${r.offerDate?`<span class="lr-chip escrow">🏁 in escrow</span>`:v?(v.past?`<span class="lr-chip seen">✔ visited</span>`:`<span class="lr-chip appt ${v.soon?'soon':''}">📅 ${v.when}</span>`):''}
       </div>
       ${fitBadge(f)}
       <span class="lr-chev">▸</span>
@@ -3825,7 +3832,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v48 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v49 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

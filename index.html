@@ -586,7 +586,7 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .det-confirm button{font-family:inherit;font-weight:800;font-size:.78rem;border:none;border-radius:8px;padding:.4rem .8rem;cursor:pointer;margin-left:.35rem}
 .det-confirm button:first-child{background:var(--win);color:var(--win-ink)}
 .det-confirm button:last-child{background:var(--calc);color:var(--ink)}
-.lib-notes{width:100%;min-height:7.5rem;font-family:inherit;font-size:.95rem;line-height:1.45;border:1.5px solid var(--line);border-radius:10px;padding:.6rem;box-sizing:border-box;background:#fff}
+.lib-notes{width:100%;min-height:9rem;resize:vertical;font-family:inherit;font-size:.95rem;line-height:1.45;border:1.5px solid var(--line);border-radius:10px;padding:.6rem;box-sizing:border-box;background:#fff}
 
 .share-msg{background:var(--calc);border-radius:10px;padding:.6rem .7rem;font-size:.86rem;white-space:pre-wrap;margin-top:.4rem;max-height:9rem;overflow-y:auto}
 .share-pick{display:block;width:100%;text-align:left;font-family:inherit;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:.6rem .7rem;margin-top:.4rem;cursor:pointer}
@@ -594,6 +594,22 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .share-pick i{font-style:normal;font-size:.68rem;color:var(--ink-soft)}
 .share-skip{display:block;width:100%;font-family:inherit;border:none;background:none;color:var(--ink-soft);font-size:.76rem;font-weight:700;padding:.6rem;margin-top:.3rem;cursor:pointer}
 .lr-unread{display:inline-flex;align-items:center;justify-content:center;background:#e2574c;color:#fff;font-size:.62rem;font-weight:800;border-radius:99px;min-width:1.15rem;height:1.15rem;padding:0 .25rem;margin-left:.3rem}
+
+.pv-card{background:linear-gradient(135deg,#eefbf4,#f2f7ff);border:1.5px solid #b7e4c7;border-radius:14px;padding:.75rem .85rem;margin-bottom:.7rem}
+.pv-head{font-weight:800;font-size:.9rem;margin-bottom:.4rem}
+.pv-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.pv-grid button{font-family:inherit;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:.55rem .6rem;font-size:.78rem;font-weight:800;cursor:pointer}
+.pv-grid button i{display:block;font-style:normal;font-size:.62rem;font-weight:600;color:var(--ink-soft)}
+.pv-custom{display:block;width:100%;margin-top:.45rem;font-family:inherit;font-weight:700;font-size:.74rem;background:none;border:1.5px dashed var(--line);border-radius:10px;padding:.5rem;cursor:pointer;color:var(--ink-soft)}
+
+.pv-verdicts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem}
+.pv-v{font-family:inherit;border:none;border-radius:12px;padding:.7rem .4rem;font-size:.82rem;font-weight:800;cursor:pointer;text-align:center}
+.pv-v i{display:block;font-style:normal;font-size:.58rem;font-weight:600;opacity:.8}
+.pv-v.in{background:#fde8ec;color:#9d1c3c}
+.pv-v.maybe{background:#fef3e2;color:#92600a}
+.pv-v.out{background:var(--calc);color:var(--ink)}
+
+.fin-btn{display:block;text-align:center;margin-top:.55rem;font-size:.8rem;font-weight:800;color:var(--indigo);border:1.5px dashed var(--indigo);border-radius:10px;padding:.55rem;cursor:pointer}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -636,7 +652,6 @@ html.is-mobile .req-grid{grid-template-columns:1fr 1fr}
 .lib-actions .del{color:var(--warn-ink)}
 .lib-actions .del.confirm{background:var(--warn-ink);color:#fff;border-color:var(--warn-ink)}
 .lib-empty{text-align:center;color:var(--ink-soft);font-size:.8rem;padding:2.5rem 1rem}
-.lib-notes{width:100%;font-family:'Archivo',sans-serif;font-size:.75rem;border:1px dashed var(--line);border-radius:8px;padding:.4rem .5rem;margin-top:.4rem;resize:vertical;min-height:34px}
 .lib-dt{font-family:'IBM Plex Mono',monospace;font-size:.72rem;border:1px solid var(--line);border-radius:8px;padding:.3rem .4rem}
 .qsave{background:linear-gradient(120deg,#158a4a,#0d9488) !important;color:#fff !important;border:none !important}
 /* Quick check (mobile) */
@@ -2172,6 +2187,18 @@ function photosBlock(r){
     <label class="ph-add" title="Add photo">＋<input type="file" accept="image/*" style="display:none" onchange="addPhoto('${r.id}', this)"></label></div>`;
 }
 
+async function migrateCommEvidence(){
+  let moved = 0;
+  for(const r of PROPS){
+    for(const c of (r.comms||[])){
+      if(c.img && c.img.startsWith('data:')){
+        const cid = 'cm_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+        if(await photoPut(cid, c.img)){ c.imgId = cid; delete c.img; moved++; }
+      }
+    }
+  }
+  if(moved){ try{ persistProps(); }catch(e){} }
+}
 async function migratePhotos(){
   let moved = 0;
   for(const r of PROPS){
@@ -2889,6 +2916,15 @@ function closeDetail(){
   expandedId = null;
   if(currentPane === 'lib') renderLib();
 }
+
+async function hydrateCommEvidence(){
+  for(const img of document.querySelectorAll('img.comm-ev[data-cid]')){
+    if(img.src) continue;
+    const b = await photoGet(img.dataset.cid);
+    if(b) img.src = typeof b === 'string' ? b : URL.createObjectURL(b);
+  }
+}
+
 function renderDetail(){
   const r = PROPS.find(x=>x.id===expandedId);
   if(!r){ closeDetail(); return; }
@@ -2914,7 +2950,7 @@ function renderDetail(){
       ${photosBlock(r)}
       ${inspectBlock(r, true)}
       ${asksBlock(r, true)}
-      <div style="margin-top:.6rem"><div class="qgroup">📝 Notes</div><textarea class="lib-notes" placeholder="Impressions, measurements, anything…" onchange="setNotes('${r.id}', this.value)">${esc(r.notes||'')}</textarea></div>`;
+      <div style="margin-top:.6rem"><div class="qgroup">📝 Notes</div><textarea class="lib-notes" placeholder="Impressions, measurements, anything…" oninput="this.style.height='auto';this.style.height=(this.scrollHeight+4)+'px'" onchange="setNotes('${r.id}', this.value)">${esc(r.notes||'')}</textarea></div>`;
     return;
   }
   const vmBtn = `<button class="vm-btn vm-cam" onclick="toggleVisitMode()" style="margin:.1rem 0 .6rem">🎒 Start Visit Mode</button>`;
@@ -2922,11 +2958,12 @@ function renderDetail(){
   const idCard = `<div class="det-id">
     <div class="det-price">${r.price?fmt.format(r.price):'no price yet'}</div>
     ${r.addr?`<a class="det-addr" href="${mapsUrl(r)}" target="_blank" rel="noopener">📍 ${esc(r.addr)}</a>`:''}
-    ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · your gut: '+'★'.repeat(r.gut):''}</div>`:''}
+    ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}</div>`:''}
     ${vs==='unconfirmed'?`<div class="det-confirm">📅 Scheduled ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})} — did you visit?
       <span><button onclick="confirmVisit('${r.id}', true)">✔ Yes</button><button onclick="confirmVisit('${r.id}', false)">✕ No</button></span></div>`:''}
   </div>`;
-  document.getElementById('detBody').innerHTML = fitHero + idCard + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
+  setTimeout(hydrateCommEvidence, 40);
+  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
@@ -2967,7 +3004,7 @@ function renderDetail(){
         <label>Offer</label>
         <input type="date" class="lib-dt" value="${r.offerDate||''}" onchange="setOffer('${r.id}', this.value)">
       </div>
-      <div style="display:flex;gap:.4rem;align-items:stretch"><textarea class="lib-notes" placeholder="Notes — what you liked, concerns, agent name…" onchange="setNotes('${r.id}', this.value)">${r.notes||''}</textarea><button class="micbtn" id="mic_${r.id}" onclick="voiceNote('${r.id}')" title="Dictate a note">🎤</button></div>
+      <div style="display:flex;gap:.4rem;align-items:stretch"><textarea class="lib-notes" placeholder="Notes — what you liked, concerns, agent name…" oninput="this.style.height='auto';this.style.height=(this.scrollHeight+4)+'px'" onchange="setNotes('${r.id}', this.value)">${r.notes||''}</textarea><button class="micbtn" id="mic_${r.id}" onclick="voiceNote('${r.id}')" title="Dictate a note">🎤</button></div>
       <div class="lib-actions">
         ${isMobile
           ? `<button onclick="loadPropInto('${r.id}','p1');closeLib();">Open in calculator</button>`
@@ -3544,7 +3581,7 @@ function dayRouteUrl(dateStr){
 function collectScheduleItems(){
   const items = [];
   PROPS.forEach(r=>{
-    if(r.visitAt && new Date(r.visitAt) >= Date.now() - 86400000)
+    if(r.visitAt && visitState(r) === 'upcoming')
       items.push({t:+new Date(r.visitAt), ic:'🏠', what:'Visit: ' + (r.name||'home'), sub:[new Date(r.visitAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}), leaveBy(r), fitOf(r)?fitOf(r).ok+'/'+fitOf(r).total+' fit':null, metaStr(r)||null].filter(Boolean).join(' · '), id:r.id, map:true});
     if(r.nextAction && !r.nextAction.done && r.nextAction.due)
       items.push({t:+new Date(r.nextAction.due+'T17:00:00'), ic:'☑️', what:r.nextAction.txt, sub:(r.name||''), id:r.id});
@@ -3636,7 +3673,10 @@ function renderComingUp(){
   PROPS.filter(needsVisitConfirm).slice(0,2).forEach(r=>{
     items.push({t:+new Date(r.visitAt), ic:'❓', what:'Did you visit ' + (r.name||'this home') + '?', sub:'was scheduled ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'}) + ' — tap to confirm', id:r.id});
   });
-  PROPS.filter(needsImpressions).slice(0,2).forEach(r=>{
+  PROPS.filter(needsPostVisit).slice(0,2).forEach(r=>{
+    items.push({t:+new Date(r.visitAt), ic:'➡️', what:'Next step for ' + (r.name||'visited home') + '?', sub:'visited — pick a follow-up', id:r.id});
+  });
+  PROPS.filter(r=>needsImpressions(r) && r.postDone).slice(0,2).forEach(r=>{
     items.push({t:+new Date(r.visitAt), ic:'📝', what:'Log impressions: ' + (r.name||'visited home'), sub:'visited ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short'}) + ' — gut score & notes', id:r.id, vm:true});
   });
   items.sort((a,b)=>a.t-b.t);
@@ -3666,14 +3706,15 @@ function renderComingUp(){
 function renderDash(){
   const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const now = Date.now();
-  const visited = PROPS.filter(r=>r.visitAt && new Date(r.visitAt) < now);
-  const upcoming = PROPS.filter(r=>r.visitAt && new Date(r.visitAt) >= now).sort((a,b)=>new Date(a.visitAt)-new Date(b.visitAt));
+  const visited = PROPS.filter(r=>visitState(r)==='visited');
+  const unconfirmed = PROPS.filter(r=>visitState(r)==='unconfirmed');
+  const upcoming = PROPS.filter(r=>visitState(r)==='upcoming').sort((a,b)=>new Date(a.visitAt)-new Date(b.visitAt));
   const short = PROPS.filter(r=>r.shortlisted);
   document.getElementById('d_stats').innerHTML =
     `<button class="dstat" onclick="goHomes('all')"><b>${PROPS.length}</b><span>Saved</span></button>
      <button class="dstat" onclick="goHomes('star')"><b>${short.length}</b><span>⭐ Shortlist</span></button>
      <button class="dstat" onclick="openSchedule()"><b>${upcoming.length}</b><span>Visits ahead</span></button>
-     <button class="dstat" onclick="goHomes('visited')"><b>${visited.length}</b><span>Visited</span></button>`;
+     <button class="dstat" onclick="goHomes('visited')"><b>${visited.length}</b><span>Visited${unconfirmed.length?' <em style="font-style:normal;color:#e2574c">·'+unconfirmed.length+'?</em>':''}</span></button>`;
   // Escrow deadlines
   const inEscrow = PROPS.filter(r=>r.offerDate);
   const ec = document.getElementById('d_escrow_card'); if(!ec){} else
@@ -3740,7 +3781,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v61 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v64 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3749,7 +3790,29 @@ const PROP_FIELDS = ['price','dp','rate','term','taxr','ins','hoa','mr','util','
 let PROPS = [];
 let slotPropId = {p1:null, p2:null, p3:null};
 function loadProps(){ try{ PROPS = JSON.parse(localStorage.getItem(PROP_KEY)) || []; }catch(e){ PROPS = []; } }
-function persistProps(){ try{ localStorage.setItem(PROP_KEY, JSON.stringify(PROPS)); }catch(e){} }
+let _saveAlarmT = 0;
+function persistProps(){
+  try{ localStorage.setItem(PROP_KEY, JSON.stringify(PROPS)); }
+  catch(e){
+    // storage full: move the heaviest transient data (scan evidence images) to the big vault, retry
+    let moved = 0;
+    PROPS.forEach(r=>(r.comms||[]).forEach(c=>{
+      if(c.img && c.img.startsWith('data:')){
+        const cid = 'cm_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+        photoPut(cid, c.img); c.imgId = cid; delete c.img; moved++;
+      }
+    }));
+    try{ localStorage.setItem(PROP_KEY, JSON.stringify(PROPS)); if(moved) return; }
+    catch(e2){
+      if(Date.now() - _saveAlarmT > 30000){
+        _saveAlarmT = Date.now();
+        alert('⚠ COULD NOT SAVE — phone storage for the app is full.\nYour last change was NOT kept. Open ⚙ Settings → Data and delete some documents or photos, then redo the change.');
+      }
+      const el = document.getElementById('q_status');
+      if(el){ el.style.display='block'; el.className='err'; el.textContent='⚠ Save failed — storage full. Changes are NOT being kept.'; }
+    }
+  }
+}
 
 
 function stripTracking(u){
@@ -3874,6 +3937,155 @@ function confirmVisit(id, yes){
   r.visited = !!yes;
   if(!yes && confirm('Mark as not visited. Clear the old appointment so you can reschedule?')){ r.visitAt = null; }
   persistProps(); refreshHomeViews(); renderDash();
+  if(yes) openDetail(id);   // detail now shows the post-visit card
+}
+
+function setVerdict(id, v){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  if(v === 'out'){ r.verdict = {v:'out', t:Date.now()}; persistProps(); ruleOut(id); r.postDone = true; persistProps(); return; }
+  r.verdict = {v, t:Date.now()};
+  persistProps(); refreshHomeViews(); renderDash();
+}
+function verdictIcon(r){ return r.verdict?.v==='in' ? '❤️' : r.verdict?.v==='maybe' ? '🤔' : r.verdict?.v==='out' ? '👎' : ''; }
+function verdictLabel(r){ return r.verdict?.v==='in' ? 'Interested — strong candidate' : r.verdict?.v==='maybe' ? 'Maybe — needs another look' : r.verdict?.v==='out' ? 'Not for us' : ''; }
+
+
+// ================= Agent finance sheet → numbers =================
+async function uploadFinSheet(id, inp){
+  const file = inp.files[0]; inp.value='';
+  const r = PROPS.find(x=>x.id===id); if(!r || !file) return;
+  const isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
+  // archive the sheet on the home first (photo strip or docs), regardless of extraction
+  if(!isPdf){
+    // reuse photo pipeline at document quality
+    const blob = await new Promise((res, rej)=>{
+      const img = new Image();
+      img.onload = ()=>{ const sc = Math.min(1, 2200/Math.max(img.width,img.height));
+        const c = document.createElement('canvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        c.toBlob(b=>b?res(b):rej(new Error('encode')), 'image/jpeg', .9); URL.revokeObjectURL(img.src); };
+      img.onerror = rej; img.src = URL.createObjectURL(file);
+    });
+    const pid = 'ph_fin_' + Date.now();
+    if(await photoPut(pid, blob)){ r.photos = r.photos||[]; if(r.photos.length<20){ r.photos.push(pid); r.photoCaps = r.photoCaps||{}; r.photoCaps[pid]='Finance sheet'; } }
+  } else {
+    const data = await new Promise((res,rej)=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.onerror=rej; rd.readAsDataURL(file); });
+    if(file.size <= 3*1024*1024){ DOCS.unshift({id:'d'+Date.now(), name:((r.name||'home').split(':').pop().trim())+' — finance sheet.pdf', type:'pdf', size:file.size, t:Date.now(), data}); try{ persistDocs(); }catch(e){} }
+  }
+  persistProps();
+  if(!aiAvailable()){ alert('Sheet saved to this home. Add your API key in ⚙ to also extract the numbers automatically.'); refreshHomeViews(); return; }
+  // extract
+  setPStatus('p1', '⏳ Reading the finance sheet… ~15s', true);
+  try{
+    const b64 = await new Promise((res,rej)=>{ const rd=new FileReader(); rd.onload=()=>res(String(rd.result).split(',')[1]); rd.onerror=rej; rd.readAsDataURL(file); });
+    const block = isPdf
+      ? {type:'document', source:{type:'base64', media_type:'application/pdf', data:b64}}
+      : {type:'image', source:{type:'base64', media_type: file.type||'image/jpeg', data:b64}};
+    const schema = '{"price": number|null, "seller_credit": number|null, "other_incentives_value": number|null, "incentive_notes": string|null, "rate_pct": number|null, "rate_notes": string|null, "loan_term_years": number|null, "down_payment_pct": number|null, "down_payment_amount": number|null, "hoa_monthly": number|null, "property_tax_rate_pct": number|null, "mello_roos_monthly": number|null, "est_closing_costs": number|null, "monthly_payment_quote": number|null, "lender": string|null}';
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers: apiHeaders(),
+      body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:600,
+        messages:[{role:'user', content:[block, {type:'text', text:'This is a home builder/lender finance worksheet. Extract the numbers. ONLY JSON, no fences, exactly: '+schema+'\nNumbers only, no $ or %. null when not clearly on the sheet — never guess. rate_notes = buydown structure if any (e.g. "5.99% first year, 6.75% after").'}]}]})
+    });
+    if(!resp.ok){ let dd=''; try{const e=await resp.json(); dd=e?.error?.message||'';}catch(_){}
+      throw new Error('API '+resp.status+(dd?': '+dd:'')); }
+    const data = await resp.json();
+    recordCost(data.usage, 'claude-haiku-4-5-20251001');
+    const d = parseAIJson((data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n'));
+    if(!d) throw new Error('could not read numbers off the sheet');
+    // build change list
+    const changes = [];
+    const num = x => x==null?null:+x;
+    const cand = [
+      ['price','Price', num(d.price), v=>fmt.format(v)],
+      ['cred','Seller credit', num(d.seller_credit), v=>fmt.format(v)],
+      ['incval','Other incentives', num(d.other_incentives_value), v=>fmt.format(v)],
+      ['rate','Rate %', num(d.rate_pct), v=>v+'%'],
+      ['term','Term (yrs)', num(d.loan_term_years), v=>v],
+      ['hoa','HOA /mo', num(d.hoa_monthly), v=>'$'+v],
+      ['taxr','Tax rate %', num(d.property_tax_rate_pct), v=>v+'%'],
+      ['mr','Mello-Roos /mo', num(d.mello_roos_monthly), v=>'$'+v]
+    ];
+    let dp = num(d.down_payment_pct);
+    if(dp==null && d.down_payment_amount && (num(d.price)||r.price)) dp = Math.round(num(d.down_payment_amount)/(num(d.price)||r.price)*1000)/10;
+    if(dp!=null) cand.push(['dp','Down payment %', dp, v=>v+'%']);
+    if(d.est_closing_costs && (num(d.price)||r.price)) cand.push(['ccpct','Closing costs %', Math.round(num(d.est_closing_costs)/(num(d.price)||r.price)*1000)/10, v=>v+'%']);
+    cand.forEach(([k,label,nv,fmtV])=>{
+      if(nv!=null && nv !== r[k]) changes.push({k, label, from:r[k], to:nv, fmtV});
+    });
+    if(d.incentive_notes && d.incentive_notes !== r.incnote) changes.push({k:'incnote', label:'Incentive notes', from:r.incnote||'—', to:d.incentive_notes, fmtV:v=>v});
+    if(!changes.length){
+      setPStatus('p1', '✓ Sheet read — its numbers match what you already have.' + (d.monthly_payment_quote?' Their payment quote: '+fmt.format(d.monthly_payment_quote)+'/mo.':''));
+      logFinComm(r, d); refreshHomeViews(); return;
+    }
+    const summary = changes.map(c=>c.label+': '+(c.from!=null&&c.from!==''?c.fmtV(c.from):'—')+' → '+c.fmtV(c.to)).join('\n');
+    if(confirm('Finance sheet read. Apply these updates to ' + (r.name||'this home') + '?\n\n' + summary + (d.rate_notes?'\n\nRate structure: '+d.rate_notes:'') )){
+      changes.forEach(c=>{ r[c.k] = c.to; });
+      if(num(d.price) && num(d.price)!==r.priceHist?.slice(-1)[0]?.p) trackPrice(r, num(d.price));
+      logFinComm(r, d);
+      persistProps(); refreshHomeViews(); renderDash();
+      const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
+      const m2 = computeRec(r, sh);
+      setPStatus('p1', '✓ ' + changes.length + ' numbers updated from the sheet. New all-in: ' + fmt.format(m2.allin) + '/mo' + (d.monthly_payment_quote?' (their quote: '+fmt.format(d.monthly_payment_quote)+')':'') + '.');
+    } else {
+      logFinComm(r, d);
+      setPStatus('p1', '✓ Sheet saved to the home; numbers left unchanged.');
+    }
+  }catch(err){
+    setPStatus('p1', '✗ Sheet saved, but extraction failed: ' + (err.message||'') + ' — update the numbers manually.');
+    refreshHomeViews();
+  }
+}
+function logFinComm(r, d){
+  r.comms = r.comms || [];
+  const bits = [d.rate_pct?('rate '+d.rate_pct+'%'):null, d.rate_notes||null, d.seller_credit?('credit '+fmt.format(d.seller_credit)):null, d.monthly_payment_quote?('their PITI quote '+fmt.format(d.monthly_payment_quote)):null, d.lender?('lender: '+d.lender):null].filter(Boolean);
+  r.comms.push({dir:'note', txt:'💵 Finance sheet logged' + (bits.length?': '+bits.join(' · '):''), t:Date.now()});
+  persistProps();
+}
+
+function needsPostVisit(r){
+  return visitState(r) === 'visited' && !r.postDone && !isRuled(r);
+}
+function pvNext(id, txt, days){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  if(txt === '__rule'){ ruleOut(id); r.postDone = true; persistProps(); return; }
+  if(txt === '__none'){ r.postDone = true; persistProps(); refreshHomeViews(); renderDash(); return; }
+  const due = new Date(Date.now() + days*86400000);
+  r.nextAction = {txt, due: due.toISOString().slice(0,10), done:false};
+  r.postDone = true;
+  persistProps(); refreshHomeViews(); renderDash();
+}
+function postVisitCard(r){
+  if(!needsPostVisit(r)) return '';
+  if(!r.verdict){
+    return `<div class="pv-card">
+      <div class="pv-head">✔ Visit done — how do you feel about this one?</div>
+      ${!r.gut?`<div style="display:flex;align-items:center;gap:.5rem;margin:.35rem 0 .5rem"><b style="font-size:.8rem">Gut:</b>${gutStars(r, true)}</div>`:''}
+      <div class="pv-verdicts">
+        <button class="pv-v in" onclick="setVerdict('${r.id}','in')">❤️ Interested<i>strong candidate</i></button>
+        <button class="pv-v maybe" onclick="setVerdict('${r.id}','maybe')">🤔 Maybe<i>needs another look</i></button>
+        <button class="pv-v out" onclick="setVerdict('${r.id}','out')">👎 Not for us<i>rule out with reason</i></button>
+      </div>
+    </div>`;
+  }
+  const isIn = r.verdict.v === 'in';
+  const steps = isIn ? `
+      <button onclick="pvNext('${r.id}','Follow up with ${esc(r.agentName||'the agent')} — pricing, incentives, lot options',2)">📞 Follow up w/ agent<i>in 2 days</i></button>
+      <button onclick="pvNext('${r.id}','Figure out financing for ${esc((r.name||'').split(':').pop().trim())} — rate, payment, pre-approval fit',2)">🏦 Figure out finance<i>in 2 days</i></button>
+      <button onclick="pvNext('${r.id}','Discuss ${esc((r.name||'').split(':').pop().trim())} with family',1)">👨‍👩‍👧 Family discussion<i>tomorrow</i></button>
+      <button onclick="pvNext('${r.id}','Prep offer questions for ${esc((r.name||'').split(':').pop().trim())} — lot premium, timeline, contingencies',3)">📝 Prep toward offer<i>in 3 days</i></button>`
+  : `
+      <button onclick="pvNext('${r.id}','Relook: second visit to ${esc((r.name||'').split(':').pop().trim())} — recheck the concerns',5)">🔁 Relook / 2nd visit<i>in 5 days</i></button>
+      <button onclick="pvNext('${r.id}','Follow up with ${esc(r.agentName||'the agent')} — open questions from the visit',2)">📞 Ask the open questions<i>in 2 days</i></button>
+      <button onclick="pvNext('${r.id}','Re-decide on ${esc((r.name||'').split(':').pop().trim())} — still a maybe?',14)">⏸ Park it, re-decide<i>in 2 weeks</i></button>
+      <button onclick="setVerdict('${r.id}','out')">👎 Actually — not for us<i>rule out</i></button>`;
+  return `<div class="pv-card">
+    <div class="pv-head">${isIn?'❤️ Interested':'🤔 Maybe'} — locked in. What's the next move?</div>
+    <div class="pv-grid">${steps}
+      <button onclick="pvNext('${r.id}','__none',0)">🤷 Nothing for now<i>just archive</i></button>
+    </div>
+    <button class="pv-custom" onclick="(function(){const t=prompt('Custom next step:'); if(!t)return; const d=prompt('In how many days?','3'); pvNext('${r.id}', t, parseInt(d)||3);})()">✏️ Custom step & date…</button>
+  </div>`;
 }
 
 function fmtVisit(v){
@@ -3944,7 +4156,7 @@ function renderLib(){
     const isOpen = expandedId === r.id;
     const row = `<button class="lib-rowbtn" onclick="openDetail('${r.id}')">
       <div class="lr-main">
-        <div class="lr-name">${isRuled(r)?'❌ ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${r.unread?`<span class="lr-unread">💬${r.unread}</span>`:''}${priceDeltaChip(r)}</div>
+        <div class="lr-name">${isRuled(r)?'❌ ':''}${verdictIcon(r)?verdictIcon(r)+' ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${r.unread?`<span class="lr-unread">💬${r.unread}</span>`:''}${priceDeltaChip(r)}</div>
         <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${metaStr(r)?' · '+metaStr(r):''}</div>
         ${(()=>{const vs=visitState(r);
           if(r.offerDate) return `<span class="lr-chip escrow">🏁 in escrow</span>`;
@@ -4273,7 +4485,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v61 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v64 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -4822,7 +5034,7 @@ window.onload = function(){
   fitScale();
   backGuard();
   setTimeout(processShareInbox, 600);
-  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); seedHomes(); migratePhotos(); applyPCount(); calc(); checkVisitReminders();
+  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); seedHomes(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };
 </script>

@@ -1,4 +1,32 @@
-const CACHE = 'homecheck-v58';
+
+// Web Share Target: agent texts shared into the app
+self.addEventListener('fetch', e => {
+  const u = new URL(e.request.url);
+  if(e.request.method === 'POST' && u.pathname.endsWith('/share-target')){
+    e.respondWith((async () => {
+      try{
+        const fd = await e.request.formData();
+        const item = { t: Date.now(), title: fd.get('title')||'', text: fd.get('text')||'', url: fd.get('url')||'' };
+        await new Promise((res)=>{
+          const rq = indexedDB.open('homecheck-kv', 2);
+          rq.onupgradeneeded = ()=>{ const db=rq.result;
+            if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+            if(!db.objectStoreNames.contains('photos')) db.createObjectStore('photos'); };
+          rq.onsuccess = ()=>{
+            const db = rq.result, tx = db.transaction('kv','readwrite'), st = tx.objectStore('kv');
+            const g = st.get('shareInbox');
+            g.onsuccess = ()=>{ const arr = g.result || []; arr.push(item); st.put(arr, 'shareInbox'); };
+            tx.oncomplete = ()=>{ db.close(); res(); };
+          };
+          rq.onerror = ()=>res();
+        });
+      }catch(err){}
+      return Response.redirect('./?shared=1', 303);
+    })());
+    return;
+  }
+});
+const CACHE = 'homecheck-v61';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

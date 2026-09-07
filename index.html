@@ -545,6 +545,7 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .lr-chip.appt.soon{background:var(--indigo);color:#fff}
 .lr-chip.seen{background:var(--calc);color:var(--ink-soft)}
 .lr-chip.escrow{background:#fef3e2;color:#92600a}
+.lr-chip.ask{background:var(--indigo);color:#fff}
 
 .cf-wrap{background:linear-gradient(135deg,#f6f7ff,#f0fbf7);border:1.5px solid var(--line);border-radius:14px;padding:.7rem .8rem;margin:.5rem 0 .3rem}
 .cf-head{font-size:.74rem;font-weight:800;margin-bottom:.4rem}
@@ -576,6 +577,23 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 #importFallback{position:static;background:var(--calc);border:1.5px solid var(--line);border-radius:12px;padding:.7rem;margin-top:.4rem}
 #importFallback textarea{width:100%;min-height:5.5rem;font-family:inherit;font-size:.85rem;border:1.5px solid var(--line);border-radius:8px;padding:.5rem;box-sizing:border-box}
 #importFallback button{background:var(--indigo) !important;color:#fff !important}
+
+.det-id{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:.75rem .9rem;margin-bottom:.7rem}
+.det-price{font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.5rem;color:var(--ink)}
+.det-addr{display:block;font-size:.86rem;font-weight:700;color:var(--indigo);text-decoration:none;margin-top:.25rem}
+.det-visited{font-size:.78rem;font-weight:700;color:var(--win-ink);margin-top:.35rem}
+.det-confirm{font-size:.8rem;font-weight:700;margin-top:.4rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.det-confirm button{font-family:inherit;font-weight:800;font-size:.78rem;border:none;border-radius:8px;padding:.4rem .8rem;cursor:pointer;margin-left:.35rem}
+.det-confirm button:first-child{background:var(--win);color:var(--win-ink)}
+.det-confirm button:last-child{background:var(--calc);color:var(--ink)}
+.lib-notes{width:100%;min-height:7.5rem;font-family:inherit;font-size:.95rem;line-height:1.45;border:1.5px solid var(--line);border-radius:10px;padding:.6rem;box-sizing:border-box;background:#fff}
+
+.share-msg{background:var(--calc);border-radius:10px;padding:.6rem .7rem;font-size:.86rem;white-space:pre-wrap;margin-top:.4rem;max-height:9rem;overflow-y:auto}
+.share-pick{display:block;width:100%;text-align:left;font-family:inherit;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:.6rem .7rem;margin-top:.4rem;cursor:pointer}
+.share-pick b{display:block;font-size:.86rem}
+.share-pick i{font-style:normal;font-size:.68rem;color:var(--ink-soft)}
+.share-skip{display:block;width:100%;font-family:inherit;border:none;background:none;color:var(--ink-soft);font-size:.76rem;font-weight:700;padding:.6rem;margin-top:.3rem;cursor:pointer}
+.lr-unread{display:inline-flex;align-items:center;justify-content:center;background:#e2574c;color:#fff;font-size:.62rem;font-weight:800;border-radius:99px;min-width:1.15rem;height:1.15rem;padding:0 .25rem;margin-left:.3rem}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1200,6 +1218,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 </div></div>
     <div class="dstats" id="d_stats"></div>
     <button class="fit-strip" id="d_fitstrip" onclick="goFit()" style="display:none"></button>
+    <button class="fit-strip" id="d_texts" style="display:none;border-color:#e2574c"></button>
     <div class="qcard">
       <div class="qgroup" style="margin-top:0">📅 Coming up</div>
       <div id="d_up"></div>
@@ -1320,6 +1339,14 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="qhead"><b>🏆 Decision matrix</b><div><button onclick="document.getElementById('dmOverlay').style.display='none'">← Back</button></div></div>
     <div style="font-size:.72rem;color:var(--ink-soft);margin-bottom:.6rem">Your ⭐ shortlist, ranked. Score = criteria fit (40%) + monthly cost headroom (20%) + distance (15%) + schools (15%) + your gut (10%).</div>
     <div id="dmBody"></div>
+  </div>
+</div>
+
+<!-- Share resolver -->
+<div id="shareResolver" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:96;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b>💬 New agent text</b><div><button onclick="document.getElementById('shareResolver').style.display='none'">Later</button></div></div>
+    <div id="shareBody"></div>
   </div>
 </div>
 
@@ -2057,6 +2084,7 @@ function commsBlock(r){
   const cs = r.comms||[];
   return `${asksBlock(r, false)}
       <details class="lib-details"><summary>💬 Conversations (${cs.length})</summary>
+      ${r.agentPhone?`<a class="aibtn" style="display:block;text-align:center;text-decoration:none;margin:.3rem 0;background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" href="sms:${String(r.agentPhone).replace(/[^\d+]/g,'')}">📱 Text ${esc(r.agentName||'the agent')}</a>`:''}
     ${cs.slice().reverse().map((c)=>{ const idx = cs.indexOf(c);
       return `<div class="comm"><div class="c-meta"><span>${new Date(c.t).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}${c.src==='scan'?' · 📷 from screenshot':''}</span><button onclick="delComm('${r.id}',${idx})">delete</button></div>${esc(c.txt).replace(/\n/g,'<br>')}${c.img?`<img src="${c.img}" style="max-width:110px;border-radius:8px;border:1px solid var(--line);margin-top:.3rem;cursor:pointer" onclick="viewCommImg('${r.id}',${idx})">`:''}</div>`;}).join('')}
     <div class="comm-add"><textarea id="comm_in_${r.id}" placeholder="Paste a text/email from your agent, or note a call…"></textarea>
@@ -2639,6 +2667,134 @@ window.addEventListener('popstate', ()=>{
   if(h){ h.style.display = 'block'; setTimeout(()=>{ h.style.display = 'none'; }, 2100); }
 });
 
+
+// ================= Agent texts: routing, threads, schedule detection =================
+function matchHomesForText(text){
+  const t = text.toLowerCase();
+  const scores = PROPS.map(r=>{
+    let sc = 0;
+    if(r.agentPhone && t.replace(/\D/g,'').includes(String(r.agentPhone).replace(/\D/g,'').slice(-10)) && r.agentPhone.length>6) sc += 5;
+    if(r.agentName && t.includes(String(r.agentName).toLowerCase())) sc += 4;
+    const nm = (r.name||'');
+    nm.split(/[:·(),]/).map(x=>x.trim().toLowerCase()).filter(x=>x.length>3).forEach(part=>{ if(t.includes(part)) sc += 2 + Math.min(4, Math.floor(part.length/7)); });
+    const city = cityOf(r); if(city && t.includes(city.toLowerCase())) sc += 1;
+    const builder = (r.notes||'').split('\n').find(l=>/lennar|kb home|dr horton|d\.r\. horton|richmond|tri pointe|taylor morrison|centex|pulte|meritage|beazer/i.test(l));
+    if(builder){ const b = builder.match(/lennar|kb home|dr horton|d\.r\. horton|richmond|tri pointe|taylor morrison|centex|pulte|meritage|beazer/i); if(b && t.includes(b[0].toLowerCase())) sc += 2; }
+    return {r, sc};
+  }).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);
+  return scores;
+}
+function extractSchedule(text){
+  const t = text.replace(/\u00a0/g,' ');
+  // date: 9/12, Sep 12, Saturday...
+  let d = null;
+  const md = t.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
+  const mon = t.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b/i);
+  const wd = t.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday|tomorrow|today)\b/i);
+  const now = new Date();
+  if(md){ const y = md[3]? (md[3].length===2?2000+ +md[3]:+md[3]) : now.getFullYear(); d = new Date(y, +md[1]-1, +md[2]); if(!md[3] && d < now) d.setFullYear(y+1); }
+  else if(mon){ const mi = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(mon[1].toLowerCase().slice(0,3)); d = new Date(now.getFullYear(), mi, +mon[2]); if(d < now) d.setFullYear(now.getFullYear()+1); }
+  else if(wd){
+    const w = wd[1].toLowerCase();
+    d = new Date(now);
+    if(w==='today'){} else if(w==='tomorrow'){ d.setDate(d.getDate()+1); }
+    else { const names=['sunday','monday','tuesday','wednesday','thursday','friday','saturday']; const target=names.indexOf(w); let add=(target-d.getDay()+7)%7; if(add===0) add=7; d.setDate(d.getDate()+add); }
+  }
+  // time: 2pm, 2:30 PM, 14:00
+  const tm = t.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i) || t.match(/\b(\d{1,2}):(\d{2})\b/);
+  if(!d || !tm) return null;
+  let h = +tm[1], mnt = +(tm[2]||0);
+  if(tm[3]){ const ap = tm[3].toLowerCase(); if(ap==='pm' && h<12) h+=12; if(ap==='am' && h===12) h=0; }
+  d.setHours(h, mnt, 0, 0);
+  if(isNaN(+d)) return null;
+  return d;
+}
+function attachText(id, item){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.comms = r.comms || [];
+  r.comms.push({dir:'in', txt:item.text, t:item.t || Date.now(), src:'sms'});
+  r.unread = (r.unread||0) + 1;
+  // learn the agent from the message
+  const nm = item.text.match(/(?:this is|it's|its)\s+([A-Z][a-z]+)/);
+  if(nm && !r.agentName) r.agentName = nm[1];
+  const ph = item.text.match(/(\+?1?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})/);
+  if(ph && !r.agentPhone) r.agentPhone = ph[1];
+  persistProps();
+  // schedule inside?
+  const when = extractSchedule(item.text);
+  if(when && confirm('This text mentions ' + when.toLocaleString([],{weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) + '.\nSet it as the visit time for ' + (r.name||'this home') + '?')){
+    r.visitAt = new Date(when - when.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    r.visited = undefined;
+    persistProps();
+  }
+  refreshHomeViews(); renderDash();
+}
+function markRead(id){
+  const r = PROPS.find(x=>x.id===id);
+  if(r && r.unread){ r.unread = 0; persistProps(); renderDash(); if(currentPane==='lib') renderLib(); }
+}
+let SHARE_QUEUE = [];
+function resolveShare(idx, id){
+  const item = SHARE_QUEUE[idx]; if(!item) return;
+  if(id) attachText(id, item);
+  SHARE_QUEUE[idx] = null;
+  renderShareResolver();
+}
+function renderShareResolver(){
+  const pendingItems = SHARE_QUEUE.filter(Boolean);
+  const ov = document.getElementById('shareResolver');
+  if(!pendingItems.length){ ov.style.display='none'; return; }
+  ov.style.display = 'block';
+  const idx = SHARE_QUEUE.findIndex(Boolean);
+  const item = SHARE_QUEUE[idx];
+  const matches = matchHomesForText(item.text).slice(0,6);
+  document.getElementById('shareBody').innerHTML = `
+    <div class="qcard">
+      <div style="font-size:.72rem;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em">Agent text${pendingItems.length>1?' · '+pendingItems.length+' waiting':''}</div>
+      <div class="share-msg">${esc(item.text.slice(0,500))}</div>
+      <div style="font-size:.8rem;font-weight:800;margin:.6rem 0 .3rem">Which property is this about?</div>
+      ${matches.map(m=>`<button class="share-pick" onclick="resolveShare(${idx}, '${m.r.id}')"><b>${esc(m.r.name)}</b><i>${m.sc>=4?'likely match':'possible'}</i></button>`).join('')}
+      <button class="share-pick" onclick="openSharePicker(${idx})"><b>Another home…</b><i>choose from the full list</i></button>
+      <button class="share-skip" onclick="resolveShare(${idx}, null)">Not about a property — discard</button>
+    </div>`;
+}
+function openSharePicker(idx){
+  const item = SHARE_QUEUE[idx]; if(!item) return;
+  const name = prompt('Type part of the home name (community / city):');
+  if(!name) return;
+  const found = PROPS.find(r=>(r.name||'').toLowerCase().includes(name.toLowerCase()));
+  if(found) resolveShare(idx, found.id);
+  else alert('No home matched "' + name + '".');
+}
+
+
+function pickFromMatches(m){
+  if(!m.length || m[0].sc < 4) return null;
+  if(!m[1] || m[1].sc < m[0].sc) return m[0].r;
+  // tie: if all tied entries are sister plans of the same community, pick the most relevant
+  const comm = x => (x.r.name||'').split('·')[0].trim();
+  const tied = m.filter(x=>x.sc === m[0].sc);
+  if(tied.every(x=>comm(x) === comm(tied[0]))){
+    return (tied.find(x=>x.r.visitAt && new Date(x.r.visitAt) >= Date.now()-86400000) ||
+            tied.find(x=>x.r.shortlisted) || tied[0]).r;
+  }
+  return null;
+}
+
+async function processShareInbox(){
+  const inbox = await idbGet('shareInbox');
+  if(!inbox || !inbox.length) return;
+  await idbSet('shareInbox', []);
+  inbox.forEach(item=>{
+    if(!item.text) return;
+    const m = matchHomesForText(item.text);
+    const pick = pickFromMatches(m);
+    if(pick){ attachText(pick.id, item); }
+    else { SHARE_QUEUE.push(item); }
+  });
+  renderShareResolver();
+}
+
 // ---- Tile navigation ----
 let LIB_VIEW = 'all';   // all | star | visited
 function goHomes(view){
@@ -2723,6 +2879,7 @@ function refreshHomeViews(){
 }
 function openDetail(id){
   expandedId = id;
+  markRead(id);
   renderDetail();
   const ov = document.getElementById('detailOverlay');
   ov.style.display = 'block'; ov.scrollTop = 0;
@@ -2757,11 +2914,19 @@ function renderDetail(){
       ${photosBlock(r)}
       ${inspectBlock(r, true)}
       ${asksBlock(r, true)}
-      <details class="lib-details"><summary>📝 Notes</summary><textarea class="lib-notes" onchange="setNotes('${r.id}', this.value)">${esc(r.notes||'')}</textarea></details>`;
+      <div style="margin-top:.6rem"><div class="qgroup">📝 Notes</div><textarea class="lib-notes" placeholder="Impressions, measurements, anything…" onchange="setNotes('${r.id}', this.value)">${esc(r.notes||'')}</textarea></div>`;
     return;
   }
   const vmBtn = `<button class="vm-btn vm-cam" onclick="toggleVisitMode()" style="margin:.1rem 0 .6rem">🎒 Start Visit Mode</button>`;
-  document.getElementById('detBody').innerHTML = fitHero + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
+  const vs = visitState(r);
+  const idCard = `<div class="det-id">
+    <div class="det-price">${r.price?fmt.format(r.price):'no price yet'}</div>
+    ${r.addr?`<a class="det-addr" href="${mapsUrl(r)}" target="_blank" rel="noopener">📍 ${esc(r.addr)}</a>`:''}
+    ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · your gut: '+'★'.repeat(r.gut):''}</div>`:''}
+    ${vs==='unconfirmed'?`<div class="det-confirm">📅 Scheduled ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})} — did you visit?
+      <span><button onclick="confirmVisit('${r.id}', true)">✔ Yes</button><button onclick="confirmVisit('${r.id}', false)">✕ No</button></span></div>`:''}
+  </div>`;
+  document.getElementById('detBody').innerHTML = fitHero + idCard + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
@@ -3394,6 +3559,19 @@ function goFit(){
   LIB_VIEW = 'all';
   showPane('lib');
 }
+
+function renderTextsStrip(){
+  const el = document.getElementById('d_texts'); if(!el) return;
+  const unread = PROPS.filter(r=>r.unread>0);
+  const pend = SHARE_QUEUE.filter(Boolean).length;
+  if(!unread.length && !pend){ el.style.display='none'; return; }
+  el.style.display = 'flex';
+  el.onclick = pend ? renderShareResolver : ()=>{ goHomes('all'); };
+  el.innerHTML = '<span style="font-size:1.3rem">💬</span><span style="flex:1"><b>' +
+    (pend ? pend + ' text' + (pend>1?'s':'') + ' waiting to be matched' : unread.length + ' home' + (unread.length>1?'s have':' has') + ' new agent texts') +
+    '</b><i>' + (pend ? 'tap to sort them' : unread.map(r=>(r.name||'').split(':')[0]).slice(0,3).join(', ') + ' — tap to open') + '</i></span>';
+}
+
 function renderFitStrip(){
   const el = document.getElementById('d_fitstrip'); if(!el) return;
   const reqSet = REQ_IDS.some(id=>document.getElementById(id)?.value);
@@ -3416,13 +3594,14 @@ function renderFitStrip(){
 
 
 function needsImpressions(r){
-  if(!r.visitAt) return false;
+  if(visitState(r) !== 'visited') return false;
   const vt = +new Date(r.visitAt);
-  if(vt > Date.now() || vt < Date.now() - 14*86400000) return false;
+  if(vt < Date.now() - 14*86400000) return false;
   if(r.gut) return false;
   if((r.comms||[]).some(c=>c.t > vt)) return false;
   return true;
 }
+function needsVisitConfirm(r){ return visitState(r) === 'unconfirmed'; }
 
 
 function setIncExp(id){
@@ -3454,6 +3633,9 @@ function renderChanged(){
 function renderComingUp(){
   const el = document.getElementById('d_up'); if(!el) return;
   const items = collectScheduleItems();
+  PROPS.filter(needsVisitConfirm).slice(0,2).forEach(r=>{
+    items.push({t:+new Date(r.visitAt), ic:'❓', what:'Did you visit ' + (r.name||'this home') + '?', sub:'was scheduled ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'}) + ' — tap to confirm', id:r.id});
+  });
   PROPS.filter(needsImpressions).slice(0,2).forEach(r=>{
     items.push({t:+new Date(r.visitAt), ic:'📝', what:'Log impressions: ' + (r.name||'visited home'), sub:'visited ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short'}) + ' — gut score & notes', id:r.id, vm:true});
   });
@@ -3553,11 +3735,12 @@ function renderDash(){
     </div>`;
   }).join('') : '<div style="font-size:.76rem;color:var(--ink-soft)">Save properties first — they get ranked against your requirements here.</div>';
   renderFitStrip();
+  renderTextsStrip();
   renderComingUp();
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v58 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v61 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3677,6 +3860,22 @@ function computeRec(rec, sh){
   const left = (sh.takehome||0) - allin;
   return {allin, cash, left, total};
 }
+
+function visitState(r){
+  if(!r.visitAt) return null;
+  const past = new Date(r.visitAt) < new Date();
+  if(!past) return 'upcoming';
+  if(r.visited === true) return 'visited';
+  if(r.visited === false) return 'missed';
+  return 'unconfirmed';
+}
+function confirmVisit(id, yes){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.visited = !!yes;
+  if(!yes && confirm('Mark as not visited. Clear the old appointment so you can reschedule?')){ r.visitAt = null; }
+  persistProps(); refreshHomeViews(); renderDash();
+}
+
 function fmtVisit(v){
   if(!v) return '';
   const d = new Date(v), now = new Date();
@@ -3721,7 +3920,7 @@ function renderLib(){
     const m = metric(r);
     if(!showRuled && isRuled(r)) return false;
     if(starOnly && !r.shortlisted) return false;
-    if(LIB_VIEW==='visited' && !(r.visitAt && new Date(r.visitAt) < Date.now())) return false;
+    if(LIB_VIEW==='visited' && visitState(r)!=='visited') return false;
     if(lf('price') && r.price > lf('price')) return false;
     if(lf('allin') && m.allin > lf('allin')) return false;
     if(lf('sqft') && (r.sqft||0) < lf('sqft')) return false;
@@ -3745,9 +3944,15 @@ function renderLib(){
     const isOpen = expandedId === r.id;
     const row = `<button class="lib-rowbtn" onclick="openDetail('${r.id}')">
       <div class="lr-main">
-        <div class="lr-name">${isRuled(r)?'❌ ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${priceDeltaChip(r)}</div>
+        <div class="lr-name">${isRuled(r)?'❌ ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${r.unread?`<span class="lr-unread">💬${r.unread}</span>`:''}${priceDeltaChip(r)}</div>
         <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${metaStr(r)?' · '+metaStr(r):''}</div>
-        ${r.offerDate?`<span class="lr-chip escrow">🏁 in escrow</span>`:v?(v.past?`<span class="lr-chip seen">✔ visited</span>`:`<span class="lr-chip appt ${v.soon?'soon':''}">📅 ${v.when}</span>`):''}
+        ${(()=>{const vs=visitState(r);
+          if(r.offerDate) return `<span class="lr-chip escrow">🏁 in escrow</span>`;
+          if(vs==='upcoming') return `<span class="lr-chip appt ${v.soon?'soon':''}">📅 ${v.when}</span>`;
+          if(vs==='visited') return `<span class="lr-chip seen">✔ visited ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})}</span>`;
+          if(vs==='unconfirmed') return `<span class="lr-chip ask">📅 did you visit?</span>`;
+          if(vs==='missed') return `<span class="lr-chip seen">✕ didn't visit</span>`;
+          return '';})()}
       </div>
       ${fitBadge(f)}
       <span class="lr-chev">▸</span>
@@ -4068,7 +4273,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v58 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v61 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -4199,7 +4404,7 @@ async function fetchSchools(p, address){
   schoolBusy[p] = true;
   const cell = document.getElementById(p+'_school_cell');
   if(cell) cell.innerHTML = '<span style="font-size:.72rem;color:var(--ink-soft)">Looking up schools…</span>';
-  if(p==='p1') qStatus('⏳ Looking up the zoned schools & ratings (~2¢)…', 'busy');
+  if(p==='p1') qStatus('⏳ Looking up schools, masjid & community data (~3¢)…', 'busy');
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
@@ -4208,10 +4413,13 @@ async function fetchSchools(p, address){
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
         messages: [{ role:'user', content:
-          `Search for the GreatSchools ratings of the public schools serving this address: ${address}\n` +
-          `Respond with ONLY a JSON object, no markdown fences, exactly: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null}]}\n` +
-          `rating = the GreatSchools 1-10 score. Use null if a school's score is not clearly found. Include only schools you can verify serve or are near this address. Be fast: 1-2 searches.`}],
-        tools: [{ type:'web_search_20250305', name:'web_search', max_uses: 2 }]
+          `For this address: ${address}\n` +
+          `1) The zoned public schools (elementary/middle/high) with GreatSchools 1-10 ratings\n` +
+          `2) Nearest masjid/mosque name and driving distance in miles\n` +
+          `3) Asian student percentage at the zoned elementary school if findable\n` +
+          `Respond ONLY JSON, no fences: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null}], "masjid_name": string|null, "masjid_miles": number|null, "asian_pct": number|null}\n` +
+          `null for anything not clearly verified — never guess. Be fast: at most 3 searches.`}],
+        tools: [{ type:'web_search_20250305', name:'web_search', max_uses: 3 }]
       })
     });
     if(!resp.ok) throw new Error('API ' + resp.status);
@@ -4227,9 +4435,14 @@ async function fetchSchools(p, address){
       updateQuick();
       // attach to the auto-saved record and refresh everything that shows schools
       const rec = PROPS.find(x=>x.id===slotPropId[p]);
-      if(rec){ rec.schools = d.schools; enrichOne(rec); persistProps(); refreshHomeViews(); renderDash(); }
+      if(rec){
+        rec.schools = d.schools;
+        if(d.masjid_miles != null){ rec.masjidMi = d.masjid_miles; rec.masjidUser = true; if(d.masjid_name) rec.masjidTxt = d.masjid_name + ' — ~' + d.masjid_miles + ' miles'; }
+        if(d.asian_pct != null && !rec.asianUser){ rec.asianPct = d.asian_pct; delete rec.asianEst; }
+        enrichOne(rec); persistProps(); refreshHomeViews(); renderDash();
+      }
       const names = d.schools.map(x=>((x.type||'')[0]||'S').toUpperCase() + (x.rating!=null?x.rating:'?')).join('/');
-      if(p==='p1') qStatus('✓ Schools found: ' + d.schools.map(x=>x.name).join(', ') + ' (' + names + ') — saved to the home.', 'ok');
+      if(p==='p1') qStatus('✓ Looked up & saved: schools ' + d.schools.map(x=>x.name).join(', ') + ' (' + names + ')' + (d.masjid_miles!=null?' · masjid ~'+d.masjid_miles+' miles':'') + (d.asian_pct!=null?' · Asian '+d.asian_pct+'%':'') + '.', 'ok');
     } else {
       SCHOOLS[p] = null;
       if(p==='p1') qStatus('✗ Could not verify the zoned schools for that address — add them from GreatSchools manually.', 'err');
@@ -4595,7 +4808,7 @@ function applyDeviceLayout(){
 }
 
 function detachShell(){
-  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar','docView','schedOverlay','detailOverlay','dmOverlay'].forEach(id=>{
+  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar','docView','schedOverlay','detailOverlay','dmOverlay','shareResolver'].forEach(id=>{
     const el = document.getElementById(id);
     if(el && el.parentElement !== document.body) document.body.appendChild(el);
   });
@@ -4608,6 +4821,7 @@ window.onload = function(){
   applyDeviceLayout();
   fitScale();
   backGuard();
+  setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); seedHomes(); migratePhotos(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };

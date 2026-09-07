@@ -2961,6 +2961,7 @@ function renderDetail(){
     ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}</div>`:''}
     ${vs==='unconfirmed'?`<div class="det-confirm">📅 Scheduled ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})} — did you visit?
       <span><button onclick="confirmVisit('${r.id}', true)">✔ Yes</button><button onclick="confirmVisit('${r.id}', false)">✕ No</button></span></div>`:''}
+    <label class="fin-btn">💵 Upload agent's finance sheet (photo or PDF)<input type="file" accept="image/*,.pdf" style="display:none" onchange="uploadFinSheet('${r.id}', this)"></label>
   </div>`;
   setTimeout(hydrateCommEvidence, 40);
   document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
@@ -3781,7 +3782,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v64 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v66 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4148,6 +4149,17 @@ function renderLib(){
   const fc = document.getElementById('filtCount');
   if(fc) fc.textContent = (filteredP.length === PROPS.length && LIB_VIEW==='all') ? '' : '· showing ' + filteredP.length + ' of ' + PROPS.length + (LIB_VIEW==='visited'?' (visited)':'');
   const sorted = [...filteredP].sort(cmp[mode] || cmp.default);
+  if(!sorted.length){
+    const msg = LIB_VIEW==='visited'
+      ? 'No confirmed visits yet.<br><br>After you tour a home, open it and answer <b>“did you visit?” → ✔ Yes</b> — it shows up here with your verdict.'
+      : starOnly
+      ? 'Nothing shortlisted yet. Tap ⭐ on any home you\'re seriously considering.'
+      : q
+      ? 'Nothing matches “' + esc(q) + '”.'
+      : 'No homes match the current filters.';
+    list.innerHTML = '<div class="lib-empty">' + msg + '<br><br><button class="aibtn" style="background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" onclick="resetLibFilters()">Show all homes</button></div>';
+    return;
+  }
   list.innerHTML = sorted.map(r=>{
     const m = computeRec(r, sh);
     const v = fmtVisit(r.visitAt);
@@ -4485,7 +4497,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v64 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v66 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

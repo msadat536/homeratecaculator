@@ -610,6 +610,11 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .pv-v.out{background:var(--calc);color:var(--ink)}
 
 .fin-btn{display:block;text-align:center;margin-top:.55rem;font-size:.8rem;font-weight:800;color:var(--indigo);border:1.5px dashed var(--indigo);border-radius:10px;padding:.55rem;cursor:pointer}
+
+.up-yn{display:flex;gap:.3rem;align-items:center;flex-shrink:0}
+.up-yn button{font-family:inherit;font-weight:800;font-size:.7rem;border:none;border-radius:8px;padding:.4rem .55rem;cursor:pointer}
+.up-yn button:first-child{background:var(--win);color:var(--win-ink)}
+.up-yn button:last-child{background:var(--calc);color:var(--ink)}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -3671,11 +3676,11 @@ function renderChanged(){
 function renderComingUp(){
   const el = document.getElementById('d_up'); if(!el) return;
   const items = collectScheduleItems();
-  PROPS.filter(needsVisitConfirm).slice(0,2).forEach(r=>{
-    items.push({t:+new Date(r.visitAt), ic:'❓', what:'Did you visit ' + (r.name||'this home') + '?', sub:'was scheduled ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'}) + ' — tap to confirm', id:r.id});
+  PROPS.filter(r=>needsVisitConfirm(r) && +new Date(r.visitAt) > Date.now() - 10*86400000).slice(0,2).forEach(r=>{
+    items.push({t:+new Date(r.visitAt), ic:'❓', what:'Did you visit ' + (r.name||'this home') + '?', sub:'was scheduled ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'}), id:r.id, yn:true});
   });
-  PROPS.filter(needsPostVisit).slice(0,2).forEach(r=>{
-    items.push({t:+new Date(r.visitAt), ic:'➡️', what:'Next step for ' + (r.name||'visited home') + '?', sub:'visited — pick a follow-up', id:r.id});
+  PROPS.filter(r=>needsPostVisit(r) && +new Date(r.visitAt) > Date.now() - 10*86400000).slice(0,2).forEach(r=>{
+    items.push({t:+new Date(r.visitAt), ic:'➡️', what:'Next step for ' + (r.name||'visited home') + '?', sub:'visited — pick a follow-up, or ✕ to dismiss', id:r.id, dis:true});
   });
   PROPS.filter(r=>needsImpressions(r) && r.postDone).slice(0,2).forEach(r=>{
     items.push({t:+new Date(r.visitAt), ic:'📝', what:'Log impressions: ' + (r.name||'visited home'), sub:'visited ' + new Date(r.visitAt).toLocaleDateString([],{weekday:'short'}) + ' — gut score & notes', id:r.id, vm:true});
@@ -3697,8 +3702,10 @@ function renderComingUp(){
     return `<div class="up-row ${late?'late':''}">
       <button class="up-main" onclick="${x.vm?`VISIT_MODE=true;`:''}schedGo('${x.id}')">
         <span class="sch-ic">${x.ic}</span>
-        <span class="sch-main"><b>${esc(x.what)}</b><i>${late?'⚠ past due · ':''}${day}${x.sub?' · '+esc(x.sub):''}</i></span>
+        <span class="sch-main"><b>${esc(x.what)}</b><i>${late&&!x.yn?'⚠ past due · ':''}${day}${x.sub?' · '+esc(x.sub):''}</i></span>
       </button>
+      ${x.yn ? `<span class="up-yn"><button onclick="confirmVisit('${x.id}', true)">✔ Yes</button><button onclick="confirmVisit('${x.id}', false)">✕ No</button></span>` : ''}
+      ${x.dis ? `<span class="up-yn"><button onclick="pvNext('${x.id}','__none',0)">✕</button></span>` : ''}
       ${x.map && r ? `<a class="up-map" href="${mapsUrl(r)}" target="_blank" rel="noopener">📍</a>` : ''}
     </div>`;
   }).join('');
@@ -3782,7 +3789,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v66 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v67 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -3937,8 +3944,16 @@ function confirmVisit(id, yes){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
   r.visited = !!yes;
   if(!yes && confirm('Mark as not visited. Clear the old appointment so you can reschedule?')){ r.visitAt = null; }
-  persistProps(); refreshHomeViews(); renderDash();
-  if(yes) openDetail(id);   // detail now shows the post-visit card
+  persistProps();
+  // read-back proof: is the answer really on disk?
+  try{
+    const back = JSON.parse(localStorage.getItem(PROP_KEY)).find(x=>x.id===id);
+    if(!back || back.visited !== r.visited){
+      alert('⚠ Your answer did NOT save (storage problem). Open ⚙ Settings → Data, check the storage meter, and free space.');
+    }
+  }catch(e){}
+  refreshHomeViews(); renderDash();
+  if(yes) openDetail(id);
 }
 
 function setVerdict(id, v){
@@ -4497,7 +4512,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v66 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v67 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

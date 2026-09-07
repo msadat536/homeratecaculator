@@ -615,6 +615,37 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .up-yn button{font-family:inherit;font-weight:800;font-size:.7rem;border:none;border-radius:8px;padding:.4rem .55rem;cursor:pointer}
 .up-yn button:first-child{background:var(--win);color:var(--win-ink)}
 .up-yn button:last-child{background:var(--calc);color:var(--ink)}
+
+.clim-legend{display:flex;gap:.6rem;align-items:center;margin-top:.35rem}
+.cl-chip{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;font-weight:800}
+.cl-sw{width:.9rem;height:.5rem;border-radius:3px;display:inline-block}
+.cl-sw.city{background:var(--indigo)}
+.cl-sw.cm{background:#0284c7}
+.cb-month{display:grid;grid-template-columns:5.2rem 1fr 4.6rem;gap:.5rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--line)}
+.cb-mname{font-size:.74rem;font-weight:800}
+.cb-line{display:flex;align-items:center;gap:.35rem;margin:.12rem 0}
+.cb-bar{height:.72rem;border-radius:4px;display:inline-block;min-width:2px}
+.cb-bar.city{background:var(--indigo)}
+.cb-bar.city.warm{background:#e8912d}
+.cb-bar.city.hot{background:#e2574c}
+.cb-bar.cm{background:#0284c7;opacity:.85}
+.cb-line b{font-size:.72rem;font-family:'IBM Plex Mono',monospace}
+.cb-diff{font-size:.64rem;font-weight:700;color:var(--ink-soft);text-align:right}
+
+.lr-cat{display:inline-block;background:#eef2ff;color:#3730a3;font-size:.6rem;font-weight:800;border-radius:6px;padding:.1rem .35rem;margin-left:.3rem;vertical-align:middle}
+.cat-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:#3730a3;background:#eef2ff;border:none;border-radius:10px;padding:.55rem;cursor:pointer}
+
+.sr-f{display:block;margin-top:.45rem}
+.sr-f span{display:block;font-size:.66rem;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.15rem}
+.sr-f input,.sr-f select{width:100%;font-family:inherit;font-size:.95rem;border:1.5px solid var(--line);border-radius:10px;padding:.5rem .6rem;box-sizing:border-box;background:#fff}
+
+.wf-grid{display:grid;grid-template-columns:1fr 1fr;gap:.15rem .5rem}
+.wf-chips{font-size:.66rem;font-weight:700;color:var(--ink-soft);margin-top:.45rem;display:flex;gap:.3rem;align-items:center;flex-wrap:wrap}
+.wf-chips button{font-family:inherit;font-weight:800;font-size:.7rem;border:1.5px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:8px;padding:.3rem .55rem;cursor:pointer}
+.wf-res{background:var(--calc);border-radius:12px;padding:.6rem .7rem;margin-top:.5rem}
+.wf-big{font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.35rem}
+.wf-big span{font-size:.75rem;font-weight:700;color:var(--ink-soft);margin-left:.25rem}
+.wf-line{font-size:.76rem;margin-top:.2rem}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1237,6 +1268,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   <button onclick="openSettings()">&#9881;</button>
 </div></div>
     <div class="dstats" id="d_stats"></div>
+<div class="dstats" id="d_cats" style="display:none;margin-top:.45rem"></div>
     <button class="fit-strip" id="d_fitstrip" onclick="goFit()" style="display:none"></button>
     <button class="fit-strip" id="d_texts" style="display:none;border-color:#e2574c"></button>
     <div class="qcard">
@@ -1367,6 +1399,30 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   <div class="qwrap">
     <div class="qhead"><b>💬 New agent text</b><div><button onclick="document.getElementById('shareResolver').style.display='none'">Later</button></div></div>
     <div id="shareBody"></div>
+  </div>
+</div>
+
+<!-- Climate big view -->
+<div id="climBig" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:97;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b id="climBigTitle">🌡 Climate</b><div><button onclick="document.getElementById('climBig').style.display='none'">← Back</button></div></div>
+    <div class="qcard" id="climBigBody"></div>
+  </div>
+</div>
+
+<!-- Category picker -->
+<div id="catPick" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:97;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b>🏷 Category</b><div><button onclick="document.getElementById('catPick').style.display='none'">← Back</button></div></div>
+    <div id="catBody"></div>
+  </div>
+</div>
+
+<!-- Scan review -->
+<div id="scanReview" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:98;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b>📷 Check the scan</b><div><button onclick="document.getElementById('scanReview').style.display='none'">← Back</button></div></div>
+    <div id="srBody"></div>
   </div>
 </div>
 
@@ -1647,6 +1703,59 @@ function fileToScaledB64(file){
   });
 }
 
+
+// ================= Scan review: edit what the scan read, then save =================
+let SCAN_REVIEW = null;
+function openScanReview(p, d, rawText){
+  SCAN_REVIEW = {p, schools: (d && d.schools) || null};
+  d = d || {};
+  const F = (id, label, val, type, ph)=>`<label class="sr-f"><span>${label}</span><input id="sr_${id}" type="${type||'text'}" value="${val!=null?String(val).replace(/"/g,'&quot;'):''}" placeholder="${ph||''}" inputmode="${type==='number'?'decimal':'text'}"></label>`;
+  const tri = (id, label, val)=>`<label class="sr-f"><span>${label}</span><select id="sr_${id}"><option value=""${val==null?' selected':''}>not sure</option><option value="yes"${val===true?' selected':''}>yes</option><option value="no"${val===false?' selected':''}>no</option></select></label>`;
+  document.getElementById('srBody').innerHTML = `
+    <div class="qcard">
+      <div style="font-size:.78rem;color:var(--ink-soft);margin-bottom:.5rem">Check what the scan read — fix anything wrong, then Save. Blank = unknown.</div>
+      ${F('address','Address / community', d.address)}
+      ${F('price','Price ($)', d.price, 'number')}
+      ${F('sqft','Sq ft', d.sqft, 'number')}
+      ${F('beds','Beds / layout', d.beds_layout, 'text', 'e.g. 4 bed / 3 bath')}
+      ${F('year','Year built', d.year_built, 'number')}
+      ${F('hoa','HOA / month ($)', d.hoa_monthly, 'number')}
+      ${F('mr','Mello-Roos / month ($)', d.mello_roos_monthly, 'number')}
+      ${F('tax','Annual tax ($)', d.annual_tax_amount, 'number')}
+      ${F('cred','Seller credit ($)', d.seller_credit, 'number')}
+      ${F('inc','Incentive notes', d.incentives)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">${tri('yard','Backyard', d.has_backyard)}${tri('loft','Loft', d.has_loft)}</div>
+      ${SCAN_REVIEW.schools && SCAN_REVIEW.schools.length?`<div style="font-size:.72rem;margin-top:.3rem">🎓 ${SCAN_REVIEW.schools.length} school${SCAN_REVIEW.schools.length>1?'s':''} captured — kept as read.</div>`:''}
+      ${rawText?`<details style="margin-top:.5rem"><summary style="font-size:.72rem;font-weight:700;cursor:pointer">What the scan actually read</summary><div class="share-msg">${esc(String(rawText).slice(0,1200))}</div></details>`:''}
+      <button class="cf-apply" onclick="saveScanReview()">💾 Save to this home</button>
+      <button class="share-skip" onclick="document.getElementById('scanReview').style.display='none'">Discard scan</button>
+    </div>`;
+  document.getElementById('scanReview').style.display = 'block';
+}
+function saveScanReview(){
+  if(!SCAN_REVIEW) return;
+  const p = SCAN_REVIEW.p;
+  const gv = id => document.getElementById('sr_'+id).value.trim();
+  const gn = id => { const v = gv(id); return v==='' ? null : parseFloat(v); };
+  const gt = id => { const v = gv(id); return v==='yes' ? true : v==='no' ? false : null; };
+  const d = {
+    address: gv('address') || null,
+    price: gn('price'), sqft: gn('sqft'),
+    beds_layout: gv('beds') || null,
+    year_built: gn('year'), hoa_monthly: gn('hoa'),
+    mello_roos_monthly: gn('mr'), annual_tax_amount: gn('tax'),
+    seller_credit: gn('cred'), incentives: gv('inc') || null,
+    has_backyard: gt('yard'), has_loft: gt('loft'),
+    schools: SCAN_REVIEW.schools
+  };
+  document.getElementById('scanReview').style.display = 'none';
+  PENDING[p] = d;
+  applyImport(p);
+  updateQuick();
+  setPStatus(p, '✓ Saved from scan: ' + describeParsed(d) + '');
+  SCAN_REVIEW = null;
+}
+
 async function scanListing(inp){
   const file = inp.files[0]; inp.value = '';
   if(!file) return;
@@ -1672,21 +1781,21 @@ async function scanListing(inp){
       const data = await resp.json();
       const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
       const parsed = parseAIJson(text);
-      PENDING[p] = parsed;
-      applyImport(p);
-      updateQuick();
-      setPStatus(p, '✓ Scanned: ' + describeParsed(parsed) + ' — verify the price.');
+      if(!parsed){
+        setPStatus(p, '✗ The scan came back garbled — check & enter the fields yourself:');
+        openScanReview(p, null, text);
+      } else {
+        setPStatus(p, '📷 Scan read — review & save.');
+        openScanReview(p, parsed, null);
+      }
     } else {
       // ---- On-device OCR path (no key needed) ----
       setPStatus(p, '📷 Reading text off the image on-device… first run downloads the OCR engine (~20s)', true);
       const text = await runOCR(file, msg=>setPStatus(p, '📷 ' + msg));
       if(!text.trim()) throw new Error('no text found in the image — try a sharper, closer screenshot');
       const d = parseListingLocal(text);
-      if(!Object.keys(d).length) throw new Error('text was read but no price/beds/sqft recognized. Read text: "' + text.replace(/\s+/g,' ').slice(0,80) + '…"');
-      PENDING[p] = d;
-      applyImport(p);
-      updateQuick();
-      setPStatus(p, '✓ Scanned on-device: ' + describeParsed(d) + ' — OCR can misread digits, verify the price.');
+      setPStatus(p, Object.keys(d).length ? '📷 Scan read — review & save (OCR can misread digits).' : '✗ Text was read but no fields recognized — enter them here:');
+      openScanReview(p, Object.keys(d).length ? d : null, text);
     }
   }catch(err){
     setPStatus(p, '📷 Scan failed (' + (err.message||'error') + '). Try a clearer screenshot, or type the numbers.');
@@ -2323,6 +2432,107 @@ function summerPeak(r){
 }
 function climRefOn(){ try{ return localStorage.getItem('climRef_v1') !== '0'; }catch(e){ return true; } }
 function toggleClimRef(){ try{ localStorage.setItem('climRef_v1', climRefOn() ? '0' : '1'); }catch(e){} renderDetail(); }
+
+function openClimBig(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const c = cityOf(r); if(!c) return;
+  const d = CLIMATE[c];
+  const hiC = d.hi.map(f2c);
+  const cmC = CLIMATE['Costa Mesa'].hi.map(f2c);
+  const cap = parseFloat(document.getElementById('rq_temp')?.value) || null;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const mx = Math.max(...hiC.concat(cmC));
+  const w = v => Math.round(v / mx * 100);
+  const rows = months.map((m,i)=>`
+    <div class="cb-month">
+      <div class="cb-mname">${m}</div>
+      <div class="cb-pair">
+        <div class="cb-line"><i class="cb-bar city ${hiC[i]>=38?'hot':hiC[i]>=32?'warm':''}" style="width:${w(hiC[i])}%"></i><b>${hiC[i]}°</b></div>
+        <div class="cb-line"><i class="cb-bar cm" style="width:${w(cmC[i])}%"></i><b>${cmC[i]}°</b></div>
+      </div>
+      <div class="cb-diff">${hiC[i]-cmC[i]>0?'+'+(hiC[i]-cmC[i])+'° hotter':hiC[i]-cmC[i]<0?(hiC[i]-cmC[i])+'° cooler':'same'}</div>
+    </div>`).join('');
+  document.getElementById('climBigBody').innerHTML = `
+    <div class="clim-legend" style="margin-bottom:.6rem">
+      <span class="cl-chip"><i class="cl-sw city"></i>${c}</span>
+      <span class="cl-chip"><i class="cl-sw cm"></i>Costa Mesa</span>
+    </div>
+    <div style="font-size:.8rem;margin-bottom:.6rem">Hottest ever in ${c}: <b>${f2c(d.rec)}°C</b> · in Costa Mesa: <b>${f2c(CLIMATE['Costa Mesa'].rec)}°C</b>${cap?` · your cap: <b>${cap}°C</b>`:''}</div>
+    ${rows}
+    <div style="font-size:.66rem;color:var(--ink-soft);margin-top:.6rem">Typical daily high per month, °C. Summer gap is what your family will feel most.</div>`;
+  document.getElementById('climBig').style.display = 'block';
+  document.getElementById('climBigTitle').textContent = '🌡 ' + c + ' vs Costa Mesa';
+}
+
+
+// ================= What-if calculator on each home =================
+function whatIfBlock(r){
+  return `<details class="lib-details" id="wfWrap" ontoggle="if(this.open)calcWhatIf('${r.id}')"><summary>🧮 Test the numbers — what-if</summary>
+    <div class="wf-grid">
+      <label class="sr-f"><span>Price ($)</span><input id="wf_price" type="number" inputmode="decimal" value="${r.price||''}" oninput="calcWhatIf('${r.id}')"></label>
+      <label class="sr-f"><span>Rate %</span><input id="wf_rate" type="number" step="0.05" inputmode="decimal" value="${r.rate!=null?r.rate:g('p1_rate')||6.75}" oninput="calcWhatIf('${r.id}')"></label>
+      <label class="sr-f"><span>Down payment %</span><input id="wf_dp" type="number" step="0.5" inputmode="decimal" value="${r.dp!=null?r.dp:3.5}" oninput="calcWhatIf('${r.id}')"></label>
+      <label class="sr-f"><span>Term (yrs)</span><input id="wf_term" type="number" value="${r.term||30}" oninput="calcWhatIf('${r.id}')"></label>
+      <label class="sr-f"><span>Seller credit ($)</span><input id="wf_cred" type="number" inputmode="decimal" value="${r.cred||''}" oninput="calcWhatIf('${r.id}')"></label>
+      <label class="sr-f"><span>HOA /mo ($)</span><input id="wf_hoa" type="number" inputmode="decimal" value="${r.hoa||''}" oninput="calcWhatIf('${r.id}')"></label>
+    </div>
+    <div class="wf-chips">Down payment quick-set:
+      ${[3.5,5,10,15,20].map(v=>`<button onclick="document.getElementById('wf_dp').value=${v};calcWhatIf('${r.id}')">${v}%</button>`).join('')}
+    </div>
+    <div id="wf_out"></div>
+    <div style="display:flex;gap:.4rem;margin-top:.5rem">
+      <button class="cf-apply" style="margin-top:0;flex:1" onclick="applyWhatIf('${r.id}')">💾 Apply to this home</button>
+      <button class="share-skip" style="margin-top:0;flex:0 0 auto;padding:.6rem .8rem" onclick="openDetail('${r.id}')">Reset</button>
+    </div>
+  </details>`;
+}
+function readWhatIf(r){
+  const gv = id => { const el = document.getElementById(id); const v = el ? el.value.trim() : ''; return v==='' ? null : parseFloat(v); };
+  return {
+    price: gv('wf_price'), rate: gv('wf_rate'), dp: gv('wf_dp'),
+    term: gv('wf_term'), cred: gv('wf_cred'), hoa: gv('wf_hoa')
+  };
+}
+function calcWhatIf(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const v = readWhatIf(r);
+  const test = Object.assign({}, r, {
+    price: v.price!=null?v.price:r.price, rate: v.rate, dp: v.dp,
+    term: v.term, cred: v.cred!=null?v.cred:0, hoa: v.hoa!=null?v.hoa:0
+  });
+  const sh = {takehome: g('takehome'), maint: gOr('maint', 1)};
+  const now = computeRec(r, sh);
+  const m = computeRec(test, sh);
+  const dpAmt = Math.round((test.price||0) * (test.dp||0) / 100);
+  const cc = Math.round((test.price||0) * (test.ccpct!=null?test.ccpct:2.5) / 100);
+  const cash = Math.max(0, dpAmt + cc - (test.cred||0));
+  const delta = m.allin - now.allin;
+  const th = parseFloat(sh.takehome) || null;
+  const share = th ? Math.round(m.allin / th * 100) : null;
+  document.getElementById('wf_out').innerHTML = `
+    <div class="wf-res">
+      <div class="wf-big">${fmt.format(m.allin)}<span>/mo all-in</span></div>
+      <div class="wf-line">${delta===0?'same as current setup':(delta<0?'▼ '+fmt.format(-delta)+'/mo cheaper':'▲ '+fmt.format(delta)+'/mo more')} than the home's current numbers</div>
+      <div class="wf-line">Cash to close: <b>${fmt.format(cash)}</b> <i>(${fmt.format(dpAmt)} down + ~${fmt.format(cc)} closing − credits)</i></div>
+      ${share!=null?`<div class="wf-line">That's <b>${share}%</b> of your take-home${share>40?' <em style="color:var(--warn-ink);font-style:normal;font-weight:800">— heavy</em>':share<=32?' <em style="color:var(--win-ink);font-style:normal;font-weight:800">— comfortable</em>':''}</div>`:''}
+      ${(test.dp||0) < 20 ? `<div class="wf-line" style="color:var(--ink-soft)">PMI applies under 20% down — included above.</div>` : `<div class="wf-line" style="color:var(--win-ink)">20%+ down: no PMI in this math.</div>`}
+    </div>`;
+}
+function applyWhatIf(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const v = readWhatIf(r);
+  if(v.price!=null && v.price !== r.price) trackPrice(r, v.price);
+  if(v.price!=null) r.price = v.price;
+  r.rate = v.rate!=null ? v.rate : r.rate;
+  r.dp = v.dp!=null ? v.dp : r.dp;
+  r.term = v.term!=null ? v.term : r.term;
+  r.cred = v.cred!=null ? v.cred : 0;
+  r.hoa = v.hoa!=null ? v.hoa : 0;
+  persistProps(); refreshHomeViews(); renderDash();
+  openDetail(id);
+  setPStatus('p1', '✓ New numbers applied to ' + (r.name||'the home') + '.');
+}
+
 function climateBlock(r){
   const c = cityOf(r);
   if(!c) return '';
@@ -2337,11 +2547,13 @@ function climateBlock(r){
   const px = h => Math.round((h - mn + 3) / (mx - mn + 3) * 54 + 6);
   return `<details class="lib-details"><summary>🌡 Climate — ${c} (full year)</summary>
     <div style="font-size:.78rem;margin:.3rem 0">Normal summer day tops out at <b>${f2c(Math.max(...d.hi.slice(5,9)))}°C</b> · hottest day ever recorded ${f2c(d.rec)}°C${cap?` · your cap ${cap}°C`:''}</div>
-    <div class="clim-bars">${hiC.map((h,i)=>`<div class="clim-col"><span class="clim-v">${h}°</span><span class="clim-stack"><span class="clim-bar ${h>=38?'hot':h>=32?'warm':''}" style="height:${px(h)}px"></span>${showRef?`<span class="clim-ref" style="bottom:${px(cmC[i])-1}px"></span>`:''}</span><span class="clim-m">${mo[i]}</span></div>`).join('')}</div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.25rem">
-      <span style="font-size:.6rem;color:var(--ink-soft)">Typical daily highs by month (°C)${showRef?' · <span style="color:#0284c7;font-weight:700">— Costa Mesa reference</span>':''}</span>
-      <button onclick="toggleClimRef()" style="font-family:inherit;font-size:.62rem;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:8px;padding:.25rem .5rem;cursor:pointer">${showRef?'Hide':'Show'} Costa Mesa line</button>
+    <div class="clim-bars" role="button" onclick="openClimBig('${r.id}')">${hiC.map((h,i)=>`<div class="clim-col"><span class="clim-v">${h}°</span><span class="clim-stack"><span class="clim-bar ${h>=38?'hot':h>=32?'warm':''}" style="height:${px(h)}px"></span>${showRef?`<span class="clim-ref" style="bottom:${px(cmC[i])-1}px"></span>`:''}</span><span class="clim-m">${mo[i]}</span></div>`).join('')}</div>
+    <div class="clim-legend">
+      <span class="cl-chip"><i class="cl-sw city"></i>${c}</span>
+      ${showRef?`<span class="cl-chip"><i class="cl-sw cm"></i>Costa Mesa</span>`:''}
+      <button onclick="toggleClimRef()" style="font-family:inherit;font-size:.62rem;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:8px;padding:.25rem .5rem;cursor:pointer;margin-left:auto">${showRef?'Hide':'Show'} Costa Mesa</button>
     </div>
+    <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.2rem">Typical daily highs by month (°C) · tap the chart to enlarge</div>
   </details>`;
 }
 
@@ -2668,6 +2880,12 @@ function schedGo(id){
 // ---- Android back button: overlays close, then Dashboard, then double-back to exit ----
 let _backArmed = 0;
 function topOverlayClose(){
+  const sr = document.getElementById('scanReview');
+  if(sr && sr.style.display === 'block'){ sr.style.display = 'none'; return true; }
+  const cp = document.getElementById('catPick');
+  if(cp && cp.style.display === 'block'){ cp.style.display = 'none'; return true; }
+  const cb = document.getElementById('climBig');
+  if(cb && cb.style.display === 'block'){ cb.style.display = 'none'; return true; }
   const pv = document.getElementById('photoView');
   if(pv && pv.classList.contains('open')){ pv.classList.remove('open'); return true; }
   const dv = document.getElementById('docView');
@@ -2827,6 +3045,54 @@ async function processShareInbox(){
   renderShareResolver();
 }
 
+
+// ================= Custom categories =================
+let CATS = [];
+function loadCats(){ try{ CATS = JSON.parse(localStorage.getItem('homeCats_v1')) || []; }catch(e){ CATS = []; } }
+function saveCats(){ try{ localStorage.setItem('homeCats_v1', JSON.stringify(CATS)); }catch(e){} }
+function openCatPick(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const ov = document.getElementById('catPick');
+  ov.style.display = 'block';
+  const counts = {};
+  PROPS.forEach(p=>{ if(p.cat) counts[p.cat] = (counts[p.cat]||0)+1; });
+  document.getElementById('catBody').innerHTML = `
+    <div class="qcard">
+      <div style="font-weight:800;font-size:.9rem;margin-bottom:.5rem">🏷 Category for ${esc((r.name||'').slice(0,40))}</div>
+      ${CATS.map(c=>`<button class="share-pick" onclick="setCat('${id}', ${JSON.stringify(c).replace(/"/g,'&quot;')})"><b>${r.cat===c?'✔ ':''}${esc(c)}</b><i>${counts[c]||0} home${(counts[c]||0)!==1?'s':''}</i></button>`).join('')}
+      <button class="share-pick" onclick="(function(){const n=prompt('New category name:'); if(n&&n.trim()) setCat('${id}', n.trim());})()"><b>➕ New category…</b><i>e.g. Top picks, Backup, Show parents</i></button>
+      ${r.cat?`<button class="share-skip" onclick="setCat('${id}', null)">Remove from “${esc(r.cat)}”</button>`:''}
+      ${CATS.length?`<button class="share-skip" onclick="manageCats()">Manage categories…</button>`:''}
+    </div>`;
+}
+function setCat(id, cat){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  if(cat && !CATS.includes(cat)){ CATS.push(cat); saveCats(); }
+  r.cat = cat || undefined;
+  persistProps();
+  document.getElementById('catPick').style.display = 'none';
+  refreshHomeViews(); renderDash();
+}
+function manageCats(){
+  const del = prompt('Type a category name to DELETE (removes the label from its homes):\n\n' + CATS.join('\n'));
+  if(!del) return;
+  const c = CATS.find(x=>x.toLowerCase() === del.trim().toLowerCase());
+  if(!c){ alert('No category called "' + del + '".'); return; }
+  CATS = CATS.filter(x=>x!==c); saveCats();
+  PROPS.forEach(p=>{ if(p.cat === c) p.cat = undefined; });
+  persistProps();
+  document.getElementById('catPick').style.display = 'none';
+  refreshHomeViews(); renderDash();
+}
+function renderCatTiles(){
+  const el = document.getElementById('d_cats'); if(!el) return;
+  if(!CATS.length){ el.style.display='none'; return; }
+  const counts = {};
+  PROPS.forEach(p=>{ if(p.cat) counts[p.cat] = (counts[p.cat]||0)+1; });
+  el.style.display = 'grid';
+  el.innerHTML = CATS.map(c=>`<button class="dstat" onclick="goHomes(${JSON.stringify('cat:'+c).replace(/"/g,'&quot;')})"><b>${counts[c]||0}</b><span>🏷 ${esc(c)}</span></button>`).join('');
+}
+
 // ---- Tile navigation ----
 let LIB_VIEW = 'all';   // all | star | visited
 function goHomes(view){
@@ -2966,10 +3232,11 @@ function renderDetail(){
     ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}</div>`:''}
     ${vs==='unconfirmed'?`<div class="det-confirm">📅 Scheduled ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})} — did you visit?
       <span><button onclick="confirmVisit('${r.id}', true)">✔ Yes</button><button onclick="confirmVisit('${r.id}', false)">✕ No</button></span></div>`:''}
+    <button class="cat-btn" onclick="openCatPick('${r.id}')">🏷 ${r.cat?esc(r.cat)+' — change':'Add to a category'}</button>
     <label class="fin-btn">💵 Upload agent's finance sheet (photo or PDF)<input type="file" accept="image/*,.pdf" style="display:none" onchange="uploadFinSheet('${r.id}', this)"></label>
   </div>`;
   setTimeout(hydrateCommEvidence, 40);
-  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
+  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + whatIfBlock(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
@@ -3785,11 +4052,12 @@ function renderDash(){
   }).join('') : '<div style="font-size:.76rem;color:var(--ink-soft)">Save properties first — they get ranked against your requirements here.</div>';
   renderFitStrip();
   renderTextsStrip();
+  renderCatTiles();
   renderComingUp();
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v67 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v71 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4149,6 +4417,7 @@ function renderLib(){
     if(!showRuled && isRuled(r)) return false;
     if(starOnly && !r.shortlisted) return false;
     if(LIB_VIEW==='visited' && visitState(r)!=='visited') return false;
+    if(LIB_VIEW && LIB_VIEW.startsWith('cat:') && r.cat !== LIB_VIEW.slice(4)) return false;
     if(lf('price') && r.price > lf('price')) return false;
     if(lf('allin') && m.allin > lf('allin')) return false;
     if(lf('sqft') && (r.sqft||0) < lf('sqft')) return false;
@@ -4162,7 +4431,7 @@ function renderLib(){
     return true;
   });
   const fc = document.getElementById('filtCount');
-  if(fc) fc.textContent = (filteredP.length === PROPS.length && LIB_VIEW==='all') ? '' : '· showing ' + filteredP.length + ' of ' + PROPS.length + (LIB_VIEW==='visited'?' (visited)':'');
+  if(fc) fc.textContent = (filteredP.length === PROPS.length && LIB_VIEW==='all') ? '' : '· showing ' + filteredP.length + ' of ' + PROPS.length + (LIB_VIEW==='visited'?' (visited)':LIB_VIEW&&LIB_VIEW.startsWith('cat:')?' (🏷 '+LIB_VIEW.slice(4)+')':'');
   const sorted = [...filteredP].sort(cmp[mode] || cmp.default);
   if(!sorted.length){
     const msg = LIB_VIEW==='visited'
@@ -4183,7 +4452,7 @@ function renderLib(){
     const isOpen = expandedId === r.id;
     const row = `<button class="lib-rowbtn" onclick="openDetail('${r.id}')">
       <div class="lr-main">
-        <div class="lr-name">${isRuled(r)?'❌ ':''}${verdictIcon(r)?verdictIcon(r)+' ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${r.unread?`<span class="lr-unread">💬${r.unread}</span>`:''}${priceDeltaChip(r)}</div>
+        <div class="lr-name">${isRuled(r)?'❌ ':''}${verdictIcon(r)?verdictIcon(r)+' ':''}${r.shortlisted?'⭐ ':''}${r.name || 'Unnamed property'}${r.unread?`<span class="lr-unread">💬${r.unread}</span>`:''}${r.cat?`<span class="lr-cat">🏷 ${esc(r.cat)}</span>`:''}${priceDeltaChip(r)}</div>
         <div class="lr-sub">${r.price?fmt.format(r.price):'no price'} · ${fmt.format(m.allin)}/mo${metaStr(r)?' · '+metaStr(r):''}</div>
         ${(()=>{const vs=visitState(r);
           if(r.offerDate) return `<span class="lr-chip escrow">🏁 in escrow</span>`;
@@ -4512,7 +4781,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v67 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v71 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -5061,7 +5330,7 @@ window.onload = function(){
   fitScale();
   backGuard();
   setTimeout(processShareInbox, 600);
-  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); seedHomes(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
+  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
 };
 </script>

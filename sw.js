@@ -21,12 +21,12 @@ self.addEventListener('fetch', e => {
           rq.onerror = ()=>res();
         });
       }catch(err){}
-      return Response.redirect('./?shared=1', 303);
+      return Response.redirect(new URL('./?shared=1', self.registration.scope).href, 303);
     })());
     return;
   }
 });
-const CACHE = 'homecheck-v76';
+const CACHE = 'homecheck-v77';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

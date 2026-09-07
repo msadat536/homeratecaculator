@@ -659,6 +659,10 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .wf-big{font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.35rem}
 .wf-big span{font-size:.75rem;font-weight:700;color:var(--ink-soft);margin-left:.25rem}
 .wf-line{font-size:.76rem;margin-top:.2rem}
+
+.lf-type{display:flex;gap:.35rem;margin:.45rem 0 .2rem}
+.lft{flex:1;font-family:inherit;font-weight:800;font-size:.72rem;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:.42rem .2rem;cursor:pointer;color:var(--ink-soft)}
+.lft.on{background:var(--indigo);border-color:var(--indigo);color:#fff}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1245,6 +1249,12 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
         <label>Min beds<div class="qin"><input type="number" inputmode="numeric" id="lf_beds" oninput="renderLib();scheduleSave()"></div></label>
         <label>Max HOA<div class="qin"><span>$</span><input type="number" inputmode="numeric" id="lf_hoa" oninput="renderLib();scheduleSave()"></div></label>
         <label>Min school avg<div class="qin"><input type="number" step="0.5" inputmode="decimal" id="lf_school" oninput="renderLib();scheduleSave()"></div></label>
+      </div>
+      <div class="lf-type" id="lf_type_row">
+        <button class="lft on" data-t="" onclick="setTypeFilter(this)">All</button>
+        <button class="lft" data-t="house" onclick="setTypeFilter(this)">🏠 House</button>
+        <button class="lft" data-t="townhome" onclick="setTypeFilter(this)">🏘 Townhome</button>
+        <button class="lft" data-t="condo" onclick="setTypeFilter(this)">🏢 Condo</button>
       </div>
       <div class="lf-checks">
         <label><input type="checkbox" id="lf_star" onchange="renderLib();scheduleSave()"> ⭐ Shortlist only</label>
@@ -3091,6 +3101,17 @@ function pickFromMatches(m){
   return null;
 }
 
+
+async function shareSelfTest(){
+  const sample = {t: Date.now(), text: 'SELF-TEST: Hi, this is Sarah from Lennar about ' + ((PROPS[0]&&PROPS[0].name)||'your home') + '. Saturday at 2:30 pm works! (951) 555-0134', title:'', url:''};
+  const cur = (await idbGet('shareInbox')) || [];
+  cur.push(sample);
+  await idbSet('shareInbox', cur);
+  document.getElementById('settingsOverlay').classList.remove('open');
+  await processShareInbox();
+  alert('Self-test complete: a fake agent text just went through the same pipeline as a real share. If it routed, the first home now shows 💬 (or the picker opened). If this worked but real sharing doesn\u2019t, the phone-side registration is the issue — remove the app from your home screen and re-add it.');
+}
+
 async function processShareInbox(){
   const inbox = await idbGet('shareInbox');
   if(!inbox || !inbox.length) return;
@@ -4118,7 +4139,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v76 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v77 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4472,6 +4493,15 @@ function fmtVisit(v){
   const when = d.toLocaleString([], {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
   return {when, days, soon: days<=2 && days>=0, past: d < now};
 }
+
+let LF_TYPE = '';
+function setTypeFilter(btn){
+  LF_TYPE = btn.dataset.t;
+  document.querySelectorAll('#lf_type_row .lft').forEach(b=>b.classList.toggle('on', b===btn));
+  renderLib();
+}
+function typeOf(r){ return r.htype==='townhome'?'townhome':r.htype==='condo'?'condo':'house'; }
+
 function renderLib(){
   const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
   const list = document.getElementById('libList');
@@ -4511,6 +4541,7 @@ function renderLib(){
     if(starOnly && !r.shortlisted) return false;
     if(LIB_VIEW==='visited' && visitState(r)!=='visited') return false;
     if(LIB_VIEW && LIB_VIEW.startsWith('cat:') && r.cat !== LIB_VIEW.slice(4)) return false;
+    if(LF_TYPE && typeOf(r) !== LF_TYPE) return false;
     if(lf('price') && r.price > lf('price')) return false;
     if(lf('allin') && m.allin > lf('allin')) return false;
     if(lf('sqft') && (r.sqft||0) < lf('sqft')) return false;
@@ -4866,7 +4897,7 @@ async function renderStorMeter(){
     const est = await navigator.storage.estimate();
     const used = (est.usage/1048576).toFixed(1), quota = Math.round(est.quota/1048576);
     const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
-    el.innerHTML = 'On-device storage: <b>' + used + ' MB</b> of ~' + quota.toLocaleString() + ' MB available' +
+    el.innerHTML = 'On-device storage: <b>' + used + ' MB</b> of ~' + quota.toLocaleString() + ' MB available' + '<br><button class="aibtn" style="margin-top:.45rem;background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" onclick="shareSelfTest()">🔧 Test the text-share pipeline</button>' +
       (persisted ? ' · <span style="color:var(--win-ink);font-weight:700">protected from cleanup ✓</span>' : '') +
       '<br>Photos live only on this phone and survive app upgrades. They are not in the backup file (too large) — everything else is.';
   }catch(e){ el.textContent = ''; }
@@ -4874,7 +4905,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v76 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v77 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

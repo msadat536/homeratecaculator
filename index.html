@@ -1426,6 +1426,14 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   </div>
 </div>
 
+<!-- Finance sheet review -->
+<div id="finReview" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:98;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b>💵 Check the finance sheet</b><div><button onclick="document.getElementById('finReview').style.display='none'">← Back</button></div></div>
+    <div id="frBody"></div>
+  </div>
+</div>
+
 <!-- Settings modal -->
 <div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="smodal">
@@ -2581,15 +2589,15 @@ null for anything you cannot verify. Numbers only, no % signs.`;
     const data = await resp.json();
     recordCost(data.usage, 'claude-haiku-4-5-20251001');
     const d = parseAIJson((data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n'));
-    if(!d) throw new Error('no usable answer');
+    if(!d) throw new Error('nothing verifiable came back');
     const got = [];
-    if(d.asian_pct != null && (r.asianPct == null || r.asianEst) && !r.asianUser){ r.asianPct = d.asian_pct; delete r.asianEst; got.push('Asian ' + d.asian_pct + '%' + (d.asian_school?' ('+d.asian_school+')':'')); }
+    if(d.asian_pct != null && (r.asianPct == null || r.asianEst) && !r.asianUser){ r.asianPct = d.asian_pct; delete r.asianEst; got.push('Asian ' + d.asian_pct + '%' + (d.asian_school?' at '+d.asian_school:'')); }
     if(d.masjid_miles != null){ r.masjidMi = d.masjid_miles; r.masjidUser = true; if(d.masjid_name) r.masjidTxt = d.masjid_name + ' — ~' + d.masjid_miles + ' miles'; got.push('masjid ~' + d.masjid_miles + ' miles'); }
     if(d.has_loft != null && r.loft == null){ r.loft = !!d.has_loft; got.push('loft: ' + (d.has_loft?'yes':'no')); }
     if(d.has_backyard != null && r.hasYard == null){ r.hasYard = !!d.has_backyard; got.push('backyard: ' + (d.has_backyard?'yes':'no')); }
     if(d.schools && d.schools.length && !(r.schools||[]).length){ r.schools = d.schools; got.push(d.schools.length + ' schools + ratings'); }
-    persistProps(); refreshHomeViews();
-    setPStatus(btnMsg, got.length ? ('✓ Found: ' + got.join(' · ') + ' — verify anything critical.') : '✓ Search ran but nothing verifiable — fill manually.');
+    persistProps(); refreshHomeViews(); renderDash();
+    setPStatus('p1', got.length ? '✓ Research saved: ' + got.join(' · ') + '.' : '✓ Research ran but nothing new could be verified.');
   }catch(err){
     setPStatus(btnMsg, '✗ Research failed: ' + (err.message||'') + '.');
   }
@@ -2880,6 +2888,8 @@ function schedGo(id){
 // ---- Android back button: overlays close, then Dashboard, then double-back to exit ----
 let _backArmed = 0;
 function topOverlayClose(){
+  const fr = document.getElementById('finReview');
+  if(fr && fr.style.display === 'block'){ fr.style.display = 'none'; return true; }
   const sr = document.getElementById('scanReview');
   if(sr && sr.style.display === 'block'){ sr.style.display = 'none'; return true; }
   const cp = document.getElementById('catPick');
@@ -4057,7 +4067,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v71 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v72 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4235,6 +4245,70 @@ function verdictLabel(r){ return r.verdict?.v==='in' ? 'Interested — strong ca
 
 
 // ================= Agent finance sheet → numbers =================
+
+// ================= Finance sheet review popup =================
+let FIN_REVIEW = null;
+function openFinReview(id, d, rawText){
+  FIN_REVIEW = {id, quote: d && d.monthly_payment_quote, lender: d && d.lender, rateNotes: d && d.rate_notes};
+  d = d || {};
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const F = (fid, label, val, ph)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" placeholder="${ph||''}"></label>`;
+  const T = (fid, label, val)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="text" value="${val!=null?String(val).replace(/"/g,'&quot;'):''}"></label>`;
+  document.getElementById('frBody').innerHTML = `
+    <div class="qcard">
+      <div style="font-weight:800;font-size:.88rem">${esc((r.name||'').slice(0,44))}</div>
+      <div style="font-size:.76rem;color:var(--ink-soft);margin:.25rem 0 .3rem">Check every number against the paper — fix what's wrong, then Save. Blank = leave unchanged.</div>
+      <div class="wf-grid">
+        ${F('price','Price ($)', d.price)}
+        ${F('cred','Seller credit ($)', d.seller_credit)}
+        ${F('incval','Other incentives ($)', d.other_incentives_value)}
+        ${F('rate','Rate %', d.rate_pct)}
+        ${F('term','Term (yrs)', d.loan_term_years)}
+        ${F('dp','Down payment %', d.down_payment_pct)}
+        ${F('dpamt','…or down as $', d.down_payment_amount)}
+        ${F('hoa','HOA /mo ($)', d.hoa_monthly)}
+        ${F('taxr','Tax rate %', d.property_tax_rate_pct)}
+        ${F('mr','Mello-Roos /mo ($)', d.mello_roos_monthly)}
+        ${F('cc','Closing costs ($)', d.est_closing_costs)}
+        ${F('quote','Their PITI quote /mo', d.monthly_payment_quote)}
+      </div>
+      ${T('incnote','Incentive notes', d.incentive_notes)}
+      ${T('ratenotes','Rate structure / buydown', d.rate_notes)}
+      ${T('lender','Lender', d.lender)}
+      ${rawText?`<details style="margin-top:.5rem"><summary style="font-size:.72rem;font-weight:700;cursor:pointer">What the scan actually read</summary><div class="share-msg">${esc(String(rawText).slice(0,1200))}</div></details>`:''}
+      <button class="cf-apply" onclick="saveFinReview()">💾 Save these numbers to the home</button>
+      <button class="share-skip" onclick="document.getElementById('finReview').style.display='none'">Discard (sheet stays archived)</button>
+    </div>`;
+  document.getElementById('finReview').style.display = 'block';
+}
+function saveFinReview(){
+  if(!FIN_REVIEW) return;
+  const r = PROPS.find(x=>x.id===FIN_REVIEW.id); if(!r) return;
+  const gn = fid => { const v = document.getElementById('fr_'+fid).value.trim(); return v==='' ? null : parseFloat(v); };
+  const gt = fid => document.getElementById('fr_'+fid).value.trim() || null;
+  const price = gn('price');
+  if(price!=null && price !== r.price){ trackPrice(r, price); r.price = price; }
+  const set = (k, v)=>{ if(v!=null) r[k] = v; };
+  set('cred', gn('cred')); set('incval', gn('incval'));
+  set('rate', gn('rate')); set('term', gn('term'));
+  let dp = gn('dp');
+  const dpamt = gn('dpamt');
+  if(dp==null && dpamt!=null && (price||r.price)) dp = Math.round(dpamt/(price||r.price)*1000)/10;
+  set('dp', dp);
+  set('hoa', gn('hoa')); set('taxr', gn('taxr')); set('mr', gn('mr'));
+  const cc = gn('cc');
+  if(cc!=null && (price||r.price)) r.ccpct = Math.round(cc/(price||r.price)*1000)/10;
+  const note = gt('incnote'); if(note) r.incnote = note;
+  logFinComm(r, {rate_pct:r.rate, rate_notes: gt('ratenotes'), seller_credit:r.cred, monthly_payment_quote: gn('quote'), lender: gt('lender')});
+  persistProps(); refreshHomeViews(); renderDash();
+  document.getElementById('finReview').style.display = 'none';
+  const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
+  const m2 = computeRec(r, sh);
+  setPStatus('p1', '✓ Finance sheet numbers saved. New all-in: ' + fmt.format(m2.allin) + '/mo' + (gn('quote')?' (their quote: '+fmt.format(gn('quote'))+')':'') + '.');
+  if(document.getElementById('detailOverlay').style.display === 'block') openDetail(r.id);
+  FIN_REVIEW = null;
+}
+
 async function uploadFinSheet(id, inp){
   const file = inp.files[0]; inp.value='';
   const r = PROPS.find(x=>x.id===id); if(!r || !file) return;
@@ -4276,45 +4350,13 @@ async function uploadFinSheet(id, inp){
     const data = await resp.json();
     recordCost(data.usage, 'claude-haiku-4-5-20251001');
     const d = parseAIJson((data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n'));
-    if(!d) throw new Error('could not read numbers off the sheet');
-    // build change list
-    const changes = [];
-    const num = x => x==null?null:+x;
-    const cand = [
-      ['price','Price', num(d.price), v=>fmt.format(v)],
-      ['cred','Seller credit', num(d.seller_credit), v=>fmt.format(v)],
-      ['incval','Other incentives', num(d.other_incentives_value), v=>fmt.format(v)],
-      ['rate','Rate %', num(d.rate_pct), v=>v+'%'],
-      ['term','Term (yrs)', num(d.loan_term_years), v=>v],
-      ['hoa','HOA /mo', num(d.hoa_monthly), v=>'$'+v],
-      ['taxr','Tax rate %', num(d.property_tax_rate_pct), v=>v+'%'],
-      ['mr','Mello-Roos /mo', num(d.mello_roos_monthly), v=>'$'+v]
-    ];
-    let dp = num(d.down_payment_pct);
-    if(dp==null && d.down_payment_amount && (num(d.price)||r.price)) dp = Math.round(num(d.down_payment_amount)/(num(d.price)||r.price)*1000)/10;
-    if(dp!=null) cand.push(['dp','Down payment %', dp, v=>v+'%']);
-    if(d.est_closing_costs && (num(d.price)||r.price)) cand.push(['ccpct','Closing costs %', Math.round(num(d.est_closing_costs)/(num(d.price)||r.price)*1000)/10, v=>v+'%']);
-    cand.forEach(([k,label,nv,fmtV])=>{
-      if(nv!=null && nv !== r[k]) changes.push({k, label, from:r[k], to:nv, fmtV});
-    });
-    if(d.incentive_notes && d.incentive_notes !== r.incnote) changes.push({k:'incnote', label:'Incentive notes', from:r.incnote||'—', to:d.incentive_notes, fmtV:v=>v});
-    if(!changes.length){
-      setPStatus('p1', '✓ Sheet read — its numbers match what you already have.' + (d.monthly_payment_quote?' Their payment quote: '+fmt.format(d.monthly_payment_quote)+'/mo.':''));
-      logFinComm(r, d); refreshHomeViews(); return;
+    if(!d){
+      setPStatus('p1', '✗ The sheet came back garbled — check it & enter the numbers yourself:');
+      openFinReview(id, null, (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n'));
+      return;
     }
-    const summary = changes.map(c=>c.label+': '+(c.from!=null&&c.from!==''?c.fmtV(c.from):'—')+' → '+c.fmtV(c.to)).join('\n');
-    if(confirm('Finance sheet read. Apply these updates to ' + (r.name||'this home') + '?\n\n' + summary + (d.rate_notes?'\n\nRate structure: '+d.rate_notes:'') )){
-      changes.forEach(c=>{ r[c.k] = c.to; });
-      if(num(d.price) && num(d.price)!==r.priceHist?.slice(-1)[0]?.p) trackPrice(r, num(d.price));
-      logFinComm(r, d);
-      persistProps(); refreshHomeViews(); renderDash();
-      const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
-      const m2 = computeRec(r, sh);
-      setPStatus('p1', '✓ ' + changes.length + ' numbers updated from the sheet. New all-in: ' + fmt.format(m2.allin) + '/mo' + (d.monthly_payment_quote?' (their quote: '+fmt.format(d.monthly_payment_quote)+')':'') + '.');
-    } else {
-      logFinComm(r, d);
-      setPStatus('p1', '✓ Sheet saved to the home; numbers left unchanged.');
-    }
+    setPStatus('p1', '💵 Sheet read — review the numbers & save.');
+    openFinReview(id, d, null);
   }catch(err){
     setPStatus('p1', '✗ Sheet saved, but extraction failed: ' + (err.message||'') + ' — update the numbers manually.');
     refreshHomeViews();
@@ -4781,7 +4823,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v71 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v72 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

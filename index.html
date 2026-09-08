@@ -669,6 +669,26 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .walkin-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:var(--win-ink);background:var(--win);border:none;border-radius:10px;padding:.55rem;cursor:pointer}
 .sch-mi{font-style:normal;font-size:.64rem;color:var(--ink-soft);margin-left:.3rem}
 .edit-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:var(--ink);background:var(--calc);border:none;border-radius:10px;padding:.55rem;cursor:pointer}
+
+.cmp-scroll{overflow-x:auto;margin:0 -0.4rem}
+.cmp-tab{border-collapse:collapse;min-width:100%;font-size:.74rem}
+.cmp-tab th{position:sticky;top:0;background:var(--paper);text-align:left;padding:.4rem .5rem;vertical-align:top}
+.cmp-tab th i{display:block;font-style:normal;font-size:.6rem;color:var(--ink-soft);font-weight:600}
+.cmp-h{font-family:inherit;font-weight:800;font-size:.72rem;border:none;background:#eef2ff;color:#3730a3;border-radius:8px;padding:.3rem .45rem;cursor:pointer;text-align:left}
+.cmp-tab td{border-top:1px solid var(--line);padding:.42rem .5rem;white-space:nowrap}
+.cmp-tab td:first-child{font-weight:800;font-size:.68rem;color:var(--ink-soft);white-space:normal;min-width:6.5rem}
+.cmp-best{background:var(--win);color:var(--win-ink);font-weight:800;border-radius:6px}
+.cmp-key td{font-weight:800;background:#fbfbff}
+.lib-filtbtn{font-family:inherit;font-weight:800;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:.4rem .55rem;cursor:pointer;font-size:.78rem;margin-left:.3rem}
+
+.frb{background:var(--calc);border-radius:12px;padding:.65rem .75rem;margin-top:.6rem}
+.frb-head{font-weight:800;font-size:.78rem;margin-bottom:.35rem}
+.frb-row{display:flex;justify-content:space-between;gap:.5rem;font-size:.76rem;padding:.16rem 0;flex-wrap:wrap}
+.frb-row span{color:var(--ink-soft)}
+.frb-row b{font-family:'IBM Plex Mono',monospace}
+.frb-row i{flex-basis:100%;font-style:normal;font-size:.64rem;color:var(--ink-soft);text-align:right}
+.frb-total{border-top:1.5px solid var(--line);margin-top:.25rem;padding-top:.35rem;font-weight:800}
+.frb-warn{background:#fef3e2;color:#92600a;font-size:.7rem;font-weight:700;border-radius:8px;padding:.45rem .55rem;margin-top:.45rem}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1469,6 +1489,14 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="qhead"><b>✏️ Edit property</b><div><button onclick="document.getElementById('editHome').style.display='none'">← Back</button></div></div>
     <div id="ehBody"></div>
   </div>
+</div>
+
+<!-- Compare -->
+<div id="cmpPick" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:97;overflow-y:auto">
+  <div class="qwrap"><div class="qhead"><b>🆚 Pick homes to compare</b><div><button onclick="document.getElementById('cmpPick').style.display='none'">← Back</button></div></div><div id="cmpPickBody" class="qcard"></div></div>
+</div>
+<div id="cmpView" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:98;overflow-y:auto">
+  <div class="qwrap"><div class="qhead"><b>🆚 Comparison</b><div><button onclick="document.getElementById('cmpView').style.display='none'">← Back</button></div></div><div id="cmpViewBody" class="qcard"></div></div>
 </div>
 
 <!-- Settings modal -->
@@ -3003,6 +3031,10 @@ function schedGo(id){
 // ---- Android back button: overlays close, then Dashboard, then double-back to exit ----
 let _backArmed = 0;
 function topOverlayClose(){
+  const cv = document.getElementById('cmpView');
+  if(cv && cv.style.display === 'block'){ cv.style.display = 'none'; return true; }
+  const cpk = document.getElementById('cmpPick');
+  if(cpk && cpk.style.display === 'block'){ cpk.style.display = 'none'; return true; }
   const eh = document.getElementById('editHome');
   if(eh && eh.style.display === 'block'){ eh.style.display = 'none'; return true; }
   const fr = document.getElementById('finReview');
@@ -3247,6 +3279,72 @@ function saveEditHome(id){
   persistProps(); refreshHomeViews(); renderDash();
   document.getElementById('editHome').style.display = 'none';
   openDetail(id);
+}
+
+
+// ================= Compare tab =================
+let CMP_SEL = [];
+function openCmpPick(){
+  const ov = document.getElementById('cmpPick'); ov.style.display='block';
+  renderCmpPick('');
+}
+function renderCmpPick(q){
+  const list = PROPS.filter(r=>!isRuled(r) && (!q || (r.name||'').toLowerCase().includes(q.toLowerCase())))
+    .sort((a,b)=>(b.shortlisted?1:0)-(a.shortlisted?1:0) || (b.visited?1:0)-(a.visited?1:0));
+  document.getElementById('cmpPickBody').innerHTML = `
+    <input class="lib-search" placeholder="Search homes…" oninput="renderCmpPick(this.value)" value="${esc(q||'')}">
+    <div style="font-size:.72rem;color:var(--ink-soft);margin:.35rem 0">Pick 2-4 · ${CMP_SEL.length} selected</div>
+    ${list.slice(0,60).map(r=>`<button class="share-pick" onclick="cmpToggle('${r.id}')" style="${CMP_SEL.includes(r.id)?'border-color:var(--indigo);background:#eef2ff':''}">
+      <b>${CMP_SEL.includes(r.id)?'✔ ':''}${r.shortlisted?'⭐ ':''}${verdictIcon(r)?verdictIcon(r)+' ':''}${esc((r.name||'').slice(0,46))}</b>
+      <i>${r.price?fmt.format(r.price):'no price'}${r.htype?' · '+r.htype:''}</i></button>`).join('')}
+    <button class="cf-apply" ${CMP_SEL.length<2?'disabled style="opacity:.5"':''} onclick="openCmpView()">🆚 Compare ${CMP_SEL.length||''}</button>`;
+}
+function cmpToggle(id){
+  if(CMP_SEL.includes(id)) CMP_SEL = CMP_SEL.filter(x=>x!==id);
+  else if(CMP_SEL.length < 4) CMP_SEL.push(id);
+  else { alert('4 homes max — remove one first.'); return; }
+  const q = document.querySelector('#cmpPickBody .lib-search');
+  renderCmpPick(q?q.value:'');
+}
+function openCmpView(){
+  if(CMP_SEL.length<2) return;
+  const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
+  const recs = CMP_SEL.map(id=>PROPS.find(r=>r.id===id)).filter(Boolean);
+  const parts = recs.map(r=>computeParts(r, sh));
+  const F = fmt.format;
+  const money = v=>v?F(Math.round(v)):'—';
+  const rows = [
+    ['Total price', parts.map(p=>money(p.price)), 'min'],
+    ['Distance', recs.map(r=>r.miles!=null?'~'+r.miles+' miles':(driveMins(r)!=null?'~'+driveMins(r)+' mins':'—')), null],
+    ['Avg school rating', recs.map(r=>{const a=schoolAvg(r); return a!=null?(+a).toFixed(1)+'/10':'—';}), 'maxNum'],
+    ['Down payment', parts.map(p=>p.dpPct+'% · '+money(p.dpAmt)), null],
+    ['Loan amount', parts.map(p=>money(p.loan)), 'min'],
+    ['Interest rate', parts.map(p=>p.rate+'%'), 'minNum'],
+    ['PMI /mo', parts.map(p=>p.pmi?money(p.pmi):'none'), 'min'],
+    ['Property tax /mo', parts.map(p=>money(p.tax)), 'min'],
+    ['Mello-Roos /mo', parts.map(p=>p.mr?money(p.mr):'none'), 'min'],
+    ['HOA /mo', parts.map(p=>p.hoa?money(p.hoa):'none'), 'min'],
+    ['Others /mo (ins+utils+upkeep)', parts.map(p=>money(p.others)), 'min'],
+    ['💰 Monthly all-in', parts.map(p=>money(p.allin)), 'min'],
+    ['🔑 Cash to close', parts.map(p=>money(p.cash)), 'min'],
+  ];
+  const best = (vals, mode)=>{
+    if(!mode) return -1;
+    const nums = vals.map(v=>parseFloat(String(v).replace(/[^0-9.]/g,'')));
+    if(nums.every(isNaN)) return -1;
+    const target = mode==='maxNum' ? Math.max(...nums.filter(n=>!isNaN(n))) : Math.min(...nums.filter(n=>!isNaN(n)));
+    return nums.indexOf(target);
+  };
+  document.getElementById('cmpViewBody').innerHTML = `
+    <div class="cmp-scroll"><table class="cmp-tab">
+      <tr><th></th>${recs.map(r=>`<th><button class="cmp-h" onclick="document.getElementById('cmpView').style.display='none';document.getElementById('cmpPick').style.display='none';openDetail('${r.id}')">${esc((r.name||'').split('·')[0].trim().slice(0,26))}</button><i>${esc(((r.name||'').split('·')[1]||'').trim().slice(0,20))}</i></th>`).join('')}</tr>
+      ${rows.map(([label, vals, mode])=>{
+        const b = best(vals, mode);
+        return `<tr class="${label.startsWith('💰')||label.startsWith('🔑')?'cmp-key':''}"><td>${label}</td>${vals.map((v,i)=>`<td class="${i===b?'cmp-best':''}">${v}</td>`).join('')}</tr>`;
+      }).join('')}
+    </table></div>
+    <div style="font-size:.64rem;color:var(--ink-soft);margin-top:.5rem">Green = best in row. Numbers use each home's own saved rate/down/credits — edit a home or use its 🧮 what-if to test changes.</div>`;
+  document.getElementById('cmpView').style.display='block';
 }
 
 function openCatPick(id){
@@ -4260,7 +4358,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v81 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v82 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4389,6 +4487,21 @@ function loadPropInto(id, p){
   calc();
 }
 // pure math for library cards (mirrors calcProperty)
+
+function computeParts(rec, sh){
+  const price = rec.price||0, dpPct = rec.dp!=null?rec.dp:20, rate = rec.rate!=null?rec.rate:6.75, term = rec.term||30;
+  const dpAmt = price*dpPct/100;
+  const loan = price - dpAmt;
+  const pi = pmt(rate/100/12, term*12, loan);
+  const tax = price*(rec.taxr||0)/100/12;
+  const pmi = dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0;
+  const mr = rec.mr||0, hoa = rec.hoa||0;
+  const others = (rec.ins||0) + (rec.util||0) + price*(sh.maint||0)/100/12;
+  const allin = pi + tax + pmi + mr + hoa + others;
+  const cash = Math.max(dpAmt + loan*(rec.ccpct||0)/100 - (rec.cred||0), 0);
+  return {price, dpPct, dpAmt, loan, rate, term, pi, tax, pmi, mr, hoa, others, allin, cash};
+}
+
 function computeRec(rec, sh){
   const price=rec.price||0, dpPct=rec.dp||20, rate=rec.rate||6.75, term=rec.term||30;
   const loan = price*(1-dpPct/100);
@@ -4460,7 +4573,7 @@ function openFinReview(id, d, rawText){
   FIN_REVIEW = {id, quote: d && d.monthly_payment_quote, lender: d && d.lender, rateNotes: d && d.rate_notes};
   d = d || {};
   const r = PROPS.find(x=>x.id===id); if(!r) return;
-  const F = (fid, label, val, ph)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" placeholder="${ph||''}"></label>`;
+  const F = (fid, label, val, ph)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" placeholder="${ph||''}" oninput="finPreview()"></label>`;
   const T = (fid, label, val)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="text" value="${val!=null?String(val).replace(/"/g,'&quot;'):''}"></label>`;
   document.getElementById('frBody').innerHTML = `
     <div class="qcard">
@@ -4484,14 +4597,62 @@ function openFinReview(id, d, rawText){
       ${T('ratenotes','Rate structure / buydown', d.rate_notes)}
       ${T('lender','Lender', d.lender)}
       ${rawText?`<details style="margin-top:.5rem"><summary style="font-size:.72rem;font-weight:700;cursor:pointer">What the scan actually read</summary><div class="share-msg">${esc(String(rawText).slice(0,1200))}</div></details>`:''}
+      <div id="fr_breakdown"></div>
       <button class="cf-apply" onclick="saveFinReview()">💾 Save these numbers to the home</button>
       <button class="share-skip" onclick="document.getElementById('finReview').style.display='none'">Discard (sheet stays archived)</button>
     </div>`;
   document.getElementById('finReview').style.display = 'block';
+  setTimeout(finPreview, 30);
 }
+
+function finStaged(){
+  if(!FIN_REVIEW) return null;
+  const r = PROPS.find(x=>x.id===FIN_REVIEW.id); if(!r) return null;
+  const gn = fid => { const el=document.getElementById('fr_'+fid); if(!el) return null; const v = el.value.trim(); return v==='' ? null : parseFloat(v); };
+  const t = Object.assign({}, r);
+  const price = gn('price'); if(price!=null) t.price = price;
+  ['cred','rate','term','hoa','taxr','mr'].forEach(k=>{ const v=gn(k); if(v!=null) t[k]=v; });
+  const iv = gn('incval'); if(iv!=null) t.incval = iv;
+  let dp = gn('dp');
+  const dpamt = gn('dpamt');
+  if(dp==null && dpamt!=null && t.price) dp = Math.round(dpamt/t.price*1000)/10;
+  if(dp!=null) t.dp = dp;
+  const cc = gn('cc'); if(cc!=null && t.price) t.ccpct = Math.round(cc/t.price*1000)/10;
+  return {t, r, quote: gn('quote')};
+}
+function finPreview(){
+  const st = finStaged(); if(!st) return;
+  const el = document.getElementById('fr_breakdown'); if(!el) return;
+  const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
+  const p = computeParts(st.t, sh);
+  const cur = computeParts(st.r, sh);
+  const F = v=>fmt.format(Math.round(v));
+  const d = p.allin - cur.allin;
+  const row = (l,v,extra)=>`<div class="frb-row"><span>${l}</span><b>${v}</b>${extra?`<i>${extra}</i>`:''}</div>`;
+  el.innerHTML = `<div class="frb">
+    <div class="frb-head">What these numbers mean for this home</div>
+    ${row('Loan ('+p.dpPct+'% down = '+F(p.dpAmt)+')', F(p.loan))}
+    ${row('Principal & interest @ '+p.rate+'%', F(p.pi)+'/mo')}
+    ${p.pmi?row('PMI (under 20% down)', F(p.pmi)+'/mo'):row('PMI','none — 20%+ down')}
+    ${row('Property tax', F(p.tax)+'/mo')}
+    ${row('Mello-Roos', p.mr?F(p.mr)+'/mo':'none')}
+    ${row('HOA', p.hoa?F(p.hoa)+'/mo':'none')}
+    ${row('Others (ins + utils + upkeep)', F(p.others)+'/mo')}
+    <div class="frb-row frb-total"><span>Monthly all-in</span><b>${F(p.allin)}/mo</b><i>${d===0?'unchanged':(d<0?'▼ '+F(-d)+' cheaper':'▲ '+F(d)+' more')} vs saved numbers${st.quote?' · their quote: '+F(st.quote):''}</i></div>
+    <div class="frb-row frb-total"><span>Cash to close</span><b>${F(p.cash)}</b><i>${p.dpPct}% down + closing − credits</i></div>
+    ${st.quote && Math.abs(st.quote - p.allin) > 150 ? `<div class="frb-warn">⚠ Their quote is ${F(Math.abs(st.quote-p.allin))}/mo ${st.quote<p.allin?'lower':'higher'} than this math — usually missing Mello-Roos, insurance, or HOA. Ask the agent what their number includes.</div>` : ''}
+  </div>`;
+}
+
 function saveFinReview(){
   if(!FIN_REVIEW) return;
   const r = PROPS.find(x=>x.id===FIN_REVIEW.id); if(!r) return;
+  const st = finStaged();
+  if(st){
+    const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
+    const p = computeParts(st.t, sh);
+    if(!confirm('Save these numbers to ' + (r.name||'this home') + '?\n\nMonthly all-in becomes ' + fmt.format(Math.round(p.allin)) + '/mo\nCash to close: ' + fmt.format(Math.round(p.cash)) + '\n\n(You can edit anything later via ✏️ Edit.)')) return;
+  }
   const gn = fid => { const v = document.getElementById('fr_'+fid).value.trim(); return v==='' ? null : parseFloat(v); };
   const gt = fid => document.getElementById('fr_'+fid).value.trim() || null;
   const price = gn('price');
@@ -5041,7 +5202,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v81 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v82 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }

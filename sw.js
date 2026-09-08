@@ -26,7 +26,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 });
-const CACHE = 'homecheck-v97';
+const CACHE = 'homecheck-v98';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -44,7 +44,7 @@ self.addEventListener('fetch', e => {
   // Page itself: network-first so updates land, cache fallback for offline
   if (e.request.mode === 'navigate' || url.pathname.endsWith('index.html')) {
     e.respondWith(
-      fetch(e.request).then(r => {
+      fetch(new Request(e.request, {cache: 'reload'})).then(r => {
         const copy = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
         return r;

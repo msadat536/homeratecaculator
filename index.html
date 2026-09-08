@@ -689,6 +689,9 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .frb-row i{flex-basis:100%;font-style:normal;font-size:.64rem;color:var(--ink-soft);text-align:right}
 .frb-total{border-top:1.5px solid var(--line);margin-top:.25rem;padding-top:.35rem;font-weight:800}
 .frb-warn{background:#fef3e2;color:#92600a;font-size:.7rem;font-weight:700;border-radius:8px;padding:.45rem .55rem;margin-top:.45rem}
+
+.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.area-grid button{font-family:inherit;font-weight:800;font-size:.78rem;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:.55rem .4rem;cursor:pointer}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1260,6 +1263,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
     <div class="qhead">
       <b>🏘 My properties</b>
       <div style="display:flex;gap:.4rem">
+        <button onclick="openAreaScan()">📍 Area</button>
         <button onclick="openCmpPick()">🆚 Compare</button>
         <button onclick="exportPropsCSV()">CSV</button>
         <button onclick="openSettings()">&#9881;</button>
@@ -1498,6 +1502,11 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 </div>
 <div id="cmpView" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:98;overflow-y:auto">
   <div class="qwrap"><div class="qhead"><b>🆚 Comparison</b><div><button onclick="document.getElementById('cmpView').style.display='none'">← Back</button></div></div><div id="cmpViewBody" class="qcard"></div></div>
+</div>
+
+<!-- Area scan -->
+<div id="areaScan" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:97;overflow-y:auto">
+  <div class="qwrap"><div class="qhead"><b>📍 Area scan</b><div><button onclick="document.getElementById('areaScan').style.display='none'">← Back</button></div></div><div id="areaBody"></div></div>
 </div>
 
 <!-- Settings modal -->
@@ -1804,7 +1813,7 @@ function openScanReview(p, d, rawText){
       <button class="cf-apply" onclick="saveScanReview()">💾 Save to this home</button>
       <button class="share-skip" onclick="document.getElementById('scanReview').style.display='none'">Discard scan</button>
     </div>`;
-  document.getElementById('scanReview').style.display = 'block';
+  showOverlay('scanReview');
 }
 function saveScanReview(){
   if(!SCAN_REVIEW) return;
@@ -2597,7 +2606,7 @@ function openClimBig(id){
     <div style="font-size:.8rem;margin-bottom:.6rem">Hottest ever in ${c}: <b>${f2c(d.rec)}°C</b> · in Costa Mesa: <b>${f2c(CLIMATE['Costa Mesa'].rec)}°C</b>${cap?` · your cap: <b>${cap}°C</b>`:''}</div>
     ${rows}
     <div style="font-size:.66rem;color:var(--ink-soft);margin-top:.6rem">Typical daily high per month, °C. Summer gap is what your family will feel most.</div>`;
-  document.getElementById('climBig').style.display = 'block';
+  showOverlay('climBig');
   document.getElementById('climBigTitle').textContent = '🌡 ' + c + ' vs Costa Mesa';
 }
 
@@ -2763,6 +2772,37 @@ function setFeature(id, key){
   persistProps(); refreshHomeViews();
 }
 function triTxt(v){ return v===true?'✓ yes':v===false?'✗ no':'? tap'; }
+
+
+// Nearest major hospital per city (commonly in Cigna PPO networks; Kaiser facilities excluded) + typical urgent-care distance. Estimates.
+const HOSP_CITY = {
+ 'Winchester':{h:'Inland Valley Medical Center (Wildomar)', hm:7, uc:2.5},
+ 'Menifee':{h:'Menifee Valley Medical Center', hm:3, uc:2},
+ 'Lake Elsinore':{h:'Inland Valley Medical Center (Wildomar)', hm:6, uc:2},
+ 'Wildomar':{h:'Inland Valley Medical Center', hm:2, uc:2},
+ 'Murrieta':{h:'Loma Linda University Medical Center — Murrieta', hm:3, uc:1.5},
+ 'Temecula':{h:'Temecula Valley Hospital', hm:3, uc:1.5},
+ 'Perris':{h:'Menifee Valley Medical Center', hm:8, uc:2.5},
+ 'Moreno Valley':{h:'Riverside University Health System Medical Center', hm:4, uc:2},
+ 'Riverside':{h:'Riverside Community Hospital', hm:5, uc:2},
+ 'Jurupa Valley':{h:'Riverside Community Hospital', hm:6, uc:2.5},
+ 'Corona':{h:'Corona Regional Medical Center', hm:4, uc:2},
+ 'Ontario':{h:'San Antonio Regional Hospital (Upland)', hm:6, uc:2},
+ 'Rialto':{h:'Arrowhead Regional Medical Center (Colton)', hm:5, uc:2},
+ 'Eastvale':{h:'Corona Regional Medical Center', hm:7, uc:2},
+ 'Fontana':{h:'Arrowhead Regional Medical Center (Colton)', hm:6, uc:2},
+ 'Beaumont':{h:'San Gorgonio Memorial Hospital (Banning)', hm:5, uc:2}
+};
+function hospitalBlock(r){
+  const c = cityOf(r);
+  const h = c && HOSP_CITY[c];
+  if(!h) return '';
+  return `<details class="lib-details"><summary>🏥 Medical (est.)</summary>
+    <div class="schl-row"><span class="schl-ic">🏥</span><span class="schl-main"><b>${esc(h.h)}</b><i>nearest major hospital · ~${h.hm} miles</i></span></div>
+    <div class="schl-row"><span class="schl-ic">⚕️</span><span class="schl-main"><b>Urgent care</b><i>multiple within ~${h.uc} miles</i></span></div>
+    <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.3rem">Commonly in Cigna PPO networks (Kaiser facilities excluded). Distances are city-level estimates — verify your specific Cigna plan's network before relying on it.</div>
+  </details>`;
+}
 
 function schoolsBlock(r){
   const list = r.schools || [];
@@ -3031,7 +3071,18 @@ function schedGo(id){
 
 // ---- Android back button: overlays close, then Dashboard, then double-back to exit ----
 let _backArmed = 0;
+
+function showOverlay(id){
+  const el = document.getElementById(id);
+  if(!el) return null;
+  if(el.parentElement !== document.body) document.body.appendChild(el);   // self-heal: never trapped in a hidden parent
+  el.style.display = 'block';
+  return el;
+}
+
 function topOverlayClose(){
+  const az = document.getElementById('areaScan');
+  if(az && az.style.display === 'block'){ az.style.display = 'none'; return true; }
   const cv = document.getElementById('cmpView');
   if(cv && cv.style.display === 'block'){ cv.style.display = 'none'; return true; }
   const cpk = document.getElementById('cmpPick');
@@ -3269,7 +3320,7 @@ function openEditHome(id){
       <button class="cf-apply" onclick="saveEditHome('${r.id}')">💾 Save changes</button>
       <button class="share-skip" onclick="document.getElementById('editHome').style.display='none'">Cancel</button>
     </div>`;
-  document.getElementById('editHome').style.display = 'block';
+  showOverlay('editHome');
 }
 function saveEditHome(id){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
@@ -3300,7 +3351,7 @@ function saveEditHome(id){
 // ================= Compare tab =================
 let CMP_SEL = [];
 function openCmpPick(){
-  const ov = document.getElementById('cmpPick'); ov.style.display='block';
+  showOverlay('cmpPick');
   renderCmpPick('');
 }
 function renderCmpPick(q){
@@ -3359,13 +3410,148 @@ function openCmpView(){
       }).join('')}
     </table></div>
     <div style="font-size:.64rem;color:var(--ink-soft);margin-top:.5rem">Green = best in row. Numbers use each home's own saved rate/down/credits — edit a home or use its 🧮 what-if to test changes.</div>`;
-  document.getElementById('cmpView').style.display='block';
+  showOverlay('cmpView');
+}
+
+
+// ================= Area scan =================
+function openAreaScan(){
+  showOverlay('areaScan');
+  const cities = Object.keys(CITY_GEO).filter(c=>c!=='Costa Mesa').sort();
+  document.getElementById('areaBody').innerHTML = `
+    <div class="qcard">
+      <div style="font-weight:800;font-size:.88rem;margin-bottom:.4rem">Pick an area to scan</div>
+      <div class="area-grid">${cities.map(c=>`<button onclick="renderAreaScan('${c}')">${c}</button>`).join('')}</div>
+    </div>
+    <div id="areaOut"></div>`;
+}
+function renderAreaScan(c){
+  const sh = {takehome:g('takehome'), maint:gOr('maint',1)};
+  const mins = Math.round(havMiles(ORIGIN.ll, CITY_GEO[c]) * 1.25 / 52 * 60 + 7);
+  const miles = Math.round(havMiles(ORIGIN.ll, CITY_GEO[c]) * 1.25);
+  const cl = CLIMATE[c], cm = CLIMATE['Costa Mesa'];
+  const jul = cl ? f2c(cl.hi[6]) : null, julCM = f2c(cm.hi[6]);
+  const sg = safetyGrade(c);
+  const asian = ASIAN_PCT_CITY[c], masjid = MASJID_CITY[c], smi = SCHOOL_MI_CITY[c], hosp = HOSP_CITY[c];
+  const inCity = PROPS.filter(r=>cityOf(r)===c && !isRuled(r));
+  const fits = inCity.map(r=>{ const f=fitSummary(evalReqs(r, computeRec(r, sh))); return f?f.ok/f.total:0; });
+  const best = inCity.slice().sort((a,b)=>{const fa=fitSummary(evalReqs(a,computeRec(a,sh))),fb=fitSummary(evalReqs(b,computeRec(b,sh)));return (fb?fb.ok:0)-(fa?fa.ok:0);})[0];
+  const prices = inCity.map(r=>r.price).filter(Boolean);
+  const row=(l,v)=>`<div class="frb-row"><span>${l}</span><b>${v}</b></div>`;
+  document.getElementById('areaOut').innerHTML = `<div class="qcard">
+    <div style="font-weight:800;font-size:1rem">📍 ${c}</div>
+    <div class="frb" style="margin-top:.5rem">
+      ${row('Commute from Costa Mesa','~'+mins+' mins · ~'+miles+' miles')}
+      ${row('July typical high', jul!=null?jul+'°C (Costa Mesa '+julCM+'°C, +'+(jul-julCM)+'°)':'—')}
+      ${row('Safety grade', sg||'—')}
+      ${row('Asian % in schools', asian!=null?'~'+asian+'% (est.)':'—')}
+      ${row('Masjid', masjid?'~'+masjid.mi+' miles (est.)':'—')}
+      ${row('Schools (typical drive)', smi?'E ~'+smi[0]+' · M ~'+smi[1]+' · H ~'+smi[2]+' miles':'—')}
+      ${row('Hospital', hosp?esc(hosp.h)+' · ~'+hosp.hm+' mi':'—')}
+      ${row('Homes on your board here', inCity.length + (prices.length?' · '+fmt.format(Math.min(...prices))+'–'+fmt.format(Math.max(...prices)):''))}
+      ${best?row('Best fit here', esc((best.name||'').slice(0,34))):''}
+    </div>
+    ${inCity.length?`<button class="cf-apply" onclick="document.getElementById('areaScan').style.display='none';goHomes('all');document.getElementById('libQ').value='${c}';renderLib();showPane('lib')">See the ${inCity.length} ${c} home${inCity.length>1?'s':''}</button>`:''}
+    ${aiAvailable()?`<button class="cf-apply" onclick="findHomesInCity('${c}')">🔍 Find new construction here (~2-3¢, up to 3 searches)</button>
+    <button class="pv-custom" onclick="liveAreaCheck('${c}')">🔎 Live check — schools & what's new (~1¢, 1 search)</button>`:''}
+    <div id="areaLive"></div>
+    <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.4rem">Everything above is free — computed from data already in the app.</div>
+  </div>`;
+}
+async function liveAreaCheck(c){
+  const el = document.getElementById('areaLive');
+  el.innerHTML = '<div style="font-size:.76rem;font-weight:700;margin-top:.4rem">⏳ One quick search…</div>';
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers: apiHeaders(),
+      body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:350,
+        messages:[{role:'user', content:'In ONE search: top-rated public schools in ' + c + ', CA right now and any notable 2026 development/news for homebuyers there. Respond in under 80 words, plain text, no markdown.'}],
+        tools:[{type:'web_search_20250305', name:'web_search', max_uses:1}]})
+    });
+    if(!resp.ok) throw new Error('API '+resp.status);
+    const data = await resp.json();
+    const cents = recordCost(data.usage, 'claude-haiku-4-5-20251001');
+    const txt = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+    el.innerHTML = '<div class="frb" style="margin-top:.45rem"><div class="frb-head">Live (' + (cents<1?'<1¢':'~'+cents.toFixed(1)+'¢') + ')</div><div style="font-size:.78rem;line-height:1.45">' + esc(txt||'nothing came back') + '</div></div>';
+  }catch(e){
+    el.innerHTML = '<div class="frb-warn" style="margin-top:.4rem">✗ Live check failed: ' + esc(e.message||'') + '</div>';
+  }
+}
+
+
+// ================= Discovery: find new construction in a city =================
+async function findHomesInCity(c){
+  const el = document.getElementById('areaLive');
+  el.innerHTML = '<div style="font-size:.76rem;font-weight:700;margin-top:.4rem">⏳ Searching what\'s selling in ' + c + ' right now… (up to 3 searches)</div>';
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers: apiHeaders(),
+      body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:900,
+        messages:[{role:'user', content:
+          'Find new-construction home communities CURRENTLY SELLING in ' + c + ', CA (houses, townhomes, condos). Prioritize anything from the low $400s to low $600s.\n' +
+          'Respond ONLY a JSON array, no fences, up to 8 entries: [{"community": string, "builder": string|null, "price_from": number|null, "sqft": number|null, "beds": string|null, "type": "house"|"townhome"|"condo"|null, "url": string|null}]\n' +
+          'Real, currently-selling communities only — null for anything unverified, never invent.'}],
+        tools:[{type:'web_search_20250305', name:'web_search', max_uses:3}]})
+    });
+    if(!resp.ok) throw new Error('API '+resp.status);
+    const data = await resp.json();
+    const cents = recordCost(data.usage, 'claude-haiku-4-5-20251001');
+    const arr = parseAIJson((data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n'));
+    if(!Array.isArray(arr) || !arr.length) throw new Error('nothing verifiable came back — try the live check, or send me a listing link');
+    const have = new Set(PROPS.map(p=>(p.name||'').toLowerCase()));
+    const budget = parseFloat((JSON.parse(localStorage.getItem('homeReqs_v1')||'{}').rq_price)) || 620000;
+    FOUND_HOMES = arr.map((x,i)=>({
+      i, community:x.community||'Community', builder:x.builder, price:x.price_from, sqft:x.sqft, beds:x.beds, htype:x.type, url:x.url,
+      dup: [...have].some(n=>n.includes((x.community||'~~').toLowerCase().slice(0,14))),
+      pick: !!(x.price_from && x.price_from <= budget) && ![...have].some(n=>n.includes((x.community||'~~').toLowerCase().slice(0,14)))
+    }));
+    FOUND_CITY = c;
+    el.innerHTML = '<div class="frb" style="margin-top:.45rem"><div class="frb-head">Found (' + (cents<1?'<1¢':'~'+cents.toFixed(1)+'¢') + ') — tap to include, then add</div>' +
+      FOUND_HOMES.map(h=>`<button class="share-pick" style="${h.pick?'border-color:var(--indigo);background:#eef2ff':''}" onclick="toggleFound(${h.i})">
+        <b>${h.pick?'✔ ':''}${esc(h.community)}${h.builder?' ('+esc(h.builder)+')':''}${h.dup?' — already on your board':''}</b>
+        <i>${h.price?'from '+fmt.format(h.price):'price unknown'}${h.sqft?' · '+h.sqft+' sqft':''}${h.beds?' · '+esc(h.beds):''}${h.htype?' · '+h.htype:''}</i></button>`).join('') +
+      '<button class="cf-apply" onclick="addFoundHomes()">➕ Add selected to Homes</button>' +
+      '<div style="font-size:.62rem;color:var(--ink-soft);margin-top:.35rem">Prices are “from” figures — every added home gets the standard verify-with-sales-office note.</div></div>';
+  }catch(e){
+    el.innerHTML = '<div class="frb-warn" style="margin-top:.4rem">✗ ' + esc(e.message||'search failed') + '</div>';
+  }
+}
+let FOUND_HOMES = [], FOUND_CITY = '';
+function toggleFound(i){
+  const h = FOUND_HOMES.find(x=>x.i===i); if(!h) return;
+  h.pick = !h.pick;
+  const btns = document.querySelectorAll('#areaLive .share-pick');
+  const b = btns[FOUND_HOMES.indexOf(h)];
+  if(b){ b.style.borderColor = h.pick?'var(--indigo)':''; b.style.background = h.pick?'#eef2ff':''; b.querySelector('b').textContent = (h.pick?'✔ ':'') + h.community + (h.builder?' ('+h.builder+')':'') + (h.dup?' — already on your board':''); }
+}
+function addFoundHomes(){
+  const picks = FOUND_HOMES.filter(h=>h.pick);
+  if(!picks.length){ alert('Nothing selected — tap the communities you want first.'); return; }
+  let added = 0;
+  picks.forEach(h=>{
+    const rec = {
+      id: 'find_' + Date.now() + '_' + added,
+      name: FOUND_CITY + ': ' + h.community + (h.builder?' ('+h.builder+')':''),
+      price: h.price || null, sqft: h.sqft || null, beds: h.beds || null,
+      htype: h.htype==='house'?undefined:h.htype, year: 2026,
+      addr: h.community + ', ' + FOUND_CITY + ', CA', url: h.url || undefined,
+      createdAt: Date.now() + added,
+      notes: '🔍 Found by area scan ' + new Date().toLocaleDateString() + ' — “from” price, verify with the sales office. Run 🔎 Research for schools & details.'
+    };
+    enrichOne(rec);
+    PROPS.push(rec); added++;
+  });
+  persistProps(); refreshHomeViews(); renderDash();
+  document.getElementById('areaScan').style.display='none';
+  goHomes('all');
+  const q=document.getElementById('libQ'); if(q){ q.value=FOUND_CITY; renderLib(); }
+  showPane('lib');
+  setPStatus('p1', '✓ Added ' + added + ' ' + FOUND_CITY + ' communit' + (added>1?'ies':'y') + ' — showing them now. Use each home\'s 🔎 Research (or Go with its link) to fill schools & the rest.');
 }
 
 function openCatPick(id){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
-  const ov = document.getElementById('catPick');
-  ov.style.display = 'block';
+  showOverlay('catPick');
   const counts = {};
   PROPS.forEach(p=>{ if(p.cat) counts[p.cat] = (counts[p.cat]||0)+1; });
   document.getElementById('catBody').innerHTML = `
@@ -3551,7 +3737,7 @@ function renderDetail(){
     <label class="fin-btn">💵 Upload agent's finance sheet (photo or PDF)<input type="file" accept="image/*,.pdf" style="display:none" onchange="uploadFinSheet('${r.id}', this)"></label>
   </div>`;
   setTimeout(hydrateCommEvidence, 40);
-  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + whatIfBlock(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + safetyBlock(r) + climateBlock(r) + `
+  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + whatIfBlock(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + hospitalBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
@@ -3798,7 +3984,8 @@ function recordCost(usage, model){
 
 function parseAIJson(text){
   let t = (text||'').replace(/```json|```/g,'');
-  const start = t.indexOf('{');
+  const so = t.indexOf('{'), sa = t.indexOf('[');
+  const start = (sa >= 0 && (so < 0 || sa < so)) ? sa : so;
   if(start < 0) throw new Error('no JSON in reply');
   t = t.slice(start);
   const attempt = str => { try{ return JSON.parse(str); }catch(e){ return undefined; } };
@@ -4373,7 +4560,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v84 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v88 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4616,7 +4803,7 @@ function openFinReview(id, d, rawText){
       <button class="cf-apply" onclick="saveFinReview()">💾 Save these numbers to the home</button>
       <button class="share-skip" onclick="document.getElementById('finReview').style.display='none'">Discard (sheet stays archived)</button>
     </div>`;
-  document.getElementById('finReview').style.display = 'block';
+  showOverlay('finReview');
   setTimeout(finPreview, 30);
 }
 
@@ -5217,7 +5404,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v84 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v88 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -5752,7 +5939,7 @@ function applyDeviceLayout(){
 }
 
 function detachShell(){
-  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar','docView','schedOverlay','detailOverlay','dmOverlay','shareResolver'].forEach(id=>{
+  ['schoolOverlay','quickOverlay','libOverlay','dashOverlay','journeyOverlay','photoView','cmpOverlay','settingsOverlay','importBar','docView','schedOverlay','detailOverlay','dmOverlay','shareResolver','catPick','editHome','finReview','scanReview','cmpPick','cmpView','climBig','backHint','areaScan'].forEach(id=>{
     const el = document.getElementById(id);
     if(el && el.parentElement !== document.body) document.body.appendChild(el);
   });
@@ -5768,7 +5955,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v84';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v88';
   window.__booted = true;
 };
 </script>

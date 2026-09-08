@@ -108,9 +108,9 @@ header .actions button:hover{background:var(--indigo);color:#fff;transform:trans
 .sch-score{font-family:'IBM Plex Mono',monospace;font-weight:700;padding:.15rem .55rem;border-radius:6px;color:#fff}
 
 /* Property-count column hiding */
-body.pc1 th:nth-child(3), body.pc1 td:nth-child(3),
-body.pc1 th:nth-child(4), body.pc1 td:nth-child(4),
-body.pc2 th:nth-child(4), body.pc2 td:nth-child(4){display:none}
+body.pc1 #workbookWrap th:nth-child(3), body.pc1 #workbookWrap td:nth-child(3),
+body.pc1 #workbookWrap th:nth-child(4), body.pc1 #workbookWrap td:nth-child(4),
+body.pc2 #workbookWrap th:nth-child(4), body.pc2 #workbookWrap td:nth-child(4){display:none}
 
 /* Mobile */
 @media (max-width:700px){
@@ -899,9 +899,9 @@ thead th.pcol{border-top:5px solid var(--ink);width:24.6%}
 thead th.pcol.h1{border-top-color:var(--p1);background:linear-gradient(180deg,rgba(14,107,168,.12),transparent)}
 thead th.pcol.h2{border-top-color:var(--p2);background:linear-gradient(180deg,rgba(46,125,79,.12),transparent)}
 thead th.pcol.h3{border-top-color:var(--p3);background:linear-gradient(180deg,rgba(138,79,190,.12),transparent)}
-tbody tr:not(.sec) td:nth-child(2){background:rgba(14,107,168,.035)}
-tbody tr:not(.sec) td:nth-child(3){background:rgba(46,125,79,.035)}
-tbody tr:not(.sec) td:nth-child(4){background:rgba(138,79,190,.035)}
+#workbookWrap tbody tr:not(.sec) td:nth-child(2){background:rgba(14,107,168,.035)}
+#workbookWrap tbody tr:not(.sec) td:nth-child(3){background:rgba(46,125,79,.035)}
+#workbookWrap tbody tr:not(.sec) td:nth-child(4){background:rgba(138,79,190,.035)}
 thead input.pname{font-weight:700;font-size:.92rem;border:none;border-bottom:1.5px dashed var(--line);border-radius:0;background:transparent;padding:.2rem 0}
 thead input.pname:focus{outline:none;border-bottom-color:var(--ink)}
 .sec td{color:#fff;font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:.09em;padding:.5rem .8rem;cursor:pointer;user-select:none}
@@ -3452,7 +3452,7 @@ function openCmpView(){
   body.textContent = '';
   const count = document.createElement('div');
   count.style.cssText = 'font-size:.72rem;font-weight:800;margin-bottom:.3rem';
-  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'') + ' · app v98';
+  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'') + ' · app v99';
   body.appendChild(count);
   const scroll = document.createElement('div'); scroll.className = 'cmp-scroll';
   const tab = document.createElement('table'); tab.className = 'cmp-tab';
@@ -3489,7 +3489,7 @@ function openCmpView(){
   });
   scroll.appendChild(tab); body.appendChild(scroll);
   // rendered-truth check, visible if ever violated
-  const shown = hr.querySelectorAll('.cmp-h').length;
+  const shown = [...hr.querySelectorAll('th')].filter(th=>getComputedStyle(th).display!=='none').length - ([...hr.querySelectorAll('th')].some(th=>!th.querySelector('.cmp-h'))?1:0);
   const foot = document.createElement('div');
   foot.style.cssText = 'font-size:.64rem;color:var(--ink-soft);margin-top:.5rem';
   foot.textContent = (shown!==recs.length ? '⚠ Showing '+shown+' of '+recs.length+' — screenshot this for Claude. ' : '') + 'Green = best in row. Numbers use each home\'s own saved rate/down/credits — edit a home or use its 🧮 what-if to test changes.';
@@ -4642,7 +4642,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v98 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v99 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -5539,7 +5539,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v98 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v99 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -6090,7 +6090,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); migrateDocsToVault(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v98';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v99';
   window.__booted = true;
 };
 </script>

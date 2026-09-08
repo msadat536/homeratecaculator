@@ -26,7 +26,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 });
-const CACHE = 'homecheck-v98';
+const CACHE = 'homecheck-v99';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

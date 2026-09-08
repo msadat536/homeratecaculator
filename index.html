@@ -2550,7 +2550,7 @@ async function shareCard(id){
 }
 
 // ---- Compare picker ----
-let CMP = new Set();
+
 let expandedId = null;
 
 
@@ -3792,7 +3792,7 @@ function renderDetail(){
   document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + critBlock(r, m) + whatIfBlock(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + hospitalBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
-        <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP_SEL.includes(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
         <div class="lib-addr" style="flex:1;min-width:8rem;text-align:right" title="${(r.url||'').replace(/"/g,'')}">${cleanUrl(r.url)}</div>
       </div>
       ${r.ruledOut?`<div style="background:var(--warn);color:var(--warn-ink);border-radius:10px;padding:.5rem .7rem;font-size:.8rem;font-weight:700;margin:.3rem 0">❌ Ruled out — ${esc(r.ruledOut.why)}</div>`:''}
@@ -3908,40 +3908,11 @@ function resetLibFilters(){
 
 function toggleExpand(id){ expandedId = (expandedId === id) ? null : id; renderLib(); }
 function toggleCmp(id, on){
-  if(on){ if(CMP.size>=3){ alert('Compare up to 3 homes.'); renderLib(); return; } CMP.add(id); }
-  else CMP.delete(id);
+  if(on){ if(CMP_SEL.length>=5){ alert('Compare up to 5 homes — remove one first.'); renderLib(); return; } if(!CMP_SEL.includes(id)) CMP_SEL.push(id); }
+  else CMP_SEL = CMP_SEL.filter(x=>x!==id);
   renderLib();
 }
-function openCompare(){
-  const sh = {takehome:g('takehome'), maint:gOr('maint', 1)};
-  const rs = PROPS.filter(r=>CMP.has(r.id));
-  if(rs.length<2) return;
-  const ms = rs.map(r=>({r, m:computeRec(r, sh)}));
-  const row = (label, vals, fmtFn, lowerBetter) => {
-    const nums = vals.filter(v=>typeof v==='number' && isFinite(v));
-    const best = nums.length>1 ? (lowerBetter?Math.min(...nums):Math.max(...nums)) : NaN;
-    return `<tr><td>${label}</td>${vals.map(v=>`<td class="${(typeof v==='number' && v===best)?'win':''}">${v==null||v===''?'—':(fmtFn?fmtFn(v):v)}</td>`).join('')}</tr>`;
-  };
-  const bedsOf = r => { const m2=(r.beds||'').match(/(\d+)\s*bed/i); return m2?parseInt(m2[1]):null; };
-  document.getElementById('cmpBody').innerHTML = `<table class="cmp-table">
-    <tr><th></th>${ms.map(x=>`<th>${esc(x.r.name||'Home')}</th>`).join('')}</tr>
-    ${row('Price', ms.map(x=>x.r.price||null), v=>fmt.format(v), true)}
-    ${row('All-in / mo', ms.map(x=>x.m.allin), v=>fmt.format(v), true)}
-    ${row('Left / mo', ms.map(x=>x.m.left), v=>fmt.format(v), false)}
-    ${row('Cash to close', ms.map(x=>x.m.cash), v=>fmt.format(v), true)}
-    ${row('$ / sq ft', ms.map(x=>x.r.sqft>0?Math.round(x.r.price/x.r.sqft):null), v=>fmt.format(v), true)}
-    ${row('Sq ft', ms.map(x=>x.r.sqft||null), null, false)}
-    ${row('Beds', ms.map(x=>bedsOf(x.r)), null, false)}
-    ${row('Year built', ms.map(x=>x.r.year||null), null, false)}
-    ${row('HOA / mo', ms.map(x=>x.r.hoa||0), v=>fmt.format(v), true)}
-    ${row('Commute (min)', ms.map(x=>x.r.cmin||null), null, true)}
-    ${row('School avg', ms.map(x=>{const a=schoolAvg(x.r); return a!=null?+a.toFixed(1):null;}), null, false)}
-    ${row('Criteria met', ms.map(x=>{const f=fitSummary(evalReqs(x.r,x.m)); return f?f.ok:null;}), null, false)}
-    ${row('Incentives', ms.map(x=>[x.r.cred>0?fmt.format(x.r.cred)+' credit':null, x.r.incnote||null].filter(Boolean).join('; ')||null), null, false)}
-  </table>
-  <div style="font-size:.62rem;color:var(--ink-soft);margin-top:.5rem">Green = best value in that row.</div>`;
-  document.getElementById('cmpOverlay').classList.add('open');
-}
+function openCompare(){ openCmpView(); }
 
 // ================= Escrow stage tracker =================
 // Defaults follow the CA RPA-style contingency clock, counted from offer acceptance.
@@ -4635,7 +4606,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v95 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v96 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -5137,8 +5108,8 @@ function renderLib(){
     return;
   }
   const bar = document.getElementById('cmpBar');
-  bar.style.display = CMP.size>=2 ? 'flex' : 'none';
-  document.getElementById('cmpBarTxt').textContent = CMP.size + ' homes selected';
+  bar.style.display = CMP_SEL.length>=2 ? 'flex' : 'none';
+  document.getElementById('cmpBarTxt').textContent = CMP_SEL.length + ' homes selected';
   const mode = document.getElementById('libSort')?.value || 'default';
   const metric = r => computeRec(r, sh);
   const fitScore = r => { const f = fitSummary(evalReqs(r, metric(r))); return f ? f.ok/f.total : -1; };
@@ -5532,7 +5503,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v95 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v96 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -6083,7 +6054,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); migrateDocsToVault(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v95';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v96';
   window.__booted = true;
 };
 </script>

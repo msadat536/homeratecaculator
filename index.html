@@ -663,6 +663,12 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .lf-type{display:flex;gap:.35rem;margin:.45rem 0 .2rem}
 .lft{flex:1;font-family:inherit;font-weight:800;font-size:.72rem;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:.42rem .2rem;cursor:pointer;color:var(--ink-soft)}
 .lft.on{background:var(--indigo);border-color:var(--indigo);color:#fff}
+
+.star-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:#92600a;background:#fff7e6;border:1.5px solid #f59e0b;border-radius:10px;padding:.55rem;cursor:pointer}
+.star-btn.on{background:#f59e0b;color:#fff}
+.walkin-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:var(--win-ink);background:var(--win);border:none;border-radius:10px;padding:.55rem;cursor:pointer}
+.sch-mi{font-style:normal;font-size:.64rem;color:var(--ink-soft);margin-left:.3rem}
+.edit-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:var(--ink);background:var(--calc);border:none;border-radius:10px;padding:.55rem;cursor:pointer}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -1454,6 +1460,14 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
   <div class="qwrap">
     <div class="qhead"><b>💵 Check the finance sheet</b><div><button onclick="document.getElementById('finReview').style.display='none'">← Back</button></div></div>
     <div id="frBody"></div>
+  </div>
+</div>
+
+<!-- Edit home -->
+<div id="editHome" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:98;overflow-y:auto">
+  <div class="qwrap">
+    <div class="qhead"><b>✏️ Edit property</b><div><button onclick="document.getElementById('editHome').style.display='none'">← Back</button></div></div>
+    <div id="ehBody"></div>
   </div>
 </div>
 
@@ -2691,7 +2705,7 @@ function schoolsBlock(r){
   return `<details class="lib-details" open><summary>🏫 Schools (avg ${schoolAvg(r)!=null?(+schoolAvg(r)).toFixed(1):'?'})</summary>
     ${list.map(x=>`<div class="schl-row">
       <span class="schl-ic">${icon(x.type)}</span>
-      <span class="schl-main"><b>${esc(x.name||'School')}</b><i>${lvl(x.type)}</i></span>
+      <span class="schl-main"><b>${esc(x.name||'School')}</b><i>${lvl(x.type)}${x.miles!=null?' · 📍 '+x.miles+' mi away':''}</i></span>
       <span class="schl-r ${x.rating>=8?'good':x.rating>=6?'mid':'low'}">${x.rating!=null?x.rating:'?'}${x.rating!=null?'/10':''}</span>
     </div>`).join('')}
     <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.3rem">Ratings from the board data (GreatSchools scale). Tap Features to log Asian % for the zoned school.</div>
@@ -2948,6 +2962,8 @@ function schedGo(id){
 // ---- Android back button: overlays close, then Dashboard, then double-back to exit ----
 let _backArmed = 0;
 function topOverlayClose(){
+  const eh = document.getElementById('editHome');
+  if(eh && eh.style.display === 'block'){ eh.style.display = 'none'; return true; }
   const fr = document.getElementById('finReview');
   if(fr && fr.style.display === 'block'){ fr.style.display = 'none'; return true; }
   const sr = document.getElementById('scanReview');
@@ -3131,6 +3147,67 @@ async function processShareInbox(){
 let CATS = [];
 function loadCats(){ try{ CATS = JSON.parse(localStorage.getItem('homeCats_v1')) || []; }catch(e){ CATS = []; } }
 function saveCats(){ try{ localStorage.setItem('homeCats_v1', JSON.stringify(CATS)); }catch(e){} }
+
+// ================= Edit property =================
+function openEditHome(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const F=(fid,label,val,type)=>`<label class="sr-f"><span>${label}</span><input id="eh_${fid}" type="${type||'text'}" ${type==='number'?'inputmode="decimal"':''} value="${val!=null?String(val).replace(/"/g,'&quot;'):''}"></label>`;
+  document.getElementById('ehBody').innerHTML = `
+    <div class="qcard">
+      ${F('name','Name (City: Community · Plan)', r.name)}
+      ${F('addr','Address', r.addr)}
+      ${F('url','Website / listing link', r.url)}
+      <div class="wf-grid">
+        ${F('price','Price ($)', r.price, 'number')}
+        ${F('sqft','Sq ft', r.sqft, 'number')}
+        ${F('beds','Beds / layout', r.beds)}
+        ${F('year','Year built', r.year, 'number')}
+        ${F('rate','Rate %', r.rate, 'number')}
+        ${F('term','Term (yrs)', r.term, 'number')}
+        ${F('dp','Down payment %', r.dp, 'number')}
+        ${F('hoa','HOA /mo ($)', r.hoa, 'number')}
+        ${F('taxr','Tax rate %', r.taxr, 'number')}
+        ${F('mr','Mello-Roos /mo ($)', r.mr, 'number')}
+        ${F('cred','Seller credit ($)', r.cred, 'number')}
+        ${F('ccpct','Closing costs %', r.ccpct, 'number')}
+        ${F('cmin','Commute (mins)', r.cmin, 'number')}
+        ${F('miles','Distance (miles)', r.miles, 'number')}
+        ${F('masjidMi','Masjid (miles)', r.masjidMi, 'number')}
+        ${F('asianPct','Asian % school', r.asianPct, 'number')}
+      </div>
+      ${F('agentName','Agent name', r.agentName)}
+      ${F('agentPhone','Agent phone', r.agentPhone)}
+      <label class="sr-f"><span>Type</span><select id="eh_htype"><option value=""${!r.htype?' selected':''}>house</option><option value="townhome"${r.htype==='townhome'?' selected':''}>townhome</option><option value="condo"${r.htype==='condo'?' selected':''}>condo</option></select></label>
+      <button class="cf-apply" onclick="saveEditHome('${r.id}')">💾 Save changes</button>
+      <button class="share-skip" onclick="document.getElementById('editHome').style.display='none'">Cancel</button>
+    </div>`;
+  document.getElementById('editHome').style.display = 'block';
+}
+function saveEditHome(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const gv = fid => document.getElementById('eh_'+fid).value.trim();
+  const gn = fid => { const v = gv(fid); return v==='' ? null : parseFloat(v); };
+  const name = gv('name'); if(name) r.name = name;
+  r.addr = gv('addr') || undefined;
+  r.url = gv('url') || undefined;
+  const price = gn('price');
+  if(price!=null && price !== r.price){ trackPrice(r, price); }
+  ['price','sqft','year','rate','term','dp','hoa','taxr','mr','cred','ccpct','cmin','miles'].forEach(k=>{
+    const v = gn(k);
+    r[k] = v==null ? undefined : v;
+  });
+  const beds = gv('beds'); r.beds = beds || undefined;
+  const mm = gn('masjidMi'); if(mm !== r.masjidMi){ r.masjidMi = mm==null?undefined:mm; r.masjidUser = mm!=null; if(mm==null) delete r.masjidTxt; }
+  const ap = gn('asianPct'); if(ap !== r.asianPct){ r.asianPct = ap==null?undefined:ap; if(ap!=null){ r.asianUser = true; delete r.asianEst; } else { delete r.asianUser; delete r.asianEst; } }
+  r.agentName = gv('agentName') || undefined;
+  r.agentPhone = gv('agentPhone') || undefined;
+  const ht = document.getElementById('eh_htype').value; r.htype = ht || undefined;
+  enrichOne(r);
+  persistProps(); refreshHomeViews(); renderDash();
+  document.getElementById('editHome').style.display = 'none';
+  openDetail(id);
+}
+
 function openCatPick(id){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
   const ov = document.getElementById('catPick');
@@ -3313,7 +3390,10 @@ function renderDetail(){
     ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}</div>`:''}
     ${vs==='unconfirmed'?`<div class="det-confirm">📅 Scheduled ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})} — did you visit?
       <span><button onclick="confirmVisit('${r.id}', true)">✔ Yes</button><button onclick="confirmVisit('${r.id}', false)">✕ No</button></span></div>`:''}
+    ${!vs||vs==='upcoming'?`<button class="walkin-btn" onclick="markWalkIn('${r.id}')">✔ I visited this home${vs==='upcoming'?' already':''} (walk-in)</button>`:''}
+    <button class="star-btn ${r.shortlisted?'on':''}" onclick="toggleShort('${r.id}');openDetail('${r.id}')">${r.shortlisted?'⭐ Shortlisted — tap to remove':'☆ Add to shortlist'}</button>
     <button class="cat-btn" onclick="openCatPick('${r.id}')">🏷 ${r.cat?esc(r.cat)+' — change':'Add to a category'}</button>
+    <button class="edit-btn" onclick="openEditHome('${r.id}')">✏️ Edit this property</button>
     <label class="fin-btn">💵 Upload agent's finance sheet (photo or PDF)<input type="file" accept="image/*,.pdf" style="display:none" onchange="uploadFinSheet('${r.id}', this)"></label>
   </div>`;
   setTimeout(hydrateCommEvidence, 40);
@@ -4139,7 +4219,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v77 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v78 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4290,6 +4370,21 @@ function visitState(r){
   if(r.visited === false) return 'missed';
   return 'unconfirmed';
 }
+
+function markWalkIn(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  const when = prompt('When did you visit? (blank = just now, or e.g. "9/5" / "9/5 2pm")','');
+  let d = new Date();
+  if(when && when.trim()){
+    const parsed = extractSchedule(when + (/\d\s*(am|pm)|\d{1,2}:\d{2}/i.test(when)?'':' 12:00pm'));
+    if(parsed) d = parsed; else { alert('Could not read that date — using now.'); }
+  }
+  r.visitAt = new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  r.visited = true;
+  persistProps(); refreshHomeViews(); renderDash();
+  openDetail(id);   // post-visit verdict flow takes over
+}
+
 function confirmVisit(id, yes){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
   r.visited = !!yes;
@@ -4905,7 +5000,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v77 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v78 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -5021,7 +5116,7 @@ function openSchools(p){
   document.getElementById('schTitle').textContent = 'Schools near ' + pname(p);
   document.getElementById('schList').innerHTML = list.map(x=>
     `<div class="sch-row"><div>${x.name}<span class="sch-type">${x.type||''}</span></div>
-     <span class="sch-score" style="background:${schoolColor(x.rating)}">${x.rating!=null ? x.rating + '/10' : 'n/a'}</span></div>`).join('')
+     <span class="sch-score" style="background:${schoolColor(x.rating)}">${x.rating!=null ? x.rating + '/10' : 'n/a'}</span>${x.miles!=null?`<i class="sch-mi">📍 ${x.miles} mi</i>`:''}</div>`).join('')
     || '<div style="font-size:.8rem;color:var(--ink-soft)">No school data captured for this listing.</div>';
   document.getElementById('schMore').href = gsLink(p);
   document.getElementById('schoolOverlay').classList.add('open');
@@ -5046,10 +5141,10 @@ async function fetchSchools(p, address){
         max_tokens: 600,
         messages: [{ role:'user', content:
           `For this address: ${address}\n` +
-          `1) The zoned public schools (elementary/middle/high) with GreatSchools 1-10 ratings\n` +
+          `1) The zoned public schools (elementary/middle/high) with GreatSchools 1-10 ratings and driving distance from the address in miles\n` +
           `2) Nearest masjid/mosque name and driving distance in miles\n` +
           `3) Asian student percentage at the zoned elementary school if findable\n` +
-          `Respond ONLY JSON, no fences: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null}], "masjid_name": string|null, "masjid_miles": number|null, "asian_pct": number|null}\n` +
+          `Respond ONLY JSON, no fences: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null, "miles": number|null}], "masjid_name": string|null, "masjid_miles": number|null, "asian_pct": number|null}\n` +
           `null for anything not clearly verified — never guess. Be fast: at most 3 searches.`}],
         tools: [{ type:'web_search_20250305', name:'web_search', max_uses: 3 }]
       })

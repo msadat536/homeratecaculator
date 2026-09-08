@@ -3447,17 +3447,53 @@ function openCmpView(){
     const target = mode==='maxNum' ? Math.max(...nums.filter(n=>!isNaN(n))) : Math.min(...nums.filter(n=>!isNaN(n)));
     return nums.indexOf(target);
   };
-  document.getElementById('cmpViewBody').innerHTML = `
-    <div style="font-size:.72rem;font-weight:800;margin-bottom:.3rem">Comparing ${recs.length} home${recs.length>1?'s':''}</div>
-    <div class="cmp-scroll"><table class="cmp-tab">
-      <colgroup><col style="width:23%">${recs.map(()=>`<col style="width:${(77/recs.length).toFixed(2)}%">`).join('')}</colgroup>
-      <tr><th></th>${recs.map(r=>`<th><button class="cmp-h" onclick="document.getElementById('cmpView').style.display='none';document.getElementById('cmpPick').style.display='none';openDetail('${r.id}')">${esc((r.name||'').split(':').slice(1).join(':').split('·')[0].trim().slice(0,18)||esc((r.name||'').slice(0,18)))}</button><i>${esc((r.name||'').split(':')[0].trim().slice(0,12))}</i></th>`).join('')}</tr>
-      ${rows.map(([label, vals, mode])=>{
-        const b = best(vals, mode);
-        return `<tr class="${label.startsWith('💰')||label.startsWith('🔑')?'cmp-key':''}"><td>${label}</td>${vals.map((v,i)=>`<td class="${i===b?'cmp-best':''}">${v}</td>`).join('')}</tr>`;
-      }).join('')}
-    </table></div>
-    <div style="font-size:.64rem;color:var(--ink-soft);margin-top:.5rem">Green = best in row. Numbers use each home's own saved rate/down/credits — edit a home or use its 🧮 what-if to test changes.</div>`;
+  // Built with DOM nodes, not an HTML string — no parser can drop a column.
+  const body = document.getElementById('cmpViewBody');
+  body.textContent = '';
+  const count = document.createElement('div');
+  count.style.cssText = 'font-size:.72rem;font-weight:800;margin-bottom:.3rem';
+  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'');
+  body.appendChild(count);
+  const scroll = document.createElement('div'); scroll.className = 'cmp-scroll';
+  const tab = document.createElement('table'); tab.className = 'cmp-tab';
+  const cg = document.createElement('colgroup');
+  const c0 = document.createElement('col'); c0.style.width = '23%'; cg.appendChild(c0);
+  recs.forEach(()=>{ const c = document.createElement('col'); c.style.width = (77/recs.length).toFixed(2)+'%'; cg.appendChild(c); });
+  tab.appendChild(cg);
+  const hr = document.createElement('tr');
+  hr.appendChild(document.createElement('th'));
+  recs.forEach(r=>{
+    const th = document.createElement('th');
+    const btn = document.createElement('button');
+    btn.className = 'cmp-h';
+    const nm = (r.name||'');
+    btn.textContent = (nm.split(':').slice(1).join(':').split('·')[0].trim().slice(0,18)) || nm.slice(0,18);
+    btn.onclick = ()=>{ document.getElementById('cmpView').style.display='none'; document.getElementById('cmpPick').style.display='none'; openDetail(r.id); };
+    const city = document.createElement('i');
+    city.textContent = nm.split(':')[0].trim().slice(0,12);
+    th.appendChild(btn); th.appendChild(city); hr.appendChild(th);
+  });
+  tab.appendChild(hr);
+  rows.forEach(([label, vals, mode])=>{
+    const tr = document.createElement('tr');
+    if(label.startsWith('💰')||label.startsWith('🔑')) tr.className = 'cmp-key';
+    const td0 = document.createElement('td'); td0.textContent = label; tr.appendChild(td0);
+    const b = best(vals, mode);
+    vals.forEach((v,ix)=>{
+      const td = document.createElement('td');
+      if(ix===b) td.className = 'cmp-best';
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+    tab.appendChild(tr);
+  });
+  scroll.appendChild(tab); body.appendChild(scroll);
+  // rendered-truth check, visible if ever violated
+  const shown = hr.querySelectorAll('.cmp-h').length;
+  const foot = document.createElement('div');
+  foot.style.cssText = 'font-size:.64rem;color:var(--ink-soft);margin-top:.5rem';
+  foot.textContent = (shown!==recs.length ? '⚠ Showing '+shown+' of '+recs.length+' — screenshot this for Claude. ' : '') + 'Green = best in row. Numbers use each home\'s own saved rate/down/credits — edit a home or use its 🧮 what-if to test changes.';
+  body.appendChild(foot);
   showOverlay('cmpView');
 }
 
@@ -4606,7 +4642,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v96 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v97 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -5503,7 +5539,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v96 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v97 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -6054,7 +6090,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); migrateDocsToVault(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v96';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v97';
   window.__booted = true;
 };
 </script>

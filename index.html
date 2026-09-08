@@ -700,6 +700,15 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 
 .det-undo{display:flex;gap:.35rem;margin-top:.3rem;flex-wrap:wrap}
 .det-undo button{font-family:inherit;font-size:.64rem;font-weight:800;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:8px;padding:.25rem .5rem;cursor:pointer}
+
+.fr-sec{border:1.5px solid var(--line);border-radius:12px;padding:.6rem .7rem;margin-top:.6rem}
+.fr-sec-sheet{border-color:#c7d2fe;background:#fbfcff}
+.fr-sec-miss{border-color:#fcd34d;background:#fffdf5}
+.fr-sec-h{font-weight:800;font-size:.8rem;margin-bottom:.15rem}
+.fr-finalbox{background:var(--ink);color:#fff;border-radius:12px;padding:.7rem .85rem;margin-top:.6rem}
+.fr-final-row{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:.12rem 0}
+.fr-final-row span{font-size:.74rem;font-weight:700;opacity:.85}
+.fr-final-row b{font-family:'IBM Plex Mono',monospace;font-size:1.02rem}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -3382,18 +3391,31 @@ function renderCmpPick(q){
     .sort((a,b)=>(b.shortlisted?1:0)-(a.shortlisted?1:0) || (b.visited?1:0)-(a.visited?1:0));
   document.getElementById('cmpPickBody').innerHTML = `
     <input class="lib-search" placeholder="Search homes…" oninput="renderCmpPick(this.value)" value="${esc(q||'')}">
-    <div style="font-size:.72rem;color:var(--ink-soft);margin:.35rem 0">Pick 2-5 · ${CMP_SEL.length} selected</div>
-    ${list.slice(0,60).map(r=>`<button class="share-pick" onclick="cmpToggle('${r.id}')" style="${CMP_SEL.includes(r.id)?'border-color:var(--indigo);background:#eef2ff':''}">
+    <div style="font-size:.72rem;color:var(--ink-soft);margin:.35rem 0">Pick 2-5 · <span id="cmpSelCount">${CMP_SEL.length} selected</span></div>
+    ${list.slice(0,60).map(r=>`<button class="share-pick" onclick="cmpToggle('${r.id}', this)" style="${CMP_SEL.includes(r.id)?'border-color:var(--indigo);background:#eef2ff':''}">
       <b>${CMP_SEL.includes(r.id)?'✔ ':''}${r.shortlisted?'⭐ ':''}${verdictIcon(r)?verdictIcon(r)+' ':''}${esc((r.name||'').slice(0,46))}</b>
       <i>${r.price?fmt.format(r.price):'no price'}${r.htype?' · '+r.htype:''}</i></button>`).join('')}
-    <button class="cf-apply" ${CMP_SEL.length<2?'disabled style="opacity:.5"':''} onclick="openCmpView()">🆚 Compare ${CMP_SEL.length||''}</button>`;
+    <button class="cf-apply" id="cmpGo" ${CMP_SEL.length<2?'disabled style="opacity:.5"':''} onclick="openCmpView()">🆚 Compare ${CMP_SEL.length||''}</button>`;
 }
-function cmpToggle(id){
+let _cmpTapT = {};
+function cmpToggle(id, btn){
+  const now = Date.now();
+  if(_cmpTapT[id] && now - _cmpTapT[id] < 450) return;
+  _cmpTapT[id] = now;
   if(CMP_SEL.includes(id)) CMP_SEL = CMP_SEL.filter(x=>x!==id);
   else if(CMP_SEL.length < 5) CMP_SEL.push(id);
   else { alert('5 homes max — remove one first.'); return; }
-  const q = document.querySelector('#cmpPickBody .lib-search');
-  renderCmpPick(q?q.value:'');
+  const on = CMP_SEL.includes(id);
+  if(btn){
+    btn.style.borderColor = on?'var(--indigo)':'';
+    btn.style.background = on?'#eef2ff':'';
+    const b = btn.querySelector('b');
+    if(b) b.textContent = (on?'✔ ':'') + b.textContent.replace(/^✔ /,'');
+  }
+  const cnt = document.getElementById('cmpSelCount');
+  if(cnt) cnt.textContent = CMP_SEL.length + ' selected';
+  const go = document.getElementById('cmpGo');
+  if(go){ go.disabled = CMP_SEL.length<2; go.style.opacity = CMP_SEL.length<2?'.5':'1'; go.textContent = '🆚 Compare ' + (CMP_SEL.length||''); }
 }
 function openCmpView(){
   if(CMP_SEL.length<2) return;
@@ -4179,7 +4201,8 @@ function seedDocs(){
   SEED_DOCS.forEach(sd=>{
     let done = false; try{ done = !!localStorage.getItem(sd.seedFlag); }catch(e){}
     if(done || DOCS.some(d=>d.id===sd.id)) return;
-    DOCS.unshift({id:sd.id, name:sd.name, type:sd.type, size:sd.data.length, t:Date.now(), data:sd.data});
+    DOCS.unshift({id:sd.id, name:sd.name, type:sd.type, size:sd.data.length, t:Date.now(), vault:true});
+    photoPut('doc_' + sd.id, sd.data);
     try{ persistDocs(); localStorage.setItem(sd.seedFlag,'1'); }catch(e){ DOCS.shift(); }
   });
 }
@@ -4193,7 +4216,27 @@ function loadDocs(){
   if(DOCS.length!==n){ try{ persistDocs(); }catch(e){} }
   seedDocs();
 }
-function persistDocs(){ localStorage.setItem(DOCS_KEY, JSON.stringify(DOCS)); }
+function persistDocs(){
+  try{ localStorage.setItem(DOCS_KEY, JSON.stringify(DOCS)); }
+  catch(e){ migrateDocsToVault(); try{ localStorage.setItem(DOCS_KEY, JSON.stringify(DOCS)); }catch(e2){ alert('⚠ Documents could not be saved — storage still full even after moving files to the vault.'); } }
+}
+
+async function migrateDocsToVault(){
+  let moved = 0;
+  for(const d of DOCS){
+    if(d.data && d.data.length > 2000 && !d.vault){
+      try{ await photoPut('doc_' + d.id, d.data); d.vault = true; delete d.data; moved++; }
+      catch(e){ break; }
+    }
+  }
+  if(moved){ try{ persistDocs(); }catch(e){} try{ persistProps(); }catch(e){} }
+}
+async function docData(d){
+  if(d.data) return d.data;
+  if(d.vault){ try{ return await photoGet('doc_' + d.id); }catch(e){ return null; } }
+  return null;
+}
+
 function renderDocs(){
   const el = document.getElementById('docsList'); if(!el) return;
   el.innerHTML = DOCS.length ? DOCS.map((d,i)=>`
@@ -4230,15 +4273,18 @@ function storageShim(){
   return '<script>(function(){try{localStorage.length;}catch(e){var mk=function(){var m={};return {getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null},get length(){return Object.keys(m).length}}};try{Object.defineProperty(window,"localStorage",{value:mk(),configurable:true});Object.defineProperty(window,"sessionStorage",{value:mk(),configurable:true});}catch(_){}}})();<\/script>';
 }
 
-function openDoc(i){
+async function openDoc(i){
   const d = DOCS[i]; if(!d) return;
   document.getElementById('docViewTitle').textContent = d.name;
   const fr = document.getElementById('docFrame'), im = document.getElementById('docImg');
   fr.style.display='none'; im.style.display='none';
   if(d.type==='image'){ im.src = d.data; im.style.display='block'; }
-  else if(d.type==='pdf'){ fr.removeAttribute('srcdoc'); fr.src = d.data; fr.style.display='block'; }
-  else if(d.type==='html'){ fr.removeAttribute('src'); fr.srcdoc = storageShim() + d.data; fr.style.display='block'; }
-  else { fr.removeAttribute('src'); fr.srcdoc = '<pre style="white-space:pre-wrap;font-family:system-ui;padding:16px;font-size:15px">' + d.data.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>'; fr.style.display='block'; }
+  const payload = await docData(d);
+  if(!payload){ fr.removeAttribute('src'); fr.srcdoc='<p style="padding:16px;font-family:system-ui">Could not load this document from storage.</p>'; fr.style.display='block'; return; }
+  if(false){}
+  else if(d.type==='pdf'){ fr.removeAttribute('srcdoc'); fr.src = payload; fr.style.display='block'; }
+  else if(d.type==='html'){ fr.removeAttribute('src'); fr.srcdoc = storageShim() + payload; fr.style.display='block'; }
+  else { fr.removeAttribute('src'); fr.srcdoc = '<pre style="white-space:pre-wrap;font-family:system-ui;padding:16px;font-size:15px">' + payload.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>'; fr.style.display='block'; }
   document.getElementById('docView').style.display='flex';
 }
 function closeDoc(){
@@ -4589,7 +4635,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v93 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v95 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4824,36 +4870,51 @@ function openFinReview(id, d, rawText){
   FIN_REVIEW = {id, quote: d && d.monthly_payment_quote, lender: d && d.lender, rateNotes: d && d.rate_notes};
   d = d || {};
   const r = PROPS.find(x=>x.id===id); if(!r) return;
-  const F = (fid, label, val, ph)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" placeholder="${ph||''}" oninput="finPreview()"></label>`;
+  const F = (fid, label, val, note)=>`<label class="sr-f"><span>${label}${note?` <i style="font-style:normal;font-weight:600;color:var(--ink-soft)">· ${note}</i>`:''}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" oninput="finPreview()"></label>`;
   const T = (fid, label, val)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="text" value="${val!=null?String(val).replace(/"/g,'&quot;'):''}"></label>`;
+  // every number in the calculation, with what the sheet said (null = sheet didn't have it / couldn't read it)
+  const FIELDS = [
+    ['price','Price ($)', d.price, null],
+    ['cred','Seller credit ($)', d.seller_credit, null],
+    ['incval','Other incentives ($)', d.other_incentives_value, null],
+    ['rate','Rate %', d.rate_pct, null],
+    ['term','Term (yrs)', d.loan_term_years, r.term!=null?r.term:30],
+    ['dp','Down payment %', d.down_payment_pct, r.dp!=null?r.dp:20],
+    ['dpamt','…or down as $', d.down_payment_amount, null],
+    ['hoa','HOA /mo ($)', d.hoa_monthly, r.hoa],
+    ['taxr','Tax rate %', d.property_tax_rate_pct, r.taxr],
+    ['mr','Mello-Roos /mo ($)', d.mello_roos_monthly, r.mr],
+    ['cc','Closing costs ($)', d.est_closing_costs, null],
+    ['quote','Their PITI quote /mo', d.monthly_payment_quote, null],
+    ['ins','Insurance /mo ($)', d.insurance_monthly, r.ins],
+    ['util','Utilities /mo ($)', null, r.util],
+    ['pmir','PMI rate %/yr', null, r.pmir],
+    ['maint','Upkeep reserve %/yr', null, r.maintPct!=null?r.maintPct:gOr('maint',1)]
+  ];
+  const onSheet = FIELDS.filter(x=>x[2]!=null);
+  const missing = FIELDS.filter(x=>x[2]==null);
   document.getElementById('frBody').innerHTML = `
     <div class="qcard">
       <div style="font-weight:800;font-size:.88rem">${esc((r.name||'').slice(0,44))}</div>
-      <div style="font-size:.76rem;color:var(--ink-soft);margin:.25rem 0 .3rem">Check every number against the paper — fix what's wrong, then Save. Blank = leave unchanged.</div>
-      <div class="wf-grid">
-        ${F('price','Price ($)', d.price)}
-        ${F('cred','Seller credit ($)', d.seller_credit)}
-        ${F('incval','Other incentives ($)', d.other_incentives_value)}
-        ${F('rate','Rate %', d.rate_pct)}
-        ${F('term','Term (yrs)', d.loan_term_years)}
-        ${F('dp','Down payment %', d.down_payment_pct)}
-        ${F('dpamt','…or down as $', d.down_payment_amount)}
-        ${F('hoa','HOA /mo ($)', d.hoa_monthly)}
-        ${F('taxr','Tax rate %', d.property_tax_rate_pct)}
-        ${F('mr','Mello-Roos /mo ($)', d.mello_roos_monthly)}
-        ${F('cc','Closing costs ($)', d.est_closing_costs)}
-        ${F('quote','Their PITI quote /mo', d.monthly_payment_quote)}
-        ${F('ins','Insurance /mo ($)', d.insurance_monthly!=null?d.insurance_monthly:r.ins)}
-        ${F('util','Utilities /mo ($)', r.util)}
-        ${F('pmir','PMI rate %/yr', r.pmir)}
-        ${F('maint','Upkeep reserve %/yr', r.maintPct!=null?r.maintPct:gOr('maint',1))}
+
+      <div class="fr-sec fr-sec-sheet">
+        <div class="fr-sec-h">📄 Read from the agent's sheet — ${onSheet.length} number${onSheet.length===1?'':'s'}</div>
+        <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.3rem">Check each against the paper; fix anything the scan got wrong.</div>
+        <div class="wf-grid">${onSheet.map(x=>F(x[0], x[1], x[2])).join('')}</div>
+        ${T('incnote','Incentive notes', d.incentive_notes)}
+        ${T('ratenotes','Rate structure / buydown', d.rate_notes)}
+        ${T('lender','Lender', d.lender)}
       </div>
-      <div style="font-size:.64rem;color:var(--ink-soft);margin-top:.2rem">The last four are the app's own assumptions — now yours to set per home. Zero any of them out if you don't want them counted.</div>
-      ${T('incnote','Incentive notes', d.incentive_notes)}
-      ${T('ratenotes','Rate structure / buydown', d.rate_notes)}
-      ${T('lender','Lender', d.lender)}
+
+      <div class="fr-sec fr-sec-miss">
+        <div class="fr-sec-h">❓ Not on the sheet — ${missing.length} blank${missing.length===1?'':'s'} to fill or confirm</div>
+        <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.3rem">The scan found nothing for these. Values shown are the home's current numbers or the app's assumptions — edit or zero them; blank = leave as-is.</div>
+        <div class="wf-grid">${missing.map(x=>F(x[0], x[1], x[3], x[3]!=null?'current':'')).join('')}</div>
+      </div>
+
       ${rawText?`<details style="margin-top:.5rem"><summary style="font-size:.72rem;font-weight:700;cursor:pointer">What the scan actually read</summary><div class="share-msg">${esc(String(rawText).slice(0,1200))}</div></details>`:''}
-      <div id="fr_breakdown"></div>
+      <details style="margin-top:.5rem"><summary style="font-size:.72rem;font-weight:700;cursor:pointer">Full monthly breakdown</summary><div id="fr_breakdown"></div></details>
+      <div id="fr_final"></div>
       <button class="cf-apply" onclick="saveFinReview()">💾 Save these numbers to the home</button>
       <button class="share-skip" onclick="document.getElementById('finReview').style.display='none'">Discard (sheet stays archived)</button>
     </div>`;
@@ -4901,6 +4962,14 @@ function finPreview(){
     <div class="frb-row frb-total"><span>Cash to close</span><b>${F(p.cash)}</b><i>${p.dpPct}% down + closing − credits</i></div>
     ${st.quote && Math.abs(st.quote - p.allin) > 150 ? `<div class="frb-warn">⚠ Their quote is ${F(Math.abs(st.quote-p.allin))}/mo ${st.quote<p.allin?'lower':'higher'} than this math — usually missing Mello-Roos, insurance, or HOA. Ask the agent what their number includes.</div>` : ''}
   </div>`;
+  const fin = document.getElementById('fr_final');
+  if(fin){
+    fin.innerHTML = `<div class="fr-finalbox">
+      <div class="fr-final-row"><span>💰 Monthly all-in from this sheet</span><b>${F(p.allin)}/mo</b></div>
+      <div class="fr-final-row"><span>🔑 Cash to close</span><b>${F(p.cash)}</b></div>
+      <div style="font-size:.62rem;color:var(--ink-soft)">${d===0?'Same as the home\'s saved numbers':(d<0?'▼ '+F(-d)+'/mo cheaper':'▲ '+F(d)+'/mo more')+' than saved'}${st.quote?` · their quote: ${F(st.quote)}/mo`:''}</div>
+    </div>`;
+  }
 }
 
 function saveFinReview(){
@@ -5463,7 +5532,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v93 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v95 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -6012,9 +6081,9 @@ window.onload = function(){
   fitScale();
   backGuard();
   setTimeout(processShareInbox, 600);
-  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
+  initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); migrateDocsToVault(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v93';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v95';
   window.__booted = true;
 };
 </script>

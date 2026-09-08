@@ -1314,7 +1314,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <!-- Dashboard -->
 <div id="dashOverlay">
   <div class="qwrap">
-    <div class="qhead"><b>📊 Dashboard</b><div style="display:flex;gap:.4rem">
+    <div class="qhead"><b>📊 Dashboard <i id="dashVer" style="font-style:normal;font-size:.62rem;font-weight:700;opacity:.75"></i></b><div style="display:flex;gap:.4rem">
   <button onclick="openSettings()">&#9881;</button>
 </div></div>
     <div class="dstats" id="d_stats"></div>
@@ -3192,6 +3192,20 @@ function pickFromMatches(m){
 }
 
 
+
+async function forceUpdate(){
+  try{
+    const ks = await caches.keys();
+    await Promise.all(ks.map(k=>caches.delete(k)));
+    if(navigator.serviceWorker){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.update()));
+    }
+  }catch(e){}
+  alert('Cache cleared — reloading to pull the newest uploaded version. Your data is untouched.');
+  location.reload();
+}
+
 async function shareSelfTest(){
   const sample = {t: Date.now(), text: 'SELF-TEST: Hi, this is Sarah from Lennar about ' + ((PROPS[0]&&PROPS[0].name)||'your home') + '. Saturday at 2:30 pm works! (951) 555-0134', title:'', url:''};
   const cur = (await idbGet('shareInbox')) || [];
@@ -4359,7 +4373,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v83 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v84 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -5195,7 +5209,7 @@ async function renderStorMeter(){
     const est = await navigator.storage.estimate();
     const used = (est.usage/1048576).toFixed(1), quota = Math.round(est.quota/1048576);
     const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
-    el.innerHTML = 'On-device storage: <b>' + used + ' MB</b> of ~' + quota.toLocaleString() + ' MB available' + '<br><button class="aibtn" style="margin-top:.45rem;background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" onclick="shareSelfTest()">🔧 Test the text-share pipeline</button>' +
+    el.innerHTML = 'On-device storage: <b>' + used + ' MB</b> of ~' + quota.toLocaleString() + ' MB available' + '<br><button class="aibtn" style="margin-top:.45rem;background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" onclick="shareSelfTest()">🔧 Test the text-share pipeline</button><button class="aibtn" style="margin-top:.45rem;margin-left:.4rem;background:#fff;color:var(--indigo);border:1.5px solid var(--indigo);box-shadow:none" onclick="forceUpdate()">🔄 Force-refresh the app</button>' +
       (persisted ? ' · <span style="color:var(--win-ink);font-weight:700">protected from cleanup ✓</span>' : '') +
       '<br>Photos live only on this phone and survive app upgrades. They are not in the backup file (too large) — everything else is.';
   }catch(e){ el.textContent = ''; }
@@ -5203,7 +5217,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v83 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v84 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -5754,6 +5768,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v84';
   window.__booted = true;
 };
 </script>

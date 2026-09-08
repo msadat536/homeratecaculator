@@ -670,13 +670,13 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .sch-mi{font-style:normal;font-size:.64rem;color:var(--ink-soft);margin-left:.3rem}
 .edit-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:var(--ink);background:var(--calc);border:none;border-radius:10px;padding:.55rem;cursor:pointer}
 
-.cmp-scroll{margin:0 -0.55rem}
+.cmp-scroll{margin:0 -0.55rem;overflow-x:auto}
 .cmp-tab{border-collapse:collapse;table-layout:fixed;width:100%;font-size:.66rem}
 .cmp-tab th{position:sticky;top:0;background:var(--paper);text-align:left;padding:.3rem .2rem;vertical-align:top;overflow:hidden}
 .cmp-tab th i{display:block;font-style:normal;font-size:.52rem;color:var(--ink-soft);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cmp-h{font-family:inherit;font-weight:800;font-size:.58rem;border:none;background:#eef2ff;color:#3730a3;border-radius:6px;padding:.25rem .3rem;cursor:pointer;text-align:left;width:100%;word-break:break-word;line-height:1.2}
 .cmp-tab td{border-top:1px solid var(--line);padding:.32rem .2rem;white-space:normal;word-break:break-word;font-family:'IBM Plex Mono',monospace;font-size:.62rem;line-height:1.25;vertical-align:top}
-.cmp-tab td:first-child{font-weight:800;font-size:.56rem;color:var(--ink-soft);font-family:'Archivo',sans-serif;width:4.4rem}
+.cmp-tab td:first-child{font-weight:800;font-size:.56rem;color:var(--ink-soft);font-family:'Archivo',sans-serif}
 .cmp-best{background:var(--win);color:var(--win-ink);font-weight:800;border-radius:6px}
 .cmp-key td{font-weight:800;background:#fbfbff}
 .lib-filtbtn{font-family:inherit;font-weight:800;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:.4rem .55rem;cursor:pointer;font-size:.78rem;margin-left:.3rem}
@@ -1499,7 +1499,7 @@ tfoot td{border-bottom:none;color:var(--ink-soft);font-size:.72rem;padding:.7rem
 <!-- Edit home -->
 <div id="editHome" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:98;overflow-y:auto">
   <div class="qwrap">
-    <div class="qhead"><b>✏️ Edit property</b><div><button onclick="document.getElementById('editHome').style.display='none'">← Back</button></div></div>
+    <div class="qhead"><b>✏️ Edit property</b><div style="display:flex;gap:.4rem"><button id="ehTopSave" style="background:var(--indigo);color:#fff;border-color:var(--indigo)">💾 Save</button><button onclick="closeEditHome()">✕</button></div></div>
     <div id="ehBody"></div>
   </div>
 </div>
@@ -3298,7 +3298,7 @@ function saveCats(){ try{ localStorage.setItem('homeCats_v1', JSON.stringify(CAT
 // ================= Edit property =================
 function openEditHome(id){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
-  const F=(fid,label,val,type)=>`<label class="sr-f"><span>${label}</span><input id="eh_${fid}" type="${type||'text'}" ${type==='number'?'inputmode="decimal"':''} value="${val!=null?String(val).replace(/"/g,'&quot;'):''}"></label>`;
+  const F=(fid,label,val,type)=>`<label class="sr-f"><span>${label}</span><input id="eh_${fid}" type="${type||'text'}" ${type==='number'?'inputmode="decimal"':''} value="${val!=null?String(val).replace(/"/g,'&quot;'):''}" oninput="EH_DIRTY=true"></label>`;
   document.getElementById('ehBody').innerHTML = `
     <div class="qcard">
       ${F('name','Name (City: Community · Plan)', r.name)}
@@ -3330,9 +3330,19 @@ function openEditHome(id){
       ${F('agentPhone','Agent phone', r.agentPhone)}
       <label class="sr-f"><span>Type</span><select id="eh_htype"><option value=""${!r.htype?' selected':''}>house</option><option value="townhome"${r.htype==='townhome'?' selected':''}>townhome</option><option value="condo"${r.htype==='condo'?' selected':''}>condo</option></select></label>
       <button class="cf-apply" onclick="saveEditHome('${r.id}')">💾 Save changes</button>
-      <button class="share-skip" onclick="document.getElementById('editHome').style.display='none'">Cancel</button>
+      <button class="share-skip" onclick="closeEditHome()">Cancel</button>
     </div>`;
   showOverlay('editHome');
+  EH_DIRTY = false;
+  const ts = document.getElementById('ehTopSave');
+  if(ts) ts.onclick = ()=>saveEditHome(r.id);
+  const sel = document.getElementById('eh_htype');
+  if(sel) sel.onchange = ()=>{ EH_DIRTY = true; };
+}
+let EH_DIRTY = false;
+function closeEditHome(){
+  if(EH_DIRTY && !confirm('Discard your unsaved edits?')) return;
+  document.getElementById('editHome').style.display='none';
 }
 function saveEditHome(id){
   const r = PROPS.find(x=>x.id===id); if(!r) return;
@@ -3355,6 +3365,7 @@ function saveEditHome(id){
   const ht = document.getElementById('eh_htype').value; r.htype = ht || undefined;
   enrichOne(r);
   persistProps(); refreshHomeViews(); renderDash();
+  EH_DIRTY = false;
   document.getElementById('editHome').style.display = 'none';
   openDetail(id);
 }
@@ -3415,7 +3426,9 @@ function openCmpView(){
     return nums.indexOf(target);
   };
   document.getElementById('cmpViewBody').innerHTML = `
+    <div style="font-size:.72rem;font-weight:800;margin-bottom:.3rem">Comparing ${recs.length} home${recs.length>1?'s':''}</div>
     <div class="cmp-scroll"><table class="cmp-tab">
+      <colgroup><col style="width:23%">${recs.map(()=>`<col style="width:${(77/recs.length).toFixed(2)}%">`).join('')}</colgroup>
       <tr><th></th>${recs.map(r=>`<th><button class="cmp-h" onclick="document.getElementById('cmpView').style.display='none';document.getElementById('cmpPick').style.display='none';openDetail('${r.id}')">${esc((r.name||'').split(':').slice(1).join(':').split('·')[0].trim().slice(0,18)||esc((r.name||'').slice(0,18)))}</button><i>${esc((r.name||'').split(':')[0].trim().slice(0,12))}</i></th>`).join('')}</tr>
       ${rows.map(([label, vals, mode])=>{
         const b = best(vals, mode);
@@ -4576,7 +4589,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v92 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v93 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -5450,7 +5463,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v92 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v93 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -6001,7 +6014,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v92';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v93';
   window.__booted = true;
 };
 </script>

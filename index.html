@@ -670,13 +670,13 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .sch-mi{font-style:normal;font-size:.64rem;color:var(--ink-soft);margin-left:.3rem}
 .edit-btn{display:block;width:100%;text-align:center;margin-top:.55rem;font-family:inherit;font-size:.8rem;font-weight:800;color:var(--ink);background:var(--calc);border:none;border-radius:10px;padding:.55rem;cursor:pointer}
 
-.cmp-scroll{overflow-x:auto;margin:0 -0.4rem}
-.cmp-tab{border-collapse:collapse;min-width:100%;font-size:.74rem}
-.cmp-tab th{position:sticky;top:0;background:var(--paper);text-align:left;padding:.4rem .5rem;vertical-align:top}
-.cmp-tab th i{display:block;font-style:normal;font-size:.6rem;color:var(--ink-soft);font-weight:600}
-.cmp-h{font-family:inherit;font-weight:800;font-size:.72rem;border:none;background:#eef2ff;color:#3730a3;border-radius:8px;padding:.3rem .45rem;cursor:pointer;text-align:left}
-.cmp-tab td{border-top:1px solid var(--line);padding:.42rem .5rem;white-space:nowrap}
-.cmp-tab td:first-child{font-weight:800;font-size:.68rem;color:var(--ink-soft);white-space:normal;min-width:6.5rem}
+.cmp-scroll{margin:0 -0.55rem}
+.cmp-tab{border-collapse:collapse;table-layout:fixed;width:100%;font-size:.66rem}
+.cmp-tab th{position:sticky;top:0;background:var(--paper);text-align:left;padding:.3rem .2rem;vertical-align:top;overflow:hidden}
+.cmp-tab th i{display:block;font-style:normal;font-size:.52rem;color:var(--ink-soft);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-h{font-family:inherit;font-weight:800;font-size:.58rem;border:none;background:#eef2ff;color:#3730a3;border-radius:6px;padding:.25rem .3rem;cursor:pointer;text-align:left;width:100%;word-break:break-word;line-height:1.2}
+.cmp-tab td{border-top:1px solid var(--line);padding:.32rem .2rem;white-space:normal;word-break:break-word;font-family:'IBM Plex Mono',monospace;font-size:.62rem;line-height:1.25;vertical-align:top}
+.cmp-tab td:first-child{font-weight:800;font-size:.56rem;color:var(--ink-soft);font-family:'Archivo',sans-serif;width:4.4rem}
 .cmp-best{background:var(--win);color:var(--win-ink);font-weight:800;border-radius:6px}
 .cmp-key td{font-weight:800;background:#fbfbff}
 .lib-filtbtn{font-family:inherit;font-weight:800;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:.4rem .55rem;cursor:pointer;font-size:.78rem;margin-left:.3rem}
@@ -692,6 +692,14 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 
 .area-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
 .area-grid button{font-family:inherit;font-weight:800;font-size:.78rem;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:.55rem .4rem;cursor:pointer}
+
+.det-visit{display:flex;align-items:center;gap:.45rem;margin-top:.45rem}
+.det-visit span{font-size:.72rem;font-weight:800;color:var(--ink-soft);flex-shrink:0}
+.det-visit input{flex:1;min-width:0;font-family:inherit;font-size:.82rem;border:1.5px solid var(--line);border-radius:8px;padding:.35rem .45rem;background:#fff}
+.det-ics{font-size:.85rem;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:.3rem .45rem;cursor:pointer;flex-shrink:0}
+
+.det-undo{display:flex;gap:.35rem;margin-top:.3rem;flex-wrap:wrap}
+.det-undo button{font-family:inherit;font-size:.64rem;font-weight:800;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:8px;padding:.25rem .5rem;cursor:pointer}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -2691,7 +2699,7 @@ function climateBlock(r){
   const all = showRef ? hiC.concat(cmC) : hiC;
   const mx = Math.max(...all), mn = Math.min(...all);
   const px = h => Math.round((h - mn + 3) / (mx - mn + 3) * 54 + 6);
-  return `<details class="lib-details"><summary>🌡 Climate — ${c} (full year)</summary>
+  return `<details class="lib-details" open><summary>🌡 Climate — ${c} (full year)</summary>
     <div style="font-size:.78rem;margin:.3rem 0">Normal summer day tops out at <b>${f2c(Math.max(...d.hi.slice(5,9)))}°C</b> · hottest day ever recorded ${f2c(d.rec)}°C${cap?` · your cap ${cap}°C`:''}</div>
     <div class="clim-bars" role="button" onclick="openClimBig('${r.id}')">${hiC.map((h,i)=>`<div class="clim-col"><span class="clim-v">${h}°</span><span class="clim-stack"><span class="clim-bar ${h>=38?'hot':h>=32?'warm':''}" style="height:${px(h)}px"></span>${showRef?`<span class="clim-ref" style="bottom:${px(cmC[i])-1}px"></span>`:''}</span><span class="clim-m">${mo[i]}</span></div>`).join('')}</div>
     <div class="clim-legend">
@@ -2797,7 +2805,7 @@ function hospitalBlock(r){
   const c = cityOf(r);
   const h = c && HOSP_CITY[c];
   if(!h) return '';
-  return `<details class="lib-details"><summary>🏥 Medical (est.)</summary>
+  return `<details class="lib-details" open><summary>🏥 Medical (est.)</summary>
     <div class="schl-row"><span class="schl-ic">🏥</span><span class="schl-main"><b>${esc(h.h)}</b><i>nearest major hospital · ~${h.hm} miles</i></span></div>
     <div class="schl-row"><span class="schl-ic">⚕️</span><span class="schl-main"><b>Urgent care</b><i>multiple within ~${h.uc} miles</i></span></div>
     <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.3rem">Commonly in Cigna PPO networks (Kaiser facilities excluded). Distances are city-level estimates — verify your specific Cigna plan's network before relying on it.</div>
@@ -2852,7 +2860,7 @@ function safetyBlock(r){
   const g = safetyGrade(c);
   const vsV = Math.round((d.v/4.5-1)*100), vsP = Math.round((d.p/23-1)*100);
   const cmp = n => n<=-15?`<b style="color:var(--win-ink)">${Math.abs(n)}% below</b> CA avg`:n>=15?`<b style="color:var(--warn-ink)">${n}% above</b> CA avg`:'about CA average';
-  return `<details class="lib-details"><summary>🛡 Safety — ${c} <span class="sfg sfg-${g}">${g}</span></summary>
+  return `<details class="lib-details" open><summary>🛡 Safety — ${c} <span class="sfg sfg-${g}">${g}</span></summary>
     <div class="sf-row"><span>Violent crime</span><b>${d.v}/1k</b><i>${cmp(vsV)}</i></div>
     <div class="sf-row"><span>Property crime</span><b>${d.p}/1k</b><i>${cmp(vsP)}</i></div>
     <div style="font-size:.6rem;color:var(--ink-soft);margin-top:.3rem">Approximate city-level rates from public FBI UCR / CA DOJ data. New-build tracts often differ from city averages — drive the specific neighborhood at night before deciding.</div>
@@ -3309,6 +3317,10 @@ function openEditHome(id){
         ${F('mr','Mello-Roos /mo ($)', r.mr, 'number')}
         ${F('cred','Seller credit ($)', r.cred, 'number')}
         ${F('ccpct','Closing costs %', r.ccpct, 'number')}
+        ${F('ins','Insurance /mo ($)', r.ins, 'number')}
+        ${F('util','Utilities /mo ($)', r.util, 'number')}
+        ${F('pmir','PMI rate %/yr', r.pmir, 'number')}
+        ${F('maintPct','Upkeep %/yr', r.maintPct, 'number')}
         ${F('cmin','Commute (mins)', r.cmin, 'number')}
         ${F('miles','Distance (miles)', r.miles, 'number')}
         ${F('masjidMi','Masjid (miles)', r.masjidMi, 'number')}
@@ -3331,7 +3343,7 @@ function saveEditHome(id){
   r.url = gv('url') || undefined;
   const price = gn('price');
   if(price!=null && price !== r.price){ trackPrice(r, price); }
-  ['price','sqft','year','rate','term','dp','hoa','taxr','mr','cred','ccpct','cmin','miles'].forEach(k=>{
+  ['price','sqft','year','rate','term','dp','hoa','taxr','mr','cred','ccpct','cmin','miles','ins','util','pmir','maintPct'].forEach(k=>{
     const v = gn(k);
     r[k] = v==null ? undefined : v;
   });
@@ -3359,7 +3371,7 @@ function renderCmpPick(q){
     .sort((a,b)=>(b.shortlisted?1:0)-(a.shortlisted?1:0) || (b.visited?1:0)-(a.visited?1:0));
   document.getElementById('cmpPickBody').innerHTML = `
     <input class="lib-search" placeholder="Search homes…" oninput="renderCmpPick(this.value)" value="${esc(q||'')}">
-    <div style="font-size:.72rem;color:var(--ink-soft);margin:.35rem 0">Pick 2-4 · ${CMP_SEL.length} selected</div>
+    <div style="font-size:.72rem;color:var(--ink-soft);margin:.35rem 0">Pick 2-5 · ${CMP_SEL.length} selected</div>
     ${list.slice(0,60).map(r=>`<button class="share-pick" onclick="cmpToggle('${r.id}')" style="${CMP_SEL.includes(r.id)?'border-color:var(--indigo);background:#eef2ff':''}">
       <b>${CMP_SEL.includes(r.id)?'✔ ':''}${r.shortlisted?'⭐ ':''}${verdictIcon(r)?verdictIcon(r)+' ':''}${esc((r.name||'').slice(0,46))}</b>
       <i>${r.price?fmt.format(r.price):'no price'}${r.htype?' · '+r.htype:''}</i></button>`).join('')}
@@ -3367,8 +3379,8 @@ function renderCmpPick(q){
 }
 function cmpToggle(id){
   if(CMP_SEL.includes(id)) CMP_SEL = CMP_SEL.filter(x=>x!==id);
-  else if(CMP_SEL.length < 4) CMP_SEL.push(id);
-  else { alert('4 homes max — remove one first.'); return; }
+  else if(CMP_SEL.length < 5) CMP_SEL.push(id);
+  else { alert('5 homes max — remove one first.'); return; }
   const q = document.querySelector('#cmpPickBody .lib-search');
   renderCmpPick(q?q.value:'');
 }
@@ -3379,12 +3391,13 @@ function openCmpView(){
   const parts = recs.map(r=>computeParts(r, sh));
   const F = fmt.format;
   const money = v=>v?F(Math.round(v)):'—';
+  const moneyK = v=>v?(v>=100000?'$'+(v/1000).toFixed(0)+'K':F(Math.round(v))):'—';
   const rows = [
-    ['Total price', parts.map(p=>money(p.price)), 'min'],
+    ['Total price', parts.map(p=>moneyK(p.price)), 'min'],
     ['Distance', recs.map(r=>r.miles!=null?'~'+r.miles+' miles':(driveMins(r)!=null?'~'+driveMins(r)+' mins':'—')), null],
     ['Avg school rating', recs.map(r=>{const a=schoolAvg(r); return a!=null?(+a).toFixed(1)+'/10':'—';}), 'maxNum'],
-    ['Down payment', parts.map(p=>p.dpPct+'% · '+money(p.dpAmt)), null],
-    ['Loan amount', parts.map(p=>money(p.loan)), 'min'],
+    ['Down payment', parts.map(p=>p.dpPct+'%\u00a0'+moneyK(p.dpAmt)), null],
+    ['Loan amount', parts.map(p=>moneyK(p.loan)), 'min'],
     ['Interest rate', parts.map(p=>p.rate+'%'), 'minNum'],
     ['PMI /mo', parts.map(p=>p.pmi?money(p.pmi):'none'), 'min'],
     ['Property tax /mo', parts.map(p=>money(p.tax)), 'min'],
@@ -3392,7 +3405,7 @@ function openCmpView(){
     ['HOA /mo', parts.map(p=>p.hoa?money(p.hoa):'none'), 'min'],
     ['Others /mo (ins+utils+upkeep)', parts.map(p=>money(p.others)), 'min'],
     ['💰 Monthly all-in', parts.map(p=>money(p.allin)), 'min'],
-    ['🔑 Cash to close', parts.map(p=>money(p.cash)), 'min'],
+    ['🔑 Cash to close', parts.map(p=>moneyK(p.cash)), 'min'],
   ];
   const best = (vals, mode)=>{
     if(!mode) return -1;
@@ -3403,7 +3416,7 @@ function openCmpView(){
   };
   document.getElementById('cmpViewBody').innerHTML = `
     <div class="cmp-scroll"><table class="cmp-tab">
-      <tr><th></th>${recs.map(r=>`<th><button class="cmp-h" onclick="document.getElementById('cmpView').style.display='none';document.getElementById('cmpPick').style.display='none';openDetail('${r.id}')">${esc((r.name||'').split('·')[0].trim().slice(0,26))}</button><i>${esc(((r.name||'').split('·')[1]||'').trim().slice(0,20))}</i></th>`).join('')}</tr>
+      <tr><th></th>${recs.map(r=>`<th><button class="cmp-h" onclick="document.getElementById('cmpView').style.display='none';document.getElementById('cmpPick').style.display='none';openDetail('${r.id}')">${esc((r.name||'').split(':').slice(1).join(':').split('·')[0].trim().slice(0,18)||esc((r.name||'').slice(0,18)))}</button><i>${esc((r.name||'').split(':')[0].trim().slice(0,12))}</i></th>`).join('')}</tr>
       ${rows.map(([label, vals, mode])=>{
         const b = best(vals, mode);
         return `<tr class="${label.startsWith('💰')||label.startsWith('🔑')?'cmp-key':''}"><td>${label}</td>${vals.map((v,i)=>`<td class="${i===b?'cmp-best':''}">${v}</td>`).join('')}</tr>`;
@@ -3727,7 +3740,11 @@ function renderDetail(){
   const idCard = `<div class="det-id">
     <div class="det-price">${r.price?fmt.format(r.price):'no price yet'}</div>
     ${r.addr?`<a class="det-addr" href="${mapsUrl(r)}" target="_blank" rel="noopener">📍 ${esc(r.addr)}</a>`:''}
-    ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}</div>`:''}
+    <div class="det-visit"><span>📅 Visit</span><input type="datetime-local" class="lib-dt" value="${r.visitAt||''}" onchange="setVisit('${r.id}', this.value)">${r.visitAt?`<button class="det-ics" title="Add to calendar" onclick="downloadICS('${r.id}')">🗓</button>`:''}</div>
+    ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}
+      <span class="det-undo">${r.verdict?`<button onclick="changeVerdict('${r.id}')">✏️ change verdict</button>`:''}<button onclick="flipVisitAnswer('${r.id}')">↩ didn't visit</button><button onclick="resetVisitAnswer('${r.id}')">✕ clear answer</button></span></div>`:''}
+    ${vs==='missed'?`<div class="det-visited" style="color:var(--ink-soft)">✕ Marked as not visited
+      <span class="det-undo"><button onclick="flipVisitAnswer('${r.id}')">✔ actually visited</button><button onclick="resetVisitAnswer('${r.id}')">✕ clear answer</button></span></div>`:''}
     ${vs==='unconfirmed'?`<div class="det-confirm">📅 Scheduled ${new Date(r.visitAt).toLocaleDateString([],{month:'short',day:'numeric'})} — did you visit?
       <span><button onclick="confirmVisit('${r.id}', true)">✔ Yes</button><button onclick="confirmVisit('${r.id}', false)">✕ No</button></span></div>`:''}
     ${!vs||vs==='upcoming'?`<button class="walkin-btn" onclick="markWalkIn('${r.id}')">✔ I visited this home${vs==='upcoming'?' already':''} (walk-in)</button>`:''}
@@ -3737,7 +3754,7 @@ function renderDetail(){
     <label class="fin-btn">💵 Upload agent's finance sheet (photo or PDF)<input type="file" accept="image/*,.pdf" style="display:none" onchange="uploadFinSheet('${r.id}', this)"></label>
   </div>`;
   setTimeout(hydrateCommEvidence, 40);
-  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + whatIfBlock(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + hospitalBlock(r) + safetyBlock(r) + climateBlock(r) + `
+  document.getElementById('detBody').innerHTML = fitHero + idCard + postVisitCard(r) + critBlock(r, m) + whatIfBlock(r) + (detMeta?`<div class="det-meta">${detMeta}</div>`:'') + (r.visitAt && vs==='upcoming'?vmBtn:'') + featureBlock(r) + schoolsBlock(r) + hospitalBlock(r) + safetyBlock(r) + climateBlock(r) + `
       <div style="display:flex;gap:.6rem;align-items:center;margin:.1rem 0 .35rem;flex-wrap:wrap">
         <button class="lib-star ${r.shortlisted?'on':''}" style="position:static" title="Shortlist" onclick="toggleShort('${r.id}')">⭐</button>
         <label style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;color:var(--ink-soft)">⚖️ Compare<input type="checkbox" ${CMP.has(r.id)?'checked':''} onchange="toggleCmp('${r.id}', this.checked)" style="width:1.1rem;height:1.1rem;accent-color:var(--indigo);margin:0"></label>
@@ -3756,7 +3773,6 @@ function renderDetail(){
       ${offerSliderBlock(r, m)}
       ${incentiveCompareBlock(r)}
       ${photosBlock(r)}
-      ${critBlock(r, m)}
       ${inspectBlock(r)}
       ${caCostsBlock(r, m)}
       ${priceHistList(r)}
@@ -4560,7 +4576,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v88 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v92 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4698,10 +4714,12 @@ function computeParts(rec, sh){
   const tax = price*(rec.taxr||0)/100/12;
   const pmi = dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0;
   const mr = rec.mr||0, hoa = rec.hoa||0;
-  const others = (rec.ins||0) + (rec.util||0) + price*(sh.maint||0)/100/12;
+  const ins = rec.ins||0, util = rec.util||0;
+  const upkeep = price*(rec.maintPct!=null?rec.maintPct:(sh.maint||0))/100/12;
+  const others = ins + util + upkeep;
   const allin = pi + tax + pmi + mr + hoa + others;
   const cash = Math.max(dpAmt + loan*(rec.ccpct||0)/100 - (rec.cred||0), 0);
-  return {price, dpPct, dpAmt, loan, rate, term, pi, tax, pmi, mr, hoa, others, allin, cash};
+  return {price, dpPct, dpAmt, loan, rate, term, pi, tax, pmi, mr, hoa, ins, util, upkeep, others, allin, cash};
 }
 
 function computeRec(rec, sh){
@@ -4739,6 +4757,24 @@ function markWalkIn(id){
   r.visited = true;
   persistProps(); refreshHomeViews(); renderDash();
   openDetail(id);   // post-visit verdict flow takes over
+}
+
+
+function resetVisitAnswer(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.visited = undefined;
+  persistProps(); refreshHomeViews(); renderDash(); openDetail(id);
+}
+function flipVisitAnswer(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  r.visited = !(r.visited === true);
+  persistProps(); refreshHomeViews(); renderDash(); openDetail(id);
+}
+function changeVerdict(id){
+  const r = PROPS.find(x=>x.id===id); if(!r) return;
+  delete r.verdict; r.postDone = false;
+  if(isRuled(r) && confirm('This home was ruled out with the old verdict. Un-rule it too?')) unRule(id);
+  persistProps(); refreshHomeViews(); renderDash(); openDetail(id);
 }
 
 function confirmVisit(id, yes){
@@ -4794,7 +4830,12 @@ function openFinReview(id, d, rawText){
         ${F('mr','Mello-Roos /mo ($)', d.mello_roos_monthly)}
         ${F('cc','Closing costs ($)', d.est_closing_costs)}
         ${F('quote','Their PITI quote /mo', d.monthly_payment_quote)}
+        ${F('ins','Insurance /mo ($)', d.insurance_monthly!=null?d.insurance_monthly:r.ins)}
+        ${F('util','Utilities /mo ($)', r.util)}
+        ${F('pmir','PMI rate %/yr', r.pmir)}
+        ${F('maint','Upkeep reserve %/yr', r.maintPct!=null?r.maintPct:gOr('maint',1))}
       </div>
+      <div style="font-size:.64rem;color:var(--ink-soft);margin-top:.2rem">The last four are the app's own assumptions — now yours to set per home. Zero any of them out if you don't want them counted.</div>
       ${T('incnote','Incentive notes', d.incentive_notes)}
       ${T('ratenotes','Rate structure / buydown', d.rate_notes)}
       ${T('lender','Lender', d.lender)}
@@ -4813,7 +4854,8 @@ function finStaged(){
   const gn = fid => { const el=document.getElementById('fr_'+fid); if(!el) return null; const v = el.value.trim(); return v==='' ? null : parseFloat(v); };
   const t = Object.assign({}, r);
   const price = gn('price'); if(price!=null) t.price = price;
-  ['cred','rate','term','hoa','taxr','mr'].forEach(k=>{ const v=gn(k); if(v!=null) t[k]=v; });
+  ['cred','rate','term','hoa','taxr','mr','ins','util','pmir'].forEach(k=>{ const v=gn(k); if(v!=null) t[k]=v; });
+  const mp = gn('maint'); if(mp!=null) t.maintPct = mp;
   const iv = gn('incval'); if(iv!=null) t.incval = iv;
   let dp = gn('dp');
   const dpamt = gn('dpamt');
@@ -4839,7 +4881,9 @@ function finPreview(){
     ${row('Property tax', F(p.tax)+'/mo')}
     ${row('Mello-Roos', p.mr?F(p.mr)+'/mo':'none')}
     ${row('HOA', p.hoa?F(p.hoa)+'/mo':'none')}
-    ${row('Others (ins + utils + upkeep)', F(p.others)+'/mo')}
+    ${row('Insurance', p.ins?F(p.ins)+'/mo':'none')}
+    ${row('Utilities', p.util?F(p.util)+'/mo':'none')}
+    ${row('Upkeep reserve', p.upkeep?F(p.upkeep)+'/mo':'none')}
     <div class="frb-row frb-total"><span>Monthly all-in</span><b>${F(p.allin)}/mo</b><i>${d===0?'unchanged':(d<0?'▼ '+F(-d)+' cheaper':'▲ '+F(d)+' more')} vs saved numbers${st.quote?' · their quote: '+F(st.quote):''}</i></div>
     <div class="frb-row frb-total"><span>Cash to close</span><b>${F(p.cash)}</b><i>${p.dpPct}% down + closing − credits</i></div>
     ${st.quote && Math.abs(st.quote - p.allin) > 150 ? `<div class="frb-warn">⚠ Their quote is ${F(Math.abs(st.quote-p.allin))}/mo ${st.quote<p.allin?'lower':'higher'} than this math — usually missing Mello-Roos, insurance, or HOA. Ask the agent what their number includes.</div>` : ''}
@@ -4867,6 +4911,8 @@ function saveFinReview(){
   if(dp==null && dpamt!=null && (price||r.price)) dp = Math.round(dpamt/(price||r.price)*1000)/10;
   set('dp', dp);
   set('hoa', gn('hoa')); set('taxr', gn('taxr')); set('mr', gn('mr'));
+  set('ins', gn('ins')); set('util', gn('util')); set('pmir', gn('pmir'));
+  const mp2 = gn('maint'); if(mp2!=null) r.maintPct = mp2;
   const cc = gn('cc');
   if(cc!=null && (price||r.price)) r.ccpct = Math.round(cc/(price||r.price)*1000)/10;
   const note = gt('incnote'); if(note) r.incnote = note;
@@ -4910,7 +4956,7 @@ async function uploadFinSheet(id, inp){
     const block = isPdf
       ? {type:'document', source:{type:'base64', media_type:'application/pdf', data:b64}}
       : {type:'image', source:{type:'base64', media_type: file.type||'image/jpeg', data:b64}};
-    const schema = '{"price": number|null, "seller_credit": number|null, "other_incentives_value": number|null, "incentive_notes": string|null, "rate_pct": number|null, "rate_notes": string|null, "loan_term_years": number|null, "down_payment_pct": number|null, "down_payment_amount": number|null, "hoa_monthly": number|null, "property_tax_rate_pct": number|null, "mello_roos_monthly": number|null, "est_closing_costs": number|null, "monthly_payment_quote": number|null, "lender": string|null}';
+    const schema = '{"price": number|null, "seller_credit": number|null, "other_incentives_value": number|null, "incentive_notes": string|null, "rate_pct": number|null, "rate_notes": string|null, "loan_term_years": number|null, "down_payment_pct": number|null, "down_payment_amount": number|null, "hoa_monthly": number|null, "property_tax_rate_pct": number|null, "mello_roos_monthly": number|null, "est_closing_costs": number|null, "insurance_monthly": number|null, "monthly_payment_quote": number|null, "lender": string|null}';
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST', headers: apiHeaders(),
       body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:600,
@@ -5092,7 +5138,7 @@ function renderLib(){
   }).join('');
 }
 function toggleShort(id){ const r=PROPS.find(x=>x.id===id); if(r){ r.shortlisted=!r.shortlisted; persistProps(); refreshHomeViews(); } }
-function setVisit(id,v){ const r=PROPS.find(x=>x.id===id); if(r){ r.visitAt=v; persistProps(); refreshHomeViews();
+function setVisit(id,v){ const r=PROPS.find(x=>x.id===id); if(r){ r.visitAt=v||null; if(!v){ r.visited=undefined; } persistProps(); refreshHomeViews(); renderDash(); if(document.getElementById('detailOverlay').style.display==='block') renderDetail();
   if(v && 'Notification' in window && Notification.permission==='default'){ try{ Notification.requestPermission(); }catch(e){} } } }
 function setNotes(id,v){ const r=PROPS.find(x=>x.id===id); if(r){ r.notes=v; persistProps(); } }
 function delProp(btn,id){
@@ -5404,7 +5450,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v88 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v92 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -5955,7 +6001,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v88';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v92';
   window.__booted = true;
 };
 </script>

@@ -3443,6 +3443,7 @@ function openCmpView(){
     ['Mello-Roos /mo', parts.map(p=>p.mr?money(p.mr):'none'), 'min'],
     ['HOA /mo', parts.map(p=>p.hoa?money(p.hoa):'none'), 'min'],
     ['Others /mo (ins+utils+upkeep)', parts.map(p=>money(p.others)), 'min'],
+    ['📄 Sheet quote /mo', recs.map(r=>r.quoteMo!=null?money(r.quoteMo):'—'), null],
     ['💰 Monthly all-in', parts.map(p=>money(p.allin)), 'min'],
     ['🔑 Cash to close', parts.map(p=>moneyK(p.cash)), 'min'],
   ];
@@ -3458,7 +3459,7 @@ function openCmpView(){
   body.textContent = '';
   const count = document.createElement('div');
   count.style.cssText = 'font-size:.72rem;font-weight:800;margin-bottom:.3rem';
-  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'') + ' · app v100';
+  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'') + ' · app v102';
   body.appendChild(count);
   const scroll = document.createElement('div'); scroll.className = 'cmp-scroll';
   const tab = document.createElement('table'); tab.className = 'cmp-tab';
@@ -3817,6 +3818,7 @@ function renderDetail(){
   const idCard = `<div class="det-id">
     <div class="det-price">${r.price?fmt.format(r.price):'no price yet'}</div>
     ${r.addr?`<a class="det-addr" href="${mapsUrl(r)}" target="_blank" rel="noopener">📍 ${esc(r.addr)}</a>`:''}
+    ${r.quoteMo!=null?`<div style="font-size:.74rem;font-weight:800;color:var(--ink-soft);margin-top:.4rem">📄 Agent sheet quote: ${fmt.format(r.quoteMo)}/mo <i style="font-style:normal;font-weight:600">(as printed — app estimate in 💰 below)</i></div>`:''}
     <div class="det-visit"><span>📅 Visit</span><input type="datetime-local" class="lib-dt" value="${r.visitAt||''}" onchange="setVisit('${r.id}', this.value)">${r.visitAt?`<button class="det-ics" title="Add to calendar" onclick="downloadICS('${r.id}')">🗓</button>`:''}</div>
     ${vs==='visited'?`<div class="det-visited">✔ You visited ${new Date(r.visitAt).toLocaleDateString([],{weekday:'short', month:'short', day:'numeric'})}${r.gut?' · gut '+'★'.repeat(r.gut):''}${r.verdict?' · '+verdictIcon(r)+' '+verdictLabel(r):''}
       <span class="det-undo">${r.verdict?`<button onclick="changeVerdict('${r.id}')">✏️ change verdict</button>`:''}<button onclick="flipVisitAnswer('${r.id}')">↩ didn't visit</button><button onclick="resetVisitAnswer('${r.id}')">✕ clear answer</button></span></div>`:''}
@@ -4648,7 +4650,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v100 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v102 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4795,18 +4797,13 @@ function computeParts(rec, sh){
 }
 
 function computeRec(rec, sh){
-  const price=rec.price||0, dpPct=rec.dp||20, rate=rec.rate||6.75, term=rec.term||30;
-  const loan = price*(1-dpPct/100);
-  const pi = pmt(rate/100/12, term*12, loan);
-  const tax = rec.taxMo!=null ? rec.taxMo : price*(rec.taxr||0)/100/12;
-  const pmi = rec.pmiMo!=null ? rec.pmiMo : (dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0);
-  const total = pi + tax + (rec.mr||0) + (rec.ins||0) + (rec.hoa||0) + pmi;
-  const mnt = price*(sh.maint||0)/100/12;
-  const allin = total + (rec.util||0) + mnt;
-  const cash = Math.max(price*dpPct/100 + loan*(rec.ccpct||0)/100 - (rec.cred||0), 0);
-  const left = (sh.takehome||0) - allin;
-  return {allin, cash, left, total};
+  // single source of truth: delegate to computeParts so every per-home override
+  // (taxMo, pmiMo, upkeepMo, maintPct, ins, util) counts everywhere in the app
+  const p = computeParts(rec, sh);
+  const total = p.pi + p.tax + p.mr + p.ins + p.hoa + p.pmi;
+  return {allin: p.allin, cash: p.cash, left: (sh.takehome||0) - p.allin, total};
 }
+
 
 function visitState(r){
   if(!r.visitAt) return null;
@@ -4974,14 +4971,17 @@ function finPreview(){
     ${row('Upkeep reserve'+(st.t.upkeepMo!=null?' ($ as set)':''), p.upkeep?F(p.upkeep)+'/mo':'none')}
     <div class="frb-row frb-total"><span>Monthly all-in</span><b>${F(p.allin)}/mo</b><i>${d===0?'unchanged':(d<0?'▼ '+F(-d)+' cheaper':'▲ '+F(d)+' more')} vs saved numbers${st.quote?' · their quote: '+F(st.quote):''}</i></div>
     <div class="frb-row frb-total"><span>Cash to close</span><b>${F(p.cash)}</b><i>${p.dpPct}% down + closing − credits</i></div>
-    ${st.quote && Math.abs(st.quote - p.allin) > 150 ? `<div class="frb-warn">⚠ Their quote is ${F(Math.abs(st.quote-p.allin))}/mo ${st.quote<p.allin?'lower':'higher'} than this math — usually missing Mello-Roos, insurance, or HOA. Ask the agent what their number includes.</div>` : ''}
+    ${st.quote && Math.abs(st.quote - p.allin) > 150 ? `<div class="frb-warn">ℹ The sheet's quote (${F(st.quote)}/mo) and the app's full-cost estimate differ by ${F(Math.abs(st.quote-p.allin))}/mo — worth asking the agent exactly what their number includes.</div>` : ''}
   </div>`;
   const fin = document.getElementById('fr_final');
   if(fin){
     fin.innerHTML = `<div class="fr-finalbox">
-      <div class="fr-final-row"><span>💰 Monthly all-in from this sheet</span><b>${F(p.allin)}/mo</b></div>
-      <div class="fr-final-row"><span>🔑 Cash to close</span><b>${F(p.cash)}</b></div>
-      <div style="font-size:.62rem;color:var(--ink-soft)">${d===0?'Same as the home\'s saved numbers':(d<0?'▼ '+F(-d)+'/mo cheaper':'▲ '+F(d)+'/mo more')+' than saved'}${st.quote?` · their quote: ${F(st.quote)}/mo`:''}</div>
+      ${st.quote!=null?`<div class="fr-final-row"><span>📄 Monthly per the sheet</span><b>${F(st.quote)}/mo</b></div>
+      <div style="font-size:.6rem;color:rgba(255,255,255,.75);margin:-.1rem 0 .3rem">The agent's own quoted payment — saved to the home exactly as printed.</div>`:''}
+      <div class="fr-final-row"${st.quote!=null?' style="opacity:.85"':''}><span>🧮 App full-cost estimate</span><b>${F(p.allin)}/mo</b></div>
+      <div style="font-size:.6rem;color:rgba(255,255,255,.75);margin:-.1rem 0 .3rem">The app's own math from the inputs above (adds tax, PMI, HOA, insurance, upkeep). Not from the sheet.</div>
+      <div class="fr-final-row"><span>🔑 Cash to close (app-computed)</span><b>${F(p.cash)}</b></div>
+      ${st.quote!=null && Math.abs(st.quote-p.allin)>150?`<div style="font-size:.6rem;color:rgba(255,255,255,.75)">The two monthly numbers differ by ${F(Math.abs(st.quote-p.allin))} — quotes usually cover less (often P&I only). Both are kept.</div>`:''}
     </div>`;
   }
 }
@@ -5011,6 +5011,7 @@ function saveFinReview(){
   const txm = gn('taxmo'); r.taxMo = txm!=null ? txm : undefined;
   const pmm = gn('pmimo'); r.pmiMo = pmm!=null ? pmm : undefined;
   const upm = gn('upmo'); r.upkeepMo = upm!=null ? upm : undefined;
+  const qm = gn('quote'); r.quoteMo = qm!=null ? qm : undefined;
   const mp2 = gn('maint'); if(mp2!=null) r.maintPct = mp2;
   const cc = gn('cc');
   if(cc!=null && (price||r.price)) r.ccpct = Math.round(cc/(price||r.price)*1000)/10;
@@ -5549,7 +5550,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v100 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v102 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -6100,7 +6101,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); migrateDocsToVault(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v100';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v102';
   window.__booted = true;
 };
 </script>

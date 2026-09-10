@@ -709,6 +709,9 @@ html.is-mobile #settingsOverlay .smodal{background:var(--paper) !important}
 .fr-final-row{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:.12rem 0}
 .fr-final-row span{font-size:.74rem;font-weight:700;opacity:.85}
 .fr-final-row b{font-family:'IBM Plex Mono',monospace;font-size:1.02rem}
+
+.fr-pair{border-top:1px dashed var(--line);margin-top:.4rem;padding-top:.35rem}
+.fr-pair-note{font-size:.6rem;color:var(--ink-soft);margin-top:.1rem}
 /* Portrait guarantees */
 html,body{width:100%;max-width:100vw;overflow-x:hidden}
 html.is-mobile img,html.is-mobile table,html.is-mobile .qcard,html.is-mobile .qin{max-width:100%}
@@ -3330,6 +3333,9 @@ function openEditHome(id){
         ${F('util','Utilities /mo ($)', r.util, 'number')}
         ${F('pmir','PMI rate %/yr', r.pmir, 'number')}
         ${F('maintPct','Upkeep %/yr', r.maintPct, 'number')}
+        ${F('taxMo','Tax $/mo (wins over %)', r.taxMo, 'number')}
+        ${F('pmiMo','PMI $/mo (wins over %)', r.pmiMo, 'number')}
+        ${F('upkeepMo','Upkeep $/mo (wins over %)', r.upkeepMo, 'number')}
         ${F('cmin','Commute (mins)', r.cmin, 'number')}
         ${F('miles','Distance (miles)', r.miles, 'number')}
         ${F('masjidMi','Masjid (miles)', r.masjidMi, 'number')}
@@ -3362,7 +3368,7 @@ function saveEditHome(id){
   r.url = gv('url') || undefined;
   const price = gn('price');
   if(price!=null && price !== r.price){ trackPrice(r, price); }
-  ['price','sqft','year','rate','term','dp','hoa','taxr','mr','cred','ccpct','cmin','miles','ins','util','pmir','maintPct'].forEach(k=>{
+  ['price','sqft','year','rate','term','dp','hoa','taxr','mr','cred','ccpct','cmin','miles','ins','util','pmir','maintPct','taxMo','pmiMo','upkeepMo'].forEach(k=>{
     const v = gn(k);
     r[k] = v==null ? undefined : v;
   });
@@ -3452,7 +3458,7 @@ function openCmpView(){
   body.textContent = '';
   const count = document.createElement('div');
   count.style.cssText = 'font-size:.72rem;font-weight:800;margin-bottom:.3rem';
-  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'') + ' · app v99';
+  count.textContent = 'Comparing ' + recs.length + ' home' + (recs.length>1?'s':'') + ' · app v100';
   body.appendChild(count);
   const scroll = document.createElement('div'); scroll.className = 'cmp-scroll';
   const tab = document.createElement('table'); tab.className = 'cmp-tab';
@@ -4642,7 +4648,7 @@ function renderDash(){
   renderDashExtras(sh);
   renderBackupNote();
   const dd = document.getElementById('dashDiag');
-  if(dd) dd.textContent = 'v99 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
+  if(dd) dd.textContent = 'v100 · ' + window.innerWidth + '×' + window.innerHeight + ' · fs ' + (parseFloat(document.documentElement.style.fontSize)||16).toFixed(0) + 'px';
 }
 
 // ================= Property library =================
@@ -4777,11 +4783,11 @@ function computeParts(rec, sh){
   const dpAmt = price*dpPct/100;
   const loan = price - dpAmt;
   const pi = pmt(rate/100/12, term*12, loan);
-  const tax = price*(rec.taxr||0)/100/12;
-  const pmi = dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0;
+  const tax = rec.taxMo!=null ? rec.taxMo : price*(rec.taxr||0)/100/12;
+  const pmi = rec.pmiMo!=null ? rec.pmiMo : (dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0);
   const mr = rec.mr||0, hoa = rec.hoa||0;
   const ins = rec.ins||0, util = rec.util||0;
-  const upkeep = price*(rec.maintPct!=null?rec.maintPct:(sh.maint||0))/100/12;
+  const upkeep = rec.upkeepMo!=null ? rec.upkeepMo : price*(rec.maintPct!=null?rec.maintPct:(sh.maint||0))/100/12;
   const others = ins + util + upkeep;
   const allin = pi + tax + pmi + mr + hoa + others;
   const cash = Math.max(dpAmt + loan*(rec.ccpct||0)/100 - (rec.cred||0), 0);
@@ -4792,8 +4798,8 @@ function computeRec(rec, sh){
   const price=rec.price||0, dpPct=rec.dp||20, rate=rec.rate||6.75, term=rec.term||30;
   const loan = price*(1-dpPct/100);
   const pi = pmt(rate/100/12, term*12, loan);
-  const tax = price*(rec.taxr||0)/100/12;
-  const pmi = dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0;
+  const tax = rec.taxMo!=null ? rec.taxMo : price*(rec.taxr||0)/100/12;
+  const pmi = rec.pmiMo!=null ? rec.pmiMo : (dpPct<20 ? loan*(rec.pmir||0)/100/12 : 0);
   const total = pi + tax + (rec.mr||0) + (rec.ins||0) + (rec.hoa||0) + pmi;
   const mnt = price*(sh.maint||0)/100/12;
   const allin = total + (rec.util||0) + mnt;
@@ -4877,46 +4883,44 @@ function openFinReview(id, d, rawText){
   FIN_REVIEW = {id, quote: d && d.monthly_payment_quote, lender: d && d.lender, rateNotes: d && d.rate_notes};
   d = d || {};
   const r = PROPS.find(x=>x.id===id); if(!r) return;
-  const F = (fid, label, val, note)=>`<label class="sr-f"><span>${label}${note?` <i style="font-style:normal;font-weight:600;color:var(--ink-soft)">· ${note}</i>`:''}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" oninput="finPreview()"></label>`;
-  const T = (fid, label, val)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="text" value="${val!=null?String(val).replace(/"/g,'&quot;'):''}"></label>`;
-  // every number in the calculation, with what the sheet said (null = sheet didn't have it / couldn't read it)
-  const FIELDS = [
-    ['price','Price ($)', d.price, null],
-    ['cred','Seller credit ($)', d.seller_credit, null],
-    ['incval','Other incentives ($)', d.other_incentives_value, null],
-    ['rate','Rate %', d.rate_pct, null],
-    ['term','Term (yrs)', d.loan_term_years, r.term!=null?r.term:30],
-    ['dp','Down payment %', d.down_payment_pct, r.dp!=null?r.dp:20],
-    ['dpamt','…or down as $', d.down_payment_amount, null],
-    ['hoa','HOA /mo ($)', d.hoa_monthly, r.hoa],
-    ['taxr','Tax rate %', d.property_tax_rate_pct, r.taxr],
-    ['mr','Mello-Roos /mo ($)', d.mello_roos_monthly, r.mr],
-    ['cc','Closing costs ($)', d.est_closing_costs, null],
-    ['quote','Their PITI quote /mo', d.monthly_payment_quote, null],
-    ['ins','Insurance /mo ($)', d.insurance_monthly, r.ins],
-    ['util','Utilities /mo ($)', null, r.util],
-    ['pmir','PMI rate %/yr', null, r.pmir],
-    ['maint','Upkeep reserve %/yr', null, r.maintPct!=null?r.maintPct:gOr('maint',1)]
-  ];
-  const onSheet = FIELDS.filter(x=>x[2]!=null);
-  const missing = FIELDS.filter(x=>x[2]==null);
+  const F = (fid, label, val, note)=>`<label class="sr-f"><span>${label}${note?` <i style="font-style:normal;font-weight:600;color:var(--ink-soft)">· ${note}</i>`:''}</span><input id="fr_${fid}" type="number" inputmode="decimal" value="${val!=null?val:''}" placeholder="${val==null?'blank — not on sheet':''}" oninput="finPreview()"></label>`;
+  const T = (fid, label, val)=>`<label class="sr-f"><span>${label}</span><input id="fr_${fid}" type="text" value="${val!=null?String(val).replace(/"/g,'&quot;'):''}" placeholder="${val==null?'blank — not on sheet':''}"></label>`;
+  const PAIR = (l1,f1,v1,l2,f2,v2)=>`<div class="fr-pair"><div class="wf-grid">${F(f1,l1,v1)}${F(f2,l2,v2)}</div><div class="fr-pair-note">Fill either — the $ amount wins if both are set.</div></div>`;
   document.getElementById('frBody').innerHTML = `
     <div class="qcard">
       <div style="font-weight:800;font-size:.88rem">${esc((r.name||'').slice(0,44))}</div>
 
       <div class="fr-sec fr-sec-sheet">
-        <div class="fr-sec-h">📄 Read from the agent's sheet — ${onSheet.length} number${onSheet.length===1?'':'s'}</div>
-        <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.3rem">Check each against the paper; fix anything the scan got wrong.</div>
-        <div class="wf-grid">${onSheet.map(x=>F(x[0], x[1], x[2])).join('')}</div>
+        <div class="fr-sec-h">📄 From the agent's sheet — exactly as scanned</div>
+        <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.3rem">Copied verbatim, nothing derived or filled in. Blank = the scan found nothing there. Fix any misreads against the paper.</div>
+        <div class="wf-grid">
+          ${F('price','Price ($)', d.price)}
+          ${F('cred','Seller credit ($)', d.seller_credit)}
+          ${F('incval','Other incentives ($)', d.other_incentives_value)}
+          ${F('rate','Rate %', d.rate_pct)}
+          ${F('term','Term (yrs)', d.loan_term_years)}
+          ${F('quote','Their payment quote /mo', d.monthly_payment_quote)}
+          ${F('hoa','HOA /mo ($)', d.hoa_monthly)}
+          ${F('mr','Mello-Roos /mo ($)', d.mello_roos_monthly)}
+          ${F('ins','Insurance /mo ($)', d.insurance_monthly)}
+          ${F('cc','Closing costs ($)', d.est_closing_costs)}
+        </div>
+        ${PAIR('Down payment %','dp',d.down_payment_pct,'Down payment $','dpamt',d.down_payment_amount)}
+        ${PAIR('Property tax rate %','taxr',d.property_tax_rate_pct,'Property tax $/mo','taxmo',d.property_tax_monthly)}
+        ${F('pmimo','PMI $/mo (as printed)', d.pmi_monthly)}
         ${T('incnote','Incentive notes', d.incentive_notes)}
         ${T('ratenotes','Rate structure / buydown', d.rate_notes)}
         ${T('lender','Lender', d.lender)}
       </div>
 
       <div class="fr-sec fr-sec-miss">
-        <div class="fr-sec-h">❓ Not on the sheet — ${missing.length} blank${missing.length===1?'':'s'} to fill or confirm</div>
-        <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.3rem">The scan found nothing for these. Values shown are the home's current numbers or the app's assumptions — edit or zero them; blank = leave as-is.</div>
-        <div class="wf-grid">${missing.map(x=>F(x[0], x[1], x[3], x[3]!=null?'current':'')).join('')}</div>
+        <div class="fr-sec-h">🛠 The app's assumptions — yours to set, per home</div>
+        <div style="font-size:.68rem;color:var(--ink-soft);margin-bottom:.3rem">These never come from the sheet. Shown with the home's current values — edit, or zero out anything you don't want counted.</div>
+        <div class="wf-grid">
+          ${F('util','Utilities /mo ($)', r.util, 'current')}
+          ${F('pmir','PMI rate %/yr', r.pmir, 'used only if no PMI $/mo above')}
+        </div>
+        ${PAIR('Upkeep reserve %/yr','maint', r.maintPct!=null?r.maintPct:gOr('maint',1),'Upkeep reserve $/mo','upmo', r.upkeepMo)}
       </div>
 
       ${rawText?`<details style="margin-top:.5rem"><summary style="font-size:.72rem;font-weight:700;cursor:pointer">What the scan actually read</summary><div class="share-msg">${esc(String(rawText).slice(0,1200))}</div></details>`:''}
@@ -4936,6 +4940,9 @@ function finStaged(){
   const t = Object.assign({}, r);
   const price = gn('price'); if(price!=null) t.price = price;
   ['cred','rate','term','hoa','taxr','mr','ins','util','pmir'].forEach(k=>{ const v=gn(k); if(v!=null) t[k]=v; });
+  const _txm = gn('taxmo'); t.taxMo = _txm!=null ? _txm : undefined;
+  const _pmm = gn('pmimo'); t.pmiMo = _pmm!=null ? _pmm : undefined;
+  const _upm = gn('upmo'); t.upkeepMo = _upm!=null ? _upm : undefined;
   const mp = gn('maint'); if(mp!=null) t.maintPct = mp;
   const iv = gn('incval'); if(iv!=null) t.incval = iv;
   let dp = gn('dp');
@@ -4958,13 +4965,13 @@ function finPreview(){
     <div class="frb-head">What these numbers mean for this home</div>
     ${row('Loan ('+p.dpPct+'% down = '+F(p.dpAmt)+')', F(p.loan))}
     ${row('Principal & interest @ '+p.rate+'%', F(p.pi)+'/mo')}
-    ${p.pmi?row('PMI (under 20% down)', F(p.pmi)+'/mo'):row('PMI','none — 20%+ down')}
-    ${row('Property tax', F(p.tax)+'/mo')}
+    ${p.pmi?row('PMI'+(st.t.pmiMo!=null?' ($ as set)':' (under 20% down)'), F(p.pmi)+'/mo'):row('PMI','none — 20%+ down')}
+    ${row('Property tax'+(st.t.taxMo!=null?' ($ as set)':''), F(p.tax)+'/mo')}
     ${row('Mello-Roos', p.mr?F(p.mr)+'/mo':'none')}
     ${row('HOA', p.hoa?F(p.hoa)+'/mo':'none')}
     ${row('Insurance', p.ins?F(p.ins)+'/mo':'none')}
     ${row('Utilities', p.util?F(p.util)+'/mo':'none')}
-    ${row('Upkeep reserve', p.upkeep?F(p.upkeep)+'/mo':'none')}
+    ${row('Upkeep reserve'+(st.t.upkeepMo!=null?' ($ as set)':''), p.upkeep?F(p.upkeep)+'/mo':'none')}
     <div class="frb-row frb-total"><span>Monthly all-in</span><b>${F(p.allin)}/mo</b><i>${d===0?'unchanged':(d<0?'▼ '+F(-d)+' cheaper':'▲ '+F(d)+' more')} vs saved numbers${st.quote?' · their quote: '+F(st.quote):''}</i></div>
     <div class="frb-row frb-total"><span>Cash to close</span><b>${F(p.cash)}</b><i>${p.dpPct}% down + closing − credits</i></div>
     ${st.quote && Math.abs(st.quote - p.allin) > 150 ? `<div class="frb-warn">⚠ Their quote is ${F(Math.abs(st.quote-p.allin))}/mo ${st.quote<p.allin?'lower':'higher'} than this math — usually missing Mello-Roos, insurance, or HOA. Ask the agent what their number includes.</div>` : ''}
@@ -5001,6 +5008,9 @@ function saveFinReview(){
   set('dp', dp);
   set('hoa', gn('hoa')); set('taxr', gn('taxr')); set('mr', gn('mr'));
   set('ins', gn('ins')); set('util', gn('util')); set('pmir', gn('pmir'));
+  const txm = gn('taxmo'); r.taxMo = txm!=null ? txm : undefined;
+  const pmm = gn('pmimo'); r.pmiMo = pmm!=null ? pmm : undefined;
+  const upm = gn('upmo'); r.upkeepMo = upm!=null ? upm : undefined;
   const mp2 = gn('maint'); if(mp2!=null) r.maintPct = mp2;
   const cc = gn('cc');
   if(cc!=null && (price||r.price)) r.ccpct = Math.round(cc/(price||r.price)*1000)/10;
@@ -5045,7 +5055,7 @@ async function uploadFinSheet(id, inp){
     const block = isPdf
       ? {type:'document', source:{type:'base64', media_type:'application/pdf', data:b64}}
       : {type:'image', source:{type:'base64', media_type: file.type||'image/jpeg', data:b64}};
-    const schema = '{"price": number|null, "seller_credit": number|null, "other_incentives_value": number|null, "incentive_notes": string|null, "rate_pct": number|null, "rate_notes": string|null, "loan_term_years": number|null, "down_payment_pct": number|null, "down_payment_amount": number|null, "hoa_monthly": number|null, "property_tax_rate_pct": number|null, "mello_roos_monthly": number|null, "est_closing_costs": number|null, "insurance_monthly": number|null, "monthly_payment_quote": number|null, "lender": string|null}';
+    const schema = '{"price": number|null, "seller_credit": number|null, "other_incentives_value": number|null, "incentive_notes": string|null, "rate_pct": number|null, "rate_notes": string|null, "loan_term_years": number|null, "down_payment_pct": number|null, "down_payment_amount": number|null, "hoa_monthly": number|null, "property_tax_rate_pct": number|null, "mello_roos_monthly": number|null, "est_closing_costs": number|null, "insurance_monthly": number|null, "property_tax_monthly": number|null, "pmi_monthly": number|null, "monthly_payment_quote": number|null, "lender": string|null}';
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST', headers: apiHeaders(),
       body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:600,
@@ -5539,7 +5549,7 @@ async function renderStorMeter(){
 
 function renderDiag(){
   const el = document.getElementById('diagLine'); if(!el) return;
-  el.textContent = 'v99 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
+  el.textContent = 'v100 · fs ' + document.documentElement.style.fontSize + ' · screen ' + screen.width + '×' + screen.height + ' · viewport ' + window.innerWidth + '×' + window.innerHeight + ' · dpr ' + (window.devicePixelRatio||1).toFixed(2) + ' · mode ' + (document.documentElement.classList.contains('is-mobile') ? 'phone' : 'desktop');
 }
 function openSettings(){ renderDiag(); renderStorMeter(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); calc(); }
@@ -5683,7 +5693,7 @@ async function fetchSchools(p, address){
           `1) The zoned public schools (elementary/middle/high) with GreatSchools 1-10 ratings and driving distance from the address in miles\n` +
           `2) Nearest masjid/mosque name and driving distance in miles\n` +
           `3) Asian student percentage at the zoned elementary school if findable\n` +
-          `Respond ONLY JSON, no fences: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null, "miles": number|null}], "masjid_name": string|null, "masjid_miles": number|null, "asian_pct": number|null}\n` +
+          `Copy numbers EXACTLY as printed on the sheet — never derive, convert, estimate, or fill gaps; null for anything not literally printed. Respond ONLY JSON, no fences: {"schools":[{"name": string, "type": "Elementary"|"Middle"|"High", "rating": number|null, "miles": number|null}], "masjid_name": string|null, "masjid_miles": number|null, "asian_pct": number|null}\n` +
           `null for anything not clearly verified — never guess. Be fast: at most 3 searches.`}],
         tools: [{ type:'web_search_20250305', name:'web_search', max_uses: 3 }]
       })
@@ -6090,7 +6100,7 @@ window.onload = function(){
   setTimeout(processShareInbox, 600);
   initSections(); loadState(); loadApiKey(); loadProps(); loadReqs(); loadCK(); loadDocs(); loadCats(); seedHomes(); seedHomes2(); seedHomes3(); backfillSchoolMiles(); migratePhotos(); migrateCommEvidence(); migrateDocsToVault(); applyPCount(); calc(); checkVisitReminders();
   showPane('dash');
-  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v99';
+  const dv=document.getElementById('dashVer'); if(dv) dv.textContent='v100';
   window.__booted = true;
 };
 </script>
